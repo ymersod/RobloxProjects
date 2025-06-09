@@ -3,18 +3,51 @@ local replicatedStorage = game:GetService("ReplicatedStorage")
 local tool = replicatedStorage:WaitForChild("Tools"):WaitForChild("SlapTool")
 local slapLogic = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("slaplogic")
 
-game:GetService("Players").PlayerAdded:Connect(function(player)
-	player.CharacterAdded:Connect(function()
-		if not tool and not slapLogic then
-			print("Tool or slaplogic is not in storage")
-			return
+-- function ignorePhysicsOnOwner(char: Model, hitBox: Part)
+-- 	for _, charPart in char:GetDescendants() do
+-- 		if charPart:IsA("BasePart") and hitBox:IsA("BasePart") then
+-- 			local ncc = Instance.new("NoCollisionConstraint")
+-- 			ncc.Part0 = charPart
+-- 			ncc.Part1 = hitBox
+-- 			ncc.Parent = hitBox -- keep constraints organized
+-- 		end
+-- 	end
+-- end
+
+function SetupPhysics(char: Model, toolClone: Tool)
+	for _, part in char:GetDescendants() do
+		if part:IsA("BasePart") then
+			part.CollisionGroup = "Players"
 		end
+	end
 
-		local toolClone = tool:Clone()
-		local slapLogicClone = slapLogic:Clone()
+	for _, part in toolClone:GetDescendants() do
+		if part:IsA("BasePart") then
+			part.CollisionGroup = "MeeleTools"
+		end
+	end
+end
 
-		local handle = toolClone.PrimaryPart
-		slapLogicClone.Parent = handle
-		toolClone.Parent = player.Backpack
+function SetupStarterTools(player, char)
+	if not tool and not slapLogic then
+		print("Tool or slaplogic is not in storage")
+		return
+	end
+
+	local toolClone = tool:Clone()
+	local slapLogicClone = slapLogic:Clone()
+
+	local handle = toolClone.PrimaryPart
+	slapLogicClone.Parent = handle
+	toolClone.Parent = player.Backpack
+
+	-- Might be usefull later - not good for now
+	-- SetupPhysics(char, toolClone)
+	-- ignorePhysicsOnOwner(char, handle)
+end
+
+game:GetService("Players").PlayerAdded:Connect(function(player)
+	player.CharacterAdded:Connect(function(char)
+		SetupStarterTools(player, char)
 	end)
 end)

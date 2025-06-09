@@ -1,23 +1,27 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local players = game:GetService("Players")
+local ragdollClientEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("RagdollClient")
 local part = script.Parent :: Part
-local ragdollModule =
-	require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ModuleScripts"):WaitForChild("ragdollPlayer"))
-local killModule =
-	require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ModuleScripts"):WaitForChild("killPlayer"))
 
-part.Touched:Connect(function(col: BasePart)
-	local char = col:FindFirstAncestorOfClass("Model")
-	if not char then
+local debounce = {}
+
+part.Touched:Connect(function(hit: BasePart)
+	local character = hit:FindFirstAncestorOfClass("Model")
+	if not character then
 		return
 	end
 
-	local player = players:GetPlayerFromCharacter(char)
-
-	if player then
-		ragdollModule.Ragdoll(char, player)
-		-- killModule.killPlayer(char, player)
-	else
-		print("Didnt touch player")
+	local targetPlayer = game.Players:GetPlayerFromCharacter(character)
+	if not targetPlayer then
+		return
 	end
+
+	if debounce[targetPlayer] then
+		return
+	end
+	debounce[targetPlayer] = true
+	task.delay(1, function()
+		debounce[targetPlayer] = nil
+	end)
+
+	ragdollClientEvent:FireClient(targetPlayer)
 end)
