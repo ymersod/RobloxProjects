@@ -23,5 +23,5 @@ part.Touched:Connect(function(hit: BasePart)
 		debounce[targetPlayer] = nil
 	end)
 
-	ragdollClientEvent:FireClient(targetPlayer)
+	ragdollClientEvent:FireClient(targetPlayer, hit.Position)
 end)

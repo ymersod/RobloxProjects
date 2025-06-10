@@ -1,10 +1,10 @@
 local ragdollModule = {}
 
-function AddForce(humanoid: Humanoid, hrp)
+function AddForce(humanoid: Humanoid, hrp: BasePart, hitPosition: Vector3)
 	if humanoid and hrp then
 		humanoid:ChangeState(Enum.HumanoidStateType.FallingDown)
-
-		hrp:ApplyImpulse()
+		print("Applying impulse at: ", hitPosition)
+		hrp:ApplyImpulseAtPosition(hitPosition, Vector3.new(1000, 1000, 1000))
 		-- local mass = hrp.AssemblyMass
 
 		-- local force = Vector3.new(1000, 1000, 0) * mass
@@ -19,14 +19,14 @@ function AddForce(humanoid: Humanoid, hrp)
 	end
 end
 
-function ragdollModule.Ragdoll(char: Model)
+function ragdollModule.Ragdoll(char: Model, hitPosition: Vector3)
 	local humanoid = char:FindFirstChildOfClass("Humanoid")
 	local hrp = char:FindFirstChild("HumanoidRootPart")
 	if humanoid then
 		humanoid.UnequipTools(humanoid)
 
 		if humanoid and hrp then
-			AddForce(humanoid, hrp)
+			AddForce(humanoid, hrp, hitPosition)
 		end
 	end
 end

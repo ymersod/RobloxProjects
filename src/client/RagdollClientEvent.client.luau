@@ -3,9 +3,9 @@ local ragdollClientEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild
 
 local ragdollModule = require(ReplicatedStorage.Shared.ModuleScripts.ragdollPlayer)
 
-ragdollClientEvent.OnClientEvent:Connect(function()
+ragdollClientEvent.OnClientEvent:Connect(function(hitPosition: Vector3)
 	local player = game.Players.LocalPlayer
 	local character = player.Character or player.CharacterAdded:Wait()
 
-	ragdollModule.Ragdoll(character)
+	ragdollModule.Ragdoll(character, hitPosition)
 end)
