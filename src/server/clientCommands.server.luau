@@ -8,7 +8,7 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 		if message == "/kill" then
 			killModule.killPlayer(player.Character, player)
 		elseif message == "/ragdoll" then
-			ragdollEvent:FireClient(player)
+			ragdollEvent:FireClient(player, player.Character.PrimaryPart.Position, Vector3.new(1000, 1000, 1000))
 		end
 	end)
 end)

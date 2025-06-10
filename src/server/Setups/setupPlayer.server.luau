@@ -1,6 +1,7 @@
+local ServerStorage = game:GetService("ServerStorage")
 local replicatedStorage = game:GetService("ReplicatedStorage")
 
-local tool = replicatedStorage:WaitForChild("Tools"):WaitForChild("SlapTool")
+local tool = ServerStorage:WaitForChild("Tools"):WaitForChild("SlapTool")
 local slapLogic = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("slaplogic")
 
 -- function ignorePhysicsOnOwner(char: Model, hitBox: Part)
