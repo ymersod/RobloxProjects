@@ -44,11 +44,21 @@ local function getPlayer(col:{ name:string, Parent: Model }) : Player?
     return player
 end
 
+local function partListContainsPlayer(list)
+    for i,p in ipairs(list) do
+        if getPlayer(p) then
+            return true
+        end
+    end
+    return false
+end
 
 local function scoreKing()
-    while true do
-        if #kingCandidates == 1 then
-            kingCandidates[1].kingScore.Value += 1
+    while true do        
+        if partListContainsPlayer(workspace:GetPartsInPart(part)) then
+            if #kingCandidates == 1 then
+                kingCandidates[1].kingScore.Value += 1
+            end
             part.Color = Color3.fromRGB(255, 0, 0)
         else
             part.Color = Color3.fromRGB(163, 162, 165)
