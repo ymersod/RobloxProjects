@@ -3,7 +3,7 @@ local serverStorage = game:GetService("ServerStorage")
 local bombPrefab = serverStorage:WaitForChild("Tools"):WaitForChild("Bomb") :: Tool
 local bombScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("bombLogic")
 
-local BOMB_TIMER = 30
+local BOMB_TIMER = 15
 
 function giveBombToPlayer(player: Player)
 	if player and player.Character then

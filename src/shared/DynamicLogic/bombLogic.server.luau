@@ -31,12 +31,10 @@ function explode()
 	bomb:Destroy()
 end
 
--- Countdown loop
 for timeLeft = FUSE_TIME, 0, -1 do
 	countdownText.Text = timeLeft
 	task.wait(1)
 
-	-- Optional: Make text flash when close to explosion
 	if timeLeft <= 2 then
 		countdownText.TextColor3 = Color3.new(1, 1, 0) -- Yellow
 		task.wait(0.1)
@@ -44,5 +42,4 @@ for timeLeft = FUSE_TIME, 0, -1 do
 	end
 end
 
--- Boom!
 explode()

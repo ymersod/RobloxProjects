@@ -1,3 +1,4 @@
+--TODO: Script might be needed down the line
 local ServerStorage = game:GetService("ServerStorage")
 local replicatedStorage = game:GetService("ReplicatedStorage")
 

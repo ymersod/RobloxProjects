@@ -3,7 +3,6 @@ local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local equipEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("EquipServerEvent")
-
 local getItems = require(ReplicatedStorage.Shared.ModuleScripts.getAllBackpackPlayer)
 
 local toolSlotPrefab = StarterGui:WaitForChild("ScreenGui"):WaitForChild("ToolFrame"):WaitForChild("Toolslot")
@@ -14,7 +13,12 @@ local CoreGui = game:GetService("StarterGui")
 CoreGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
 local toolMap = {} -- key: slot number, value: Tool
 
-realGui:WaitForChild("Toolslot"):Destroy() --Remove initial slot
+-- Clear existing UI slots (including the initial one)
+for _, child in ipairs(realGui:GetChildren()) do
+	if child.Name == "Toolslot" then
+		child:Destroy()
+	end
+end
 
 local keyToNumber = {
 	One = 1,
@@ -29,41 +33,65 @@ local keyToNumber = {
 	Zero = 0,
 }
 
-function addToInventory(tools: { Tool })
-	for _, tool in tools do
+-- Clears the current inventory UI
+local function clearInventoryUI()
+	for _, child in ipairs(realGui:GetChildren()) do
+		if child.Name == "Toolslot" then
+			child:Destroy()
+		end
+	end
+	table.clear(toolMap) -- Reset tool mappings
+end
+
+-- Updates the inventory UI with current tools
+local function updateInventoryUI(tools: { Tool })
+	clearInventoryUI() -- Clear old UI first
+
+	for index, tool in ipairs(tools) do
 		local inventoryImageID = tool:GetAttribute("InventoryImageID")
 		if not inventoryImageID then
 			continue
 		end
 
-		toolSlotPrefab:Clone()
-		toolSlotPrefab.Parent = realGui
-		local toolImage: ImageLabel = toolSlotPrefab:FindFirstChild("ToolImage")
+		local newSlot = toolSlotPrefab:Clone()
+		newSlot.Parent = realGui
+
+		local toolImage = newSlot:FindFirstChild("ToolImage")
 		toolImage.Image = inventoryImageID
 		toolImage.Visible = true
 
-		local count = #realGui:GetChildren() - 1 -- -1 because of uiListLayout
-
-		local toolText: TextLabel = toolSlotPrefab:FindFirstChild("ToolName")
-		toolText.Text = count
+		local toolText = newSlot:FindFirstChild("ToolName")
+		toolText.Text = tostring(index)
 		toolText.Visible = true
 
-		toolMap[count] = tool
-		-- now when player presses the number shown on board player should equip that thing
+		toolMap[index] = tool
 	end
 end
 
-function initInventory()
-	local items = getItems.GetItems(player) :: { Tool }
-	addToInventory(items)
-	player.Backpack.Changed:Connect(function()
-		-- Add new item to back on change
-		-- Dont add bomb
+-- Initialize the inventory and set up listeners
+local function initInventory()
+	local function refreshInventory()
+		local items = getItems.GetItems(player) :: { Tool }
+		print("Refresh inventory -  items:", items)
+		updateInventoryUI(items)
+	end
+
+	-- Initial setup
+	refreshInventory()
+
+	-- Track backpack changes
+	player.Backpack.ChildAdded:Connect(refreshInventory)
+
+	-- Reset inventory on death
+	player.CharacterAdded:Connect(function()
+		refreshInventory()
 	end)
 end
 
+-- Initialize inventory
 initInventory()
 
+-- Handle keyboard input for equipping tools
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if gameProcessed then
 		return
@@ -72,7 +100,6 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if input.UserInputType == Enum.UserInputType.Keyboard then
 		local numberPressed = keyToNumber[input.KeyCode.Name]
 		if numberPressed and toolMap[numberPressed] then
-			print("Pressed number:", numberPressed)
 			equipEvent:FireServer(toolMap[numberPressed])
 		end
 	end
