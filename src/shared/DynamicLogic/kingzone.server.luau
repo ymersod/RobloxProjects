@@ -15,90 +15,47 @@ local function getPlayer(col: { name: string, Parent: Model }): Player?
 	return player
 end
 
-local function removePlayerWithId(T, id)
-	for i, item in ipairs(T) do
-		if item.id == id then
-			T[i] = nil
-			print("removed: " .. item.id)
-		end
-		if T[i] == nil then
-			T[i] = T[i + 1]
-			T[i + 1] = nil
-		end
-	end
-	return T
+local function tryToAddPlayer(userId)
+	kingCandidates[#kingCandidates + 1] = userId
+	print(kingCandidates)
 end
 
-local function removeAllPlayersNotInList(list,toBeKeptList)
-    local playerIds = {}
-    for i,p in ipairs(toBeKeptList) do
-        local player = getPlayer(p)
-        if player then
-            playerIds[#playerIds+1] = player.UserId
-        end
-    end
-    for i,p in ipairs(list) do
-        if function() for i, pid in ipairs(playerIds) do if pid == p.id then return false end return true end end then
-            list = removePlayerWithId(list, p.id)
-        end
-    end
-    return list
-end
-
-local function tryToAddPlayer(T, entry)
-	local playerIsAlreadyInSet = false
-	print(#T)
-	for _, item in ipairs(T) do
-		if item.id == entry.id then
-			playerIsAlreadyInSet = true
-		end
-	end
-
-	if not playerIsAlreadyInSet then
-		T[#T + 1] = entry
-	end
-	return T
-end
-
-local function partListContainsPlayer(list)
+local function updateKingZone(list)
+	table.clear(kingCandidates)
 	for _, p in ipairs(list) do
-		if getPlayer(p) then
-			return true
+		local player = getPlayer(p)
+		local playerChar = player and player.Character
+		local humanoid = playerChar and playerChar:FindFirstChildOfClass("Humanoid")
+		if player and humanoid and humanoid.Health > 0 then
+			tryToAddPlayer(player.UserId)
 		end
 	end
-	return false
 end
 
-local function scoreKing()
+function scoreKing()
+	local king = players:GetPlayerByUserId(kingCandidates[1])
+	local leaderstats = king and king:FindFirstChild("leaderstats")
+	local kingScore: IntValue = leaderstats and leaderstats:FindFirstChild("King Score")
+
+	if kingScore then
+		kingScore.Value += 1
+	end
+end
+
+local function kingZoneMainLoop()
 	while true do
 		local partsInZone = workspace:GetPartsInPart(part)
-		if partListContainsPlayer(partsInZone) then
+		updateKingZone(partsInZone)
+		if #kingCandidates > 0 then
 			if #kingCandidates == 1 then
-				kingCandidates[1].kingScore.Value += 1
+				part.Color = Color3.fromRGB(9, 255, 0)
+				scoreKing()
 			end
 			part.Color = Color3.fromRGB(255, 0, 0)
 		else
 			part.Color = Color3.fromRGB(163, 162, 165)
-			kingCandidates = removeAllPlayersNotInList(kingCandidates,partsInZone)
 		end
 		task.wait(1)
 	end
 end
-
-local scorer = coroutine.create(scoreKing)
-coroutine.resume(scorer)
-
-local function onTouched(otherPart)
-	local player = getPlayer(otherPart)
-	if player ~= nil and not part:GetAttribute("Touched") then
-		print(part.Name .. " collided with " .. player.Name)
-		local leaderstats = player and player:FindFirstChild("leaderstats")
-		local kingScore = leaderstats and leaderstats:FindFirstChild("King Score")
-
-		if kingScore then
-			kingCandidates = tryToAddPlayer(kingCandidates, { id = player.UserId, kingScore = kingScore })
-		end
-	end
-end
-
-part.Touched:Connect(onTouched)
+kingZoneMainLoop()
