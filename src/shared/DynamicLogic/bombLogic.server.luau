@@ -26,10 +26,49 @@ countdownText.Font = Enum.Font.FredokaOne
 countdownText.Text = FUSE_TIME
 countdownText.Parent = billboardGui
 
+local GRACE_PERIOD = 2 -- seconds
+
+local lastTransferTime = 0
+local previousOwnerUserId = nil
+
 function explode()
 	killModule.killPlayer(curOwnerModel, curOwnerPlayer)
 	bomb:Destroy()
 end
+
+bomb.Touched:Connect(function(hit: BasePart)
+	local now = tick()
+
+	local hitPlayerChar = hit:FindFirstAncestorOfClass("Model")
+	if not hitPlayerChar then
+		return
+	end
+
+	local playerHit = Players:GetPlayerFromCharacter(hitPlayerChar)
+	if not playerHit then
+		return
+	end
+
+	-- Prevent re-passing during grace period
+	if previousOwnerUserId and playerHit.UserId == previousOwnerUserId and (now - lastTransferTime) < GRACE_PERIOD then
+		print("Grace period active — can't pass back yet")
+		return
+	end
+
+	-- Prevent giving bomb to current owner
+	if curOwnerPlayer and playerHit.UserId == curOwnerPlayer.UserId then
+		return
+	end
+
+	local bombTool = bomb.Parent
+	bombTool.Parent = hitPlayerChar
+
+	lastTransferTime = now
+	previousOwnerUserId = curOwnerPlayer and curOwnerPlayer.UserId or nil
+
+	curOwnerModel = hitPlayerChar
+	curOwnerPlayer = playerHit
+end)
 
 for timeLeft = FUSE_TIME, 0, -1 do
 	countdownText.Text = timeLeft

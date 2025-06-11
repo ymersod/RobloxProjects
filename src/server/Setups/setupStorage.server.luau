@@ -4,13 +4,13 @@ local kingZoneScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("Dy
 local bombScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("bombLogic")
 local slapScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("slaplogic")
 
-local bombPrefab = replicatedStorage:WaitForChild("Tools"):WaitForChild("Bomb")
+local bombPrefab: Tool = replicatedStorage:WaitForChild("Tools"):WaitForChild("Bomb")
 local slapPrefab: Tool = replicatedStorage:WaitForChild("Tools"):WaitForChild("SlapTool")
 
 kingZoneScript.Parent = workspace:FindFirstChild("Kingzone")
 
 local bombScriptClone = bombScript:Clone()
-bombScriptClone.Parent = bombPrefab
+bombScriptClone.Parent = bombPrefab.PrimaryPart
 
 local slapScriptClone = slapScript:Clone()
 slapScriptClone.Parent = slapPrefab.PrimaryPart

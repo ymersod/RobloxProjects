@@ -12,37 +12,33 @@ function giveBombToPlayer(player: Player)
 	end
 end
 
-function findRandomPlayer(playerCount, players)
-	local random = Random.new()
-	local randomIndex = random.NextInteger(random, 1, playerCount)
-	local randomPlayer: Player = players[randomIndex]
-	local playerChar = randomPlayer.Character
-
-	if playerChar and playerChar:FindFirstChild("Bomb") then
-		print(randomPlayer, " already have bomb")
-		table.remove(players, randomIndex)
-		if #players > 0 then
-			return findRandomPlayer(playerCount, players)
-		else
-			return nil
-		end
+function findRandomPlayer(players)
+	if #players == 0 then
+		return nil
 	end
+
+	local random = Random.new()
+	local randomIndex = random:NextInteger(1, #players)
+	local randomPlayer: Player = players[randomIndex]
+
+	if randomPlayer and randomPlayer.Character and randomPlayer.Character:FindFirstChild("Bomb") then
+		print(randomPlayer, "already has bomb")
+		table.remove(players, randomIndex)
+		return findRandomPlayer(players) -- use current players list
+	end
+
 	return randomPlayer
 end
 
 while true do
 	local players = game:GetService("Players"):GetPlayers()
-	local playerCount = #players
-	if playerCount > 0 then
-		local randomPlayer = findRandomPlayer(playerCount, players)
-
+	if #players >= 2 then
+		local randomPlayer = findRandomPlayer(players)
 		if randomPlayer then
-			-- TODO: ADD BACK WHEN PROD OR TESTING BOMBING
-			-- giveBombToPlayer(randomPlayer)
+			giveBombToPlayer(randomPlayer)
 		end
 	else
-		warn("0 players in game")
+		warn("Need 5 players, only have:", #players)
 	end
-
 	task.wait(BOMB_TIMER)
 end
