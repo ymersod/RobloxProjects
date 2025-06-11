@@ -4,6 +4,17 @@ local part = script.Parent
 
 local kingCandidates = {}
 
+local function getPlayer(col: { name: string, Parent: Model }): Player?
+	local char = col.Parent
+	if not char or col.name ~= "HumanoidRootPart" then
+		return nil
+	end
+
+	local player = players:GetPlayerFromCharacter(char)
+
+	return player
+end
+
 local function removePlayerWithId(T, id)
 	for i, item in ipairs(T) do
 		if item.id == id then
@@ -16,6 +27,22 @@ local function removePlayerWithId(T, id)
 		end
 	end
 	return T
+end
+
+local function removeAllPlayersNotInList(list,toBeKeptList)
+    local playerIds = {}
+    for i,p in ipairs(toBeKeptList) do
+        local player = getPlayer(p)
+        if player then
+            playerIds[#playerIds+1] = player.UserId
+        end
+    end
+    for i,p in ipairs(list) do
+        if function() for i, pid in ipairs(playerIds) do if pid == p.id then return false end return true end end then
+            list = removePlayerWithId(list, p.id)
+        end
+    end
+    return list
 end
 
 local function tryToAddPlayer(T, entry)
@@ -33,17 +60,6 @@ local function tryToAddPlayer(T, entry)
 	return T
 end
 
-local function getPlayer(col: { name: string, Parent: Model }): Player?
-	local char = col.Parent
-	if not char or col.name ~= "HumanoidRootPart" then
-		return nil
-	end
-
-	local player = players:GetPlayerFromCharacter(char)
-
-	return player
-end
-
 local function partListContainsPlayer(list)
 	for _, p in ipairs(list) do
 		if getPlayer(p) then
@@ -55,13 +71,15 @@ end
 
 local function scoreKing()
 	while true do
-		if partListContainsPlayer(workspace:GetPartsInPart(part)) then
+		local partsInZone = workspace:GetPartsInPart(part)
+		if partListContainsPlayer(partsInZone) then
 			if #kingCandidates == 1 then
 				kingCandidates[1].kingScore.Value += 1
 			end
 			part.Color = Color3.fromRGB(255, 0, 0)
 		else
 			part.Color = Color3.fromRGB(163, 162, 165)
+			kingCandidates = removeAllPlayersNotInList(kingCandidates,partsInZone)
 		end
 		task.wait(1)
 	end
@@ -83,12 +101,4 @@ local function onTouched(otherPart)
 	end
 end
 
-local function onTouchEnded(otherPart)
-	local player = getPlayer(otherPart)
-	if player ~= nil and not part:GetAttribute("TouchOut") then
-		kingCandidates = removePlayerWithId(kingCandidates, player.UserId)
-	end
-end
-
 part.Touched:Connect(onTouched)
-part.TouchEnded:Connect(onTouchEnded)
