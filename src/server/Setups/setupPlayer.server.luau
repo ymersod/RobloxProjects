@@ -14,21 +14,21 @@ local tool = replicatedStorage:WaitForChild("Tools"):WaitForChild("SlapTool")
 -- 	end
 -- end
 
-function SetupPhysics(char: Model, toolClone: Tool)
-	for _, part in char:GetDescendants() do
-		if part:IsA("BasePart") then
-			part.CollisionGroup = "Players"
-		end
-	end
+-- function SetupPhysics(char: Model, toolClone: Tool)
+-- 	for _, part in char:GetDescendants() do
+-- 		if part:IsA("BasePart") then
+-- 			part.CollisionGroup = "Players"
+-- 		end
+-- 	end
 
-	for _, part in toolClone:GetDescendants() do
-		if part:IsA("BasePart") then
-			part.CollisionGroup = "MeeleTools"
-		end
-	end
-end
+-- 	for _, part in toolClone:GetDescendants() do
+-- 		if part:IsA("BasePart") then
+-- 			part.CollisionGroup = "MeeleTools"
+-- 		end
+-- 	end
+-- end
 
-function SetupStarterTools(player, char)
+function SetupStarterTools(player)
 	if not tool then
 		print("Tool or slaplogic is not in storage")
 		return
@@ -48,7 +48,7 @@ end
 
 game:GetService("Players").PlayerAdded:Connect(function(player)
 	player.CharacterAdded:Connect(function(char)
-		SetupStarterTools(player, char)
+		SetupStarterTools(player)
 
 		if not char:FindFirstChildOfClass("Humanoid") then
 			return
