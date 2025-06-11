@@ -1,9 +1,7 @@
 --TODO: Script might be needed down the line
-local ServerStorage = game:GetService("ServerStorage")
 local replicatedStorage = game:GetService("ReplicatedStorage")
 
-local tool = ServerStorage:WaitForChild("Tools"):WaitForChild("SlapTool")
-local slapLogic = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("slaplogic")
+local tool = replicatedStorage:WaitForChild("Tools"):WaitForChild("SlapTool")
 
 -- function ignorePhysicsOnOwner(char: Model, hitBox: Part)
 -- 	for _, charPart in char:GetDescendants() do
@@ -31,16 +29,16 @@ function SetupPhysics(char: Model, toolClone: Tool)
 end
 
 function SetupStarterTools(player, char)
-	if not tool and not slapLogic then
+	if not tool then
 		print("Tool or slaplogic is not in storage")
 		return
 	end
 
 	local toolClone = tool:Clone()
-	local slapLogicClone = slapLogic:Clone()
+	-- local slapLogicClone = slapLogic:Clone()
 
-	local handle = toolClone.PrimaryPart
-	slapLogicClone.Parent = handle
+	-- local handle = toolClone.PrimaryPart
+	-- slapLogicClone.Parent = handle
 	toolClone.Parent = player.Backpack
 
 	-- Might be usefull later - not good for now

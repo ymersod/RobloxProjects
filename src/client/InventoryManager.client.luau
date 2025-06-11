@@ -1,11 +1,10 @@
-local StarterGui = game:GetService("StarterGui")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local equipEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("EquipServerEvent")
 local getItems = require(ReplicatedStorage.Shared.ModuleScripts.getAllBackpackPlayer)
 
-local toolSlotPrefab = StarterGui:WaitForChild("ScreenGui"):WaitForChild("ToolFrame"):WaitForChild("Toolslot")
+local toolSlotPrefab = ReplicatedStorage:WaitForChild("UI"):WaitForChild("Toolslot")
 local player = game:GetService("Players").LocalPlayer
 local realGui = player.PlayerGui:WaitForChild("ScreenGui"):WaitForChild("ToolFrame")
 local CoreGui = game:GetService("StarterGui")
@@ -37,6 +36,7 @@ local keyToNumber = {
 local function clearInventoryUI()
 	for _, child in ipairs(realGui:GetChildren()) do
 		if child.Name == "Toolslot" then
+			print("Clearing a toolslot")
 			child:Destroy()
 		end
 	end
@@ -47,6 +47,7 @@ end
 local function updateInventoryUI(tools: { Tool })
 	clearInventoryUI() -- Clear old UI first
 
+	realGui = player.PlayerGui:WaitForChild("ScreenGui"):WaitForChild("ToolFrame")
 	for index, tool in ipairs(tools) do
 		local inventoryImageID = tool:GetAttribute("InventoryImageID")
 		if not inventoryImageID then
@@ -65,24 +66,40 @@ local function updateInventoryUI(tools: { Tool })
 		toolText.Visible = true
 
 		toolMap[index] = tool
+		print("Adding new tool to inventory", tool)
 	end
 end
 
 -- Initialize the inventory and set up listeners
 local function initInventory()
+	local refreshing = false
+
 	local function refreshInventory()
-		local items = getItems.GetItems(player) :: { Tool }
-		print("Refresh inventory -  items:", items)
-		updateInventoryUI(items)
+		if refreshing then
+			return
+		end
+		refreshing = true
+
+		-- Slight delay to allow backpack tools to settle in
+		task.delay(0.2, function()
+			local items = getItems.GetItems(player) :: { Tool }
+			print("Refresh inventory - items:", items)
+			updateInventoryUI(items)
+			refreshing = false
+		end)
 	end
 
 	-- Initial setup
 	refreshInventory()
 
 	-- Track backpack changes
-	player.Backpack.ChildAdded:Connect(refreshInventory)
+	player.Backpack.ChildAdded:Connect(function()
+		if not refreshing then
+			refreshInventory()
+		end
+	end)
 
-	-- Reset inventory on death
+	-- Refresh once on respawn
 	player.CharacterAdded:Connect(function()
 		refreshInventory()
 	end)

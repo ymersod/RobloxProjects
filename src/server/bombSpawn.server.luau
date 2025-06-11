@@ -1,16 +1,14 @@
-local replicatedStorage = game:GetService("ReplicatedStorage")
-local serverStorage = game:GetService("ServerStorage")
-local bombPrefab = serverStorage:WaitForChild("Tools"):WaitForChild("Bomb") :: Tool
-local bombScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("bombLogic")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local bombPrefab = ReplicatedStorage:WaitForChild("Tools"):WaitForChild("Bomb") :: Tool
+local equipEvent = require(ReplicatedStorage.Shared.ModuleScripts.equipItemPlayer)
 
 local BOMB_TIMER = 15
 
 function giveBombToPlayer(player: Player)
 	if player and player.Character then
 		local bombClone = bombPrefab:Clone()
-		local bombScriptClone = bombScript:Clone()
-		bombScriptClone.Parent = bombClone
-		bombClone.Parent = player.Character
+
+		equipEvent.EquipTool(player, bombClone)
 	end
 end
 
@@ -21,7 +19,7 @@ function findRandomPlayer(playerCount, players)
 	local playerChar = randomPlayer.Character
 
 	if playerChar and playerChar:FindFirstChild("Bomb") then
-		print("Player already ha bomb")
+		print(randomPlayer, " already have bomb")
 		table.remove(players, randomIndex)
 		if #players > 0 then
 			return findRandomPlayer(playerCount, players)

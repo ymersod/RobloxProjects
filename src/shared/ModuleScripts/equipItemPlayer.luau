@@ -1,7 +1,12 @@
 local equipModule = {}
-local replicatedStorage = game:GetService("ReplicatedStorage")
-local toolsFolder = game:GetService("ServerStorage"):WaitForChild("Tools")
-local slapLogic = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("slaplogic")
+local toolsFolder = game:GetService("ReplicatedStorage"):WaitForChild("Tools")
+
+function Equip(playerChar: Model, tool: Tool)
+	local toolRef = toolsFolder:FindFirstChild(tool.Name)
+	local toolClone = toolRef:Clone()
+
+	toolClone.Parent = playerChar
+end
 
 function equipModule.EquipTool(player: Player, tool: Tool)
 	local playerChar = player.Character
@@ -12,22 +17,20 @@ function equipModule.EquipTool(player: Player, tool: Tool)
 	local equippedTool = playerChar:FindFirstChildOfClass("Tool")
 
 	--Unequip active tool
-	if equippedTool then --Unequip active tool
+	if not equippedTool then
+		Equip(playerChar, tool)
+	elseif equippedTool then
 		if equippedTool.Name == "Bomb" then
 			return
-		else
-			print("Destroying equipped tool")
+		elseif not equippedTool or equippedTool.Name ~= tool.Name then
+			print("Equip new tool tool")
 			equippedTool:Destroy()
-			return
+			Equip(playerChar, tool)
+		else
+			print("Unequip active tool")
+			equippedTool:Destroy()
 		end
 	end
-
-	local toolRef = toolsFolder:FindFirstChild(tool.Name)
-	local toolClone = toolRef:Clone()
-	local slapLogicClone = slapLogic:Clone()
-	slapLogicClone.Parent = toolClone:FindFirstChildOfClass("Part")
-
-	toolClone.Parent = playerChar
 end
 
 return equipModule
