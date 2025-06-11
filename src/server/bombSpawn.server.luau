@@ -37,7 +37,8 @@ while true do
 		local randomPlayer = findRandomPlayer(playerCount, players)
 
 		if randomPlayer then
-			giveBombToPlayer(randomPlayer)
+			-- TODO: ADD BACK WHEN PROD OR TESTING BOMBING
+			-- giveBombToPlayer(randomPlayer)
 		end
 	else
 		warn("0 players in game")
