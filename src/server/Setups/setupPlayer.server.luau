@@ -49,5 +49,11 @@ end
 game:GetService("Players").PlayerAdded:Connect(function(player)
 	player.CharacterAdded:Connect(function(char)
 		SetupStarterTools(player, char)
+
+		if not char:FindFirstChildOfClass("Humanoid") then
+			return
+		end
+		local humanoidLoaded = char:WaitForChild("Humanoid")
+		humanoidLoaded.MaxSlopeAngle = 45
 	end)
 end)
