@@ -21,7 +21,7 @@ local tweenOutProps = {
 	Position = UDim2.new(
 		accessParentGui.Position.X.Scale - 0.5,
 		accessParentGui.Position.X.Offset,
-		accessParentGui.Position.Y.Scale + 0.5,
+		accessParentGui.Position.Y.Scale,
 		accessParentGui.Position.Y.Offset
 	),
 }
@@ -54,8 +54,12 @@ openCloseButton.MouseButton1Click:Connect(function()
 		openCloseBg.Image = openImageId
 		closeTween:Play()
 		isUiOpen = false
+		closeTween.Completed:Once(function()
+			accessParentGui.Visible = false
+		end)
 	elseif not isUiOpen then
 		print("Opening...")
+		accessParentGui.Visible = true
 		openCloseBg.Image = closeImageId
 		openTween:Play()
 		isUiOpen = true
