@@ -34,6 +34,10 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 			if #command.args > 0 then
 				expFuncs.incrementExp(player.UserId, tonumber(command.args[1]))
 			end
+		elseif command.command == "/setselfxp" then
+			if #command.args > 0 then
+				expFuncs.setExp(player.UserId, tonumber(command.args[1]))
+			end
 		end
 	end)
 end)

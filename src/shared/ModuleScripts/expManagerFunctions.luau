@@ -1,6 +1,9 @@
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local expLevelClient = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("ExpLevelClient")
+
 local expStore = DataStoreService:GetDataStore("PlayerExp")
 
 local OpenFunctions = {}
@@ -9,10 +12,37 @@ local OpenFunctions = {}
 -- store repeatedly.
 local playerExp = {}
 
+local function calcLevelAndExpWindow(exp:number):{lvl:number,lvlProgress:{progress:number,goal:number}}
+    local lvl = math.max(0, math.floor(-95.04+20.25*math.log(exp)))
+    local oldGoal = math.floor(math.pow(2.718, ((lvl)+95.04)/20.25))
+    local goal = math.floor(math.pow(2.718, ((lvl+1)+95.04)/20.25))
+
+    return { lvl = lvl, lvlProgress = { progress = exp-oldGoal, goal = goal-oldGoal }}
+end
+
 function OpenFunctions.incrementExp(playerId, amount)
-    print(playerId)
+    print("incrementing score for player with id: " .. playerId)
     if playerExp[playerId] then
         playerExp[playerId] += amount
+
+        local success, player = pcall(function()
+            return Players:GetPlayerByUserId(playerId)
+        end)
+        if success then
+            expLevelClient:FireClient(player,calcLevelAndExpWindow(playerExp[playerId]))
+        end
+    end
+end
+
+function OpenFunctions.setExp(playerId, amount)
+    if playerExp[playerId] then
+        playerExp[playerId] = amount
+        local success, player = pcall(function()
+            return Players:GetPlayerByUserId(playerId)
+        end)
+        if success then
+            expLevelClient:FireClient(player,calcLevelAndExpWindow(playerExp[playerId]))
+        end
     end
 end
 
