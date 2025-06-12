@@ -1,5 +1,9 @@
 local players = game:GetService("Players")
 
+local expManagerFunctions = game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("ModuleScripts"):WaitForChild("expManagerFunctions")
+
+local funcs = require(expManagerFunctions)
+
 local part = script.Parent
 
 local kingCandidates = {}
@@ -39,6 +43,7 @@ function scoreKing()
 
 	if kingScore then
 		kingScore.Value += 1
+		funcs.incrementExp(king.UserId,5)
 	end
 end
 
