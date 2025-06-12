@@ -22,7 +22,7 @@ function findRandomPlayer(players)
 	local randomPlayer: Player = players[randomIndex]
 
 	if randomPlayer and randomPlayer.Character and randomPlayer.Character:FindFirstChild("Bomb") then
-		print(randomPlayer, "already has bomb")
+		-- print(randomPlayer, "already has bomb")
 		table.remove(players, randomIndex)
 		return findRandomPlayer(players) -- use current players list
 	end

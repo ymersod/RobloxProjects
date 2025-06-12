@@ -22,7 +22,7 @@ function equipModule.EquipTool(player: Player, tool: Tool)
 	elseif equippedTool then
 		if equippedTool.Name == "Bomb" then
 			return
-		elseif not equippedTool or equippedTool.Name ~= tool.Name then
+		elseif equippedTool.Name ~= tool.Name then
 			print("Equip new tool tool")
 			equippedTool:Destroy()
 			Equip(playerChar, tool)

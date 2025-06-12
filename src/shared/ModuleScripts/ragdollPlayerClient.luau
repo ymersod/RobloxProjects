@@ -23,7 +23,7 @@ function ragdollModule.Ragdoll(char: Model, hitPosition: Vector3, direction: Vec
 	local humanoid = char:FindFirstChildOfClass("Humanoid")
 	local hrp = char:FindFirstChild("HumanoidRootPart")
 	if humanoid then
-		humanoid.UnequipTools(humanoid)
+		-- humanoid.UnequipTools(humanoid)
 
 		if humanoid and hrp then
 			AddForce(humanoid, hrp, hitPosition, direction)

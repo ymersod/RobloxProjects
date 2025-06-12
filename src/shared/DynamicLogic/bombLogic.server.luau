@@ -3,6 +3,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local bomb = script.Parent :: Part
 local FUSE_TIME = 5
 local killModule = require(ReplicatedStorage.Shared.ModuleScripts.killPlayerServer)
+local equipModule = require(ReplicatedStorage.Shared.ModuleScripts.equipItemPlayer)
+
 local curOwnerModel = script:FindFirstAncestorOfClass("Model")
 local curOwnerPlayer = Players:GetPlayerFromCharacter(curOwnerModel)
 
@@ -44,6 +46,11 @@ bomb.Touched:Connect(function(hit: BasePart)
 		return
 	end
 
+	if hit.Parent and hit.Parent:IsA("Tool") then
+		-- print("Hitting tool")
+		return
+	end
+
 	local playerHit = Players:GetPlayerFromCharacter(hitPlayerChar)
 	if not playerHit then
 		return
@@ -51,7 +58,7 @@ bomb.Touched:Connect(function(hit: BasePart)
 
 	-- Prevent re-passing during grace period
 	if previousOwnerUserId and playerHit.UserId == previousOwnerUserId and (now - lastTransferTime) < GRACE_PERIOD then
-		print("Grace period active — can't pass back yet")
+		-- print("Grace period active — can't pass back yet")
 		return
 	end
 
@@ -60,14 +67,15 @@ bomb.Touched:Connect(function(hit: BasePart)
 		return
 	end
 
-	local bombTool = bomb.Parent
-	bombTool.Parent = hitPlayerChar
-
 	lastTransferTime = now
 	previousOwnerUserId = curOwnerPlayer and curOwnerPlayer.UserId or nil
 
 	curOwnerModel = hitPlayerChar
 	curOwnerPlayer = playerHit
+
+	local bombTool = bomb.Parent
+	equipModule.EquipTool(playerHit, bombTool)
+	bombTool:Destroy()
 end)
 
 for timeLeft = FUSE_TIME, 0, -1 do
