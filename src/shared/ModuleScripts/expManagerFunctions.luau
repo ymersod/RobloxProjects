@@ -13,9 +13,14 @@ local OpenFunctions = {}
 local playerExp = {}
 
 local function calcLevelAndExpWindow(exp:number):{lvl:number,lvlProgress:{progress:number,goal:number}}
-    local lvl = math.max(0, math.floor(-95.04+20.25*math.log(exp)))
-    local oldGoal = math.floor(math.pow(2.718, ((lvl)+95.04)/20.25))
-    local goal = math.floor(math.pow(2.718, ((lvl+1)+95.04)/20.25))
+    local lvl = math.max(0, math.floor(-95.04+20.25*math.log(exp+109)))
+    local oldGoal = math.floor(math.pow(2.718, ((lvl)+95.04)/20.25))-109
+    local goal = math.floor(math.pow(2.718, ((lvl+1)+95.04)/20.25))-109
+
+    -- print("lvl: " .. lvl)
+    -- print("lvl goal: " .. oldGoal)
+    -- print("next lvl goal: " .. goal)
+    -- print("progress: " .. (exp-oldGoal)/(goal-oldGoal))
 
     return { lvl = lvl, lvlProgress = { progress = exp-oldGoal, goal = goal-oldGoal }}
 end
