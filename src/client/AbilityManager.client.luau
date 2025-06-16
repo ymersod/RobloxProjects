@@ -2,7 +2,6 @@ local player = game:GetService("Players").LocalPlayer
 local abilityGUI =
 	game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("ScreenGui"):WaitForChild("Ability")
 local pressE: Frame = abilityGUI:WaitForChild("Press_E")
-local pressEText: TextLabel = abilityGUI:WaitForChild("Press_E"):WaitForChild("PressText")
 local uiButton: ImageButton = abilityGUI:WaitForChild("ActivateAbility")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -11,12 +10,9 @@ local platformEnums = require(ReplicatedStorage.Shared.ModuleScripts.enums)
 local ContextActionService = game:GetService("ContextActionService")
 
 function UpdateUIToPlatform()
-	print("Beepboop")
 	local newPlatform = player:GetAttribute("Platform")
 	if newPlatform == platformEnums.Mobile then
 		pressE.Visible = false
-	elseif newPlatform == platformEnums.Gamepad or newPlatform == platformEnums.Console then
-		pressEText.Text = "X"
 	else
 		pressE.Visible = true
 	end
