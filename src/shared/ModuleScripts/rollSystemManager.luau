@@ -1,3 +1,6 @@
+local slapStyleFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Slapstyles")
+local slapstyles = slapStyleFolder:GetDescendants()
+
 rollsystemManager = {}
 
 local ROLL_CLASSES = {
@@ -7,7 +10,7 @@ local ROLL_CLASSES = {
     legendary = 0.002
 }
 
-local availableItems = {
+local testItems = {
     common = {
         {item = "commonTestItem1"},
         {item = "commonTestItem2"},
@@ -27,7 +30,28 @@ local availableItems = {
         {item = "legendaryTestItem1"},
     }
 }
+local availableItems = {
+    common = {},
+    uncommon = {},
+    rare = {},
+    legendary = {}
+}
 
+for i, style in ipairs(slapstyles) do
+    if not style:IsA("Tool") then continue end
+    local rarity = style:GetAttribute("Rarity")
+    if rarity == "common" then
+        availableItems.common[#availableItems.common+1] = style
+    elseif rarity == "uncommon" then
+        availableItems.uncommon[#availableItems.uncommon+1] = style
+    elseif rarity == "rare" then
+        availableItems.rare[#availableItems.rare+1] = style
+    elseif rarity == "legendary" then
+        availableItems.legendary[#availableItems.legendary+1] = style
+    end
+end
+
+print(availableItems)
 function rollsystemManager.getNewItem()
     local change = math.random()
     if change >= 1 - ROLL_CLASSES.legendary then
