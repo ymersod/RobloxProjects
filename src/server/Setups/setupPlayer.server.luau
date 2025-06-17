@@ -2,7 +2,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
-local tool = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle0")
+local tool1 = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle0")
+local tool2 = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle1")
 local inventoryFunctions = require(ReplicatedStorage.Shared.ModuleScripts.inventoryFunctions)
 
 -- function ignorePhysicsOnOwner(char: Model, hitBox: Part)
@@ -31,23 +32,15 @@ local inventoryFunctions = require(ReplicatedStorage.Shared.ModuleScripts.invent
 -- end
 
 function SetupStarterTools(player)
-	if not tool then
+	if not tool1 and tool2 then
 		print("Tool or slaplogic is not in storage")
 		return
 	end
 
-	local toolClone = tool:Clone()
-	-- local slapLogicClone = slapLogic:Clone()
+	inventoryFunctions.EquipTool(player, tool1)
+	inventoryFunctions.AddToInventory(player, tool1)
 
-	-- local handle = toolClone.PrimaryPart
-	-- slapLogicClone.Parent = handle
-	toolClone.Parent = player.Backpack
-
-	inventoryFunctions.EquipTool(player, tool)
-
-	-- Might be usefull later - not good for now
-	-- SetupPhysics(char, toolClone)
-	-- ignorePhysicsOnOwner(char, handle)
+	inventoryFunctions.AddToInventory(player, tool2)
 end
 
 game:GetService("Players").PlayerAdded:Connect(function(player)
