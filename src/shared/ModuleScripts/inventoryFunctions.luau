@@ -1,5 +1,8 @@
-local equipModule = {}
-local toolsFolder = game:GetService("ReplicatedStorage"):WaitForChild("Tools")
+local inventoryFunctions = {}
+local toolsFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools")
+
+function inventoryFunctions.AddToInventory(player: Player) end
+function inventoryFunctions.GetInventory(player: Player) end
 
 function Equip(playerChar: Model, tool: Tool)
 	local toolRef = toolsFolder:FindFirstChild(tool.Name)
@@ -8,7 +11,7 @@ function Equip(playerChar: Model, tool: Tool)
 	toolClone.Parent = playerChar
 end
 
-function equipModule.EquipTool(player: Player, tool: Tool)
+function inventoryFunctions.EquipTool(player: Player, tool: Tool)
 	local playerChar = player.Character
 	if not playerChar then
 		return
@@ -32,5 +35,4 @@ function equipModule.EquipTool(player: Player, tool: Tool)
 		end
 	end
 end
-
-return equipModule
+return inventoryFunctions

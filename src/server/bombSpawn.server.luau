@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local bombPrefab = ReplicatedStorage:WaitForChild("Tools"):WaitForChild("Bomb") :: Tool
-local equipEvent = require(ReplicatedStorage.Shared.ModuleScripts.equipItemPlayer)
+local ServerStorage = game:GetService("ServerStorage")
+local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
+local inventoryFuncs = require(ReplicatedStorage.Shared.ModuleScripts.inventoryFunctions)
 
 local BOMB_TIMER = 15
 
@@ -8,7 +9,7 @@ function giveBombToPlayer(player: Player)
 	if player and player.Character then
 		local bombClone = bombPrefab:Clone()
 
-		equipEvent.EquipTool(player, bombClone)
+		inventoryFuncs.EquipTool(player, bombClone)
 	end
 end
 

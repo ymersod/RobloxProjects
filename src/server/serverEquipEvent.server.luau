@@ -2,9 +2,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local equipServerEvent =
 	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("EquipServerEvent")
 
-local eqiupModule = require(ReplicatedStorage.Shared.ModuleScripts.equipItemPlayer)
+local inventoryFuncs = require(ReplicatedStorage.Shared.ModuleScripts.inventoryFunctions)
 
 equipServerEvent.OnServerEvent:Connect(function(player: Player, tool: Tool)
 	print(player, tool)
-	eqiupModule.EquipTool(player, tool)
+	inventoryFuncs.EquipTool(player, tool)
 end)

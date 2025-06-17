@@ -1,7 +1,7 @@
 --TODO: Script might be needed down the line
-local replicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 
-local tool = replicatedStorage:WaitForChild("Tools"):WaitForChild("SlapTool")
+local tool = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle0")
 
 -- function ignorePhysicsOnOwner(char: Model, hitBox: Part)
 -- 	for _, charPart in char:GetDescendants() do
