@@ -1,7 +1,7 @@
 local Gui = game:GetService("ReplicatedStorage"):WaitForChild("UI"):WaitForChild("LevelBillboard")
 
 game.Players.PlayerAdded:Connect(function(player)
-	local levelTest = player:WaitForChild("Level")
+	local levelTest = player:WaitForChild("LocalStats"):WaitForChild("Level")
 
 	player.CharacterAdded:Connect(function(char)
 		local newGui = Gui:Clone()
@@ -9,6 +9,6 @@ game.Players.PlayerAdded:Connect(function(player)
 		newGui.Parent = char.Head
 	end)
 	levelTest.Changed:Connect(function()
-		player.Character.Head.LevelBillboard.LevelLabel.Text = "Level: " .. player.Level.Value
+		player.Character.Head.LevelBillboard.LevelLabel.Text = "Level: " .. player.LocalStats.Level.Value
 	end)
 end)

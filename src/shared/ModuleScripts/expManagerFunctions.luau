@@ -34,7 +34,13 @@ function OpenFunctions.incrementExp(playerId, amount)
 			return Players:GetPlayerByUserId(playerId)
 		end)
 		if success then
-			expLevelClient:FireClient(player, calcLevelAndExpWindow(playerExp[playerId]))
+			local bindableLvl:IntValue = player:WaitForChild("LocalStats"):WaitForChild("Level")
+			local level = calcLevelAndExpWindow(playerExp[playerId])
+			if bindableLvl.Value ~= level.lvl then
+				bindableLvl.Value = level.lvl
+			end
+			
+			expLevelClient:FireClient(player, level)
 		end
 	end
 end
@@ -46,7 +52,13 @@ function OpenFunctions.setExp(playerId, amount)
 			return Players:GetPlayerByUserId(playerId)
 		end)
 		if success then
-			expLevelClient:FireClient(player, calcLevelAndExpWindow(playerExp[playerId]))
+			local bindableLvl:IntValue = player:WaitForChild("LocalStats"):WaitForChild("Level")
+			local level = calcLevelAndExpWindow(playerExp[playerId])
+			if bindableLvl.Value ~= level.lvl then
+				bindableLvl.Value = level.lvl
+			end
+
+			expLevelClient:FireClient(player, level)
 		end
 	end
 end
@@ -56,12 +68,6 @@ function OpenFunctions.getExp(playerId)
 end
 
 function OpenFunctions.onPlayerAdded(player)
-	-- TODO: Use persisted data to update "Level"
-	local levelTest = Instance.new("IntValue")
-	levelTest.Name = "Level"
-	levelTest.Value = 1
-	levelTest.Parent = player
-
 	-- Read data store key
 	local success, storedExp = pcall(function()
 		return expStore:GetAsync(player.UserId)
@@ -75,10 +81,19 @@ function OpenFunctions.onPlayerAdded(player)
 		end
 		playerExp[player.UserId] = currentExp
 		print(currentExp)
-	end
 
-	-- Test incrementing Exp
-	OpenFunctions.incrementExp(player.UserId, 5)
+		local level = calcLevelAndExpWindow(currentExp)
+
+		local localStats = Instance.new("Folder")
+		localStats.Name = "LocalStats"
+		localStats.Parent = player
+		local levelTest = Instance.new("IntValue")
+		levelTest.Name = "Level"
+		levelTest.Value = level.lvl
+		levelTest.Parent = localStats
+
+		expLevelClient:FireClient(player, level)
+	end
 end
 
 function OpenFunctions.onPlayerRemoving(player)
