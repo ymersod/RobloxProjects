@@ -12,7 +12,6 @@ local tweenOutInfo = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirect
 
 local openImageId = "rbxassetid://93555922850987"
 local closeImageId = "rbxassetid://89593175570849"
-local isUiOpen = true
 
 -- Should be size of frame
 local tweenInProps = { Size = accessParentGui.Size, Position = accessParentGui.Position }
@@ -47,21 +46,21 @@ local function pulseOpenClose()
 	end)
 end
 
+closeTween:Play()
+
 openCloseButton.MouseButton1Click:Connect(function()
 	pulseOpenClose()
-	if isUiOpen then
+	if accessParentGui.Visible then
 		print("Closing...")
 		openCloseBg.Image = openImageId
 		closeTween:Play()
-		isUiOpen = false
 		closeTween.Completed:Once(function()
 			accessParentGui.Visible = false
 		end)
-	elseif not isUiOpen then
+	elseif not accessParentGui.Visible then
 		print("Opening...")
 		accessParentGui.Visible = true
 		openCloseBg.Image = closeImageId
 		openTween:Play()
-		isUiOpen = true
 	end
 end)

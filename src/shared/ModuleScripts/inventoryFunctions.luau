@@ -1,11 +1,17 @@
 local inventoryFunctions = {}
-local toolsFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools")
+local toolsFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools"):WaitForChild("Slapstyles")
 
 function inventoryFunctions.AddToInventory(player: Player) end
 function inventoryFunctions.GetInventory(player: Player) end
 
 function Equip(playerChar: Model, tool: Tool)
 	local toolRef = toolsFolder:FindFirstChild(tool.Name)
+
+	if not toolRef then
+		warn("Cant find tool")
+		return
+	end
+
 	local toolClone = toolRef:Clone()
 
 	toolClone.Parent = playerChar

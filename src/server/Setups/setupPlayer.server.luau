@@ -1,7 +1,9 @@
 --TODO: Script might be needed down the line
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
 local tool = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle0")
+local inventoryFunctions = require(ReplicatedStorage.Shared.ModuleScripts.inventoryFunctions)
 
 -- function ignorePhysicsOnOwner(char: Model, hitBox: Part)
 -- 	for _, charPart in char:GetDescendants() do
@@ -40,6 +42,8 @@ function SetupStarterTools(player)
 	-- local handle = toolClone.PrimaryPart
 	-- slapLogicClone.Parent = handle
 	toolClone.Parent = player.Backpack
+
+	inventoryFunctions.EquipTool(player, tool)
 
 	-- Might be usefull later - not good for now
 	-- SetupPhysics(char, toolClone)
