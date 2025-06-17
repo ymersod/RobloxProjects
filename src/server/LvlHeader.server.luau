@@ -1,10 +1,7 @@
 local Gui = game:GetService("ReplicatedStorage"):WaitForChild("UI"):WaitForChild("LevelBillboard")
 
 game.Players.PlayerAdded:Connect(function(player)
-	local levelTest = Instance.new("IntValue")
-	levelTest.Name = "Level"
-	levelTest.Value = 1
-	levelTest.Parent = player
+	local levelTest = player:WaitForChild("Level")
 
 	player.CharacterAdded:Connect(function(char)
 		local newGui = Gui:Clone()
