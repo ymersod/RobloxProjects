@@ -2,14 +2,18 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
 local inventoryFuncs = require(ReplicatedStorage.Shared.ModuleScripts.inventoryFunctions)
-
 local BOMB_TIMER = 15
 
 function giveBombToPlayer(player: Player)
 	if player and player.Character then
 		local bombClone = bombPrefab:Clone()
-
-		inventoryFuncs.EquipTool(player, bombClone)
+		local bombLogic: Script? = bombClone.PrimaryPart:FindFirstChildOfClass("Script")
+		if not bombLogic then
+			warn("Cant find bomblogic")
+			return
+		end
+		bombLogic.Enabled = true
+		inventoryFuncs.EquipBomb(player, bombClone, 0.1)
 	end
 end
 
@@ -33,7 +37,7 @@ end
 
 while true do
 	local players = game:GetService("Players"):GetPlayers()
-	if #players >= 2 then
+	if #players >= 1 then
 		local randomPlayer = findRandomPlayer(players)
 		if randomPlayer then
 			giveBombToPlayer(randomPlayer)

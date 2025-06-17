@@ -74,8 +74,7 @@ bomb.Touched:Connect(function(hit: BasePart)
 	curOwnerPlayer = playerHit
 
 	local bombTool = bomb.Parent
-	inventoryFuncs.EquipTool(playerHit, bombTool)
-	bombTool:Destroy()
+	inventoryFuncs.EquipBomb(playerHit, bombTool, 0)
 end)
 
 for timeLeft = FUSE_TIME, 0, -1 do
