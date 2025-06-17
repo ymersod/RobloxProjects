@@ -2,8 +2,28 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local inventoryFunctions = {}
 local toolsFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools"):WaitForChild("Slapstyles")
 
-function inventoryFunctions.AddToInventory(player: Player) end
-function inventoryFunctions.GetInventory(player: Player) end
+function inventoryFunctions.AddToInventory(player: Player, tool: Tool)
+	local backpack = player.Backpack
+	if backpack then
+		local toolClone = tool:Clone()
+		toolClone.Parent = backpack
+	else
+		warn("Cant find backpack on player, might not be initialized yet")
+	end
+end
+function inventoryFunctions.GetInventory(player: Player)
+	local bpItems = {}
+	local backpack = player.Backpack
+	if backpack then
+		for _, item in ipairs(backpack:GetChildren()) do
+			table.insert(bpItems, item)
+		end
+	else
+		warn("Cant find backpack on player, might not be initialized yet")
+	end
+
+	return bpItems
+end
 
 function Equip(playerChar: Model, tool: Tool)
 	local toolRef = toolsFolder:FindFirstChild(tool.Name)
