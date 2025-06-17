@@ -37,7 +37,7 @@ end
 
 while true do
 	local players = game:GetService("Players"):GetPlayers()
-	if #players >= 1 then
+	if #players >= 5 then
 		local randomPlayer = findRandomPlayer(players)
 		if randomPlayer then
 			giveBombToPlayer(randomPlayer)
