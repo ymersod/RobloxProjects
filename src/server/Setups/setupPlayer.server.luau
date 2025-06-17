@@ -31,6 +31,7 @@ local inventoryFunctions = require(ReplicatedStorage.Shared.ModuleScripts.invent
 -- 	end
 -- end
 
+-- TODO: This should only be done if player is a first time login (has no saved slapstyles)
 function SetupStarterTools(player)
 	if not tool1 and tool2 then
 		print("Tool or slaplogic is not in storage")

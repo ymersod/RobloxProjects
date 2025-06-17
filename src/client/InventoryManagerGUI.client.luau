@@ -1,20 +1,30 @@
 local player = game:GetService("Players").LocalPlayer
-
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local inventoryFunctionsServerEvent =
+	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("InventoryFunctionsServer")
 local CoreGui = game:GetService("StarterGui")
 CoreGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+
+local activeSlapSlotUIPrefab = ReplicatedStorage:WaitForChild("UI"):WaitForChild("DynamicGUI"):WaitForChild("SlapStyle")
 
 -- PLAYER GUI
 local inventoryGUI = player.PlayerGui:WaitForChild("ScreenGui"):WaitForChild("Inventory")
 local slapGUI = inventoryGUI:WaitForChild("ActiveSlapStyle"):WaitForChild("Active")
 local activeSlapInfoGUI = slapGUI:WaitForChild("SlapStyle"):WaitForChild("Info")
+local backpackGUI = inventoryGUI:WaitForChild("InventoryOutline")
 
-local backpackGUI: Frame = inventoryGUI:WaitForChild("InventoryOutline")
 local openCloseImgButton: ImageButton =
 	slapGUI:WaitForChild("OpenClose"):WaitForChild("OpenContainer"):WaitForChild("OpenCloseButton")
 local icon: ImageLabel = activeSlapInfoGUI:WaitForChild("SlapstyleIcon")
 local damageImg: ImageLabel = activeSlapInfoGUI:WaitForChild("Stats"):WaitForChild("Damage"):WaitForChild("Fill")
 local rangeImg: ImageLabel = activeSlapInfoGUI:WaitForChild("Stats"):WaitForChild("Range"):WaitForChild("Fill")
 local speedImg: ImageLabel = activeSlapInfoGUI:WaitForChild("Stats"):WaitForChild("Speed"):WaitForChild("Fill")
+local slotArr: { Frame } = {}
+for _, child in ipairs(backpackGUI:WaitForChild("InventoryOpen"):GetChildren()) do
+	if child:HasTag("InventorySlot") then
+		table.insert(slotArr, child)
+	end
+end
 
 -- OTHER VARS
 local colors = {
@@ -26,10 +36,9 @@ local colors = {
 local openImg = "rbxassetid://108893418916619"
 local closeImg = "rbxassetid://82931248911040"
 
-player.Backpack.Changed:Connect(function()
-	-- add to inventory
-end)
-
+----------------------------------------------------------------
+-- >> Section: Track and update active tool
+----------------------------------------------------------------
 function extractDataFromTool(tool: Tool)
 	local primaryPart = tool.PrimaryPart
 	return {
@@ -69,39 +78,109 @@ function updateStatBar(bar: ImageLabel, val: number)
 	end
 end
 
-function updateGUI(data: { Damage: number, Range: number, Speed: number, Icon: string })
-	icon.Image = data.Icon
-	updateStatBar(damageImg, data.Damage)
-	updateStatBar(rangeImg, data.Range)
-	updateStatBar(speedImg, data.Speed)
+function updateActiveGUI(
+	data: { Damage: number, Range: number, Speed: number, Icon: string },
+	imgArr: { damageImgRef: ImageLabel, rangeImgRef: ImageLabel, speedImgRef: ImageLabel },
+	iconRef: ImageLabel
+)
+	iconRef.Image = data.Icon
+	updateStatBar(imgArr.damageImgRef, data.Damage)
+	updateStatBar(imgArr.rangeImgRef, data.Range)
+	updateStatBar(imgArr.speedImgRef, data.Speed)
 end
 
-function trackBackPack()
+function trackActiveTool()
 	local playerChar = player.Character
 	if not playerChar then
-		warn("Character not in scene")
+		warn("Character not spawned")
 		return
 	end
 
 	for _, child in ipairs(playerChar:GetChildren()) do
 		if child:IsA("Tool") then
 			local data = extractDataFromTool(child)
-			updateGUI(data)
+			updateActiveGUI(data, { damageImgRef = damageImg, rangeImgRef = rangeImg, speedImgRef = speedImg }, icon)
 		end
 	end
 
-	player.Character.ChildAdded:Connect(function(child)
+	playerChar.ChildAdded:Connect(function(child)
 		if child:IsA("Tool") and child.PrimaryPart then
 			local data = extractDataFromTool(child)
 			if data.Icon == nil or data.Damage == nil or data.Range == nil or data.Speed == nil then
 				warn("Some attributtes were nil")
 				return
 			end
-			updateGUI(data)
+			updateActiveGUI(data, { damageImgRef = damageImg, rangeImgRef = rangeImg, speedImgRef = speedImg }, icon)
 		end
 	end)
 end
-trackBackPack()
+trackActiveTool()
+
+----------------------------------------------------------------
+-- >> Section: Track and update backpack GUI
+----------------------------------------------------------------
+function trackBackpack()
+	local backpack = player.Backpack
+
+	if not backpack then
+		warn("backpack not initialized")
+		return
+	end
+	for _, tool in ipairs(backpack:GetChildren()) do
+		if tool:IsA("Tool") then
+			local chosenSlot = nil
+			local chosenSlotUi = nil
+			for _, slot in ipairs(slotArr) do
+				local slotUI = slot:FindFirstChild("SlotUI")
+				local toolIdRef: string? = slotUI and slot:GetAttribute("ToolIdRef")
+				-- print("idref = nil: ", toolIdRef ~= nil)
+				-- print("toolIdRef val: ", toolIdRef)
+				-- print("Toolidref == 0: ", toolIdRef == "0")
+				if toolIdRef ~= nil and toolIdRef == "0" then
+					chosenSlot = slot
+					chosenSlotUi = slotUI
+					break
+				end
+			end
+
+			if not chosenSlot or not chosenSlotUi then
+				warn("No slot for tool found")
+				return
+			end
+
+			chosenSlotUi:Destroy()
+			local newSlotGUI = activeSlapSlotUIPrefab:Clone()
+			newSlotGUI.Parent = chosenSlot
+
+			local statsFrame = newSlotGUI:FindFirstChild("Info"):FindFirstChild("Stats")
+			local dmgRef: ImageLabel? = statsFrame:FindFirstChild("Damage"):FindFirstChild("Fill")
+			local rangeRef: ImageLabel? = statsFrame:FindFirstChild("Range"):FindFirstChild("Fill")
+			local speedRef: ImageLabel? = statsFrame:FindFirstChild("Speed"):FindFirstChild("Fill")
+			local newIcon: ImageLabel? = newSlotGUI:FindFirstChild("Info"):FindFirstChild("SlapstyleIcon")
+			local equipButton: ImageButton? = newSlotGUI:FindFirstChildOfClass("ImageButton")
+
+			if dmgRef and rangeRef and speedRef and newIcon and equipButton then
+				local data = extractDataFromTool(tool)
+				updateActiveGUI(
+					data,
+					{ damageImgRef = dmgRef, rangeImgRef = rangeRef, speedImgRef = speedRef },
+					newIcon
+				)
+
+				equipButton.MouseButton1Click:Connect(function()
+					inventoryFunctionsServerEvent:FireServer(tool)
+				end)
+			else
+				warn("Didnt find imagelabels of inventory GUI slot prefab stats")
+			end
+		end
+	end
+
+	backpack.ChildAdded:Connect(function(child)
+		-- Update backpack on changes
+	end)
+end
+trackBackpack()
 
 openCloseImgButton.MouseButton1Click:Connect(function()
 	-- CLOSE BACKPACK

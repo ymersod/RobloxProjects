@@ -1,7 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local inventoryFunctions = {}
 local toolsFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools"):WaitForChild("Slapstyles")
-
 function inventoryFunctions.AddToInventory(player: Player, tool: Tool)
 	local backpack = player.Backpack
 	if backpack then
