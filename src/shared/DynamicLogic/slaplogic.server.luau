@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ragdollClientEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("RagdollClient")
-local part = script.Parent :: Part
+local part = script:FindFirstAncestorOfClass("Tool"):FindFirstChildOfClass("MeshPart") :: MeshPart
 local tool = part.Parent :: Tool
 
 local animationId = "rbxassetid://121694662752238"
@@ -11,13 +11,17 @@ local characterRoot = script:FindFirstAncestorOfClass("Model") :: Model?
 local humanoid = characterRoot and characterRoot:WaitForChild("Humanoid") :: Humanoid
 local animator = humanoid and humanoid:WaitForChild("Animator") :: Animator
 
-local loadedAnim -- so we can stop it later if needed
+local loadedAnim = animator:LoadAnimation(animation)
 
 local POWER_MULT = 1000
 
 local debounce = {}
 
 part.Touched:Connect(function(hit: BasePart)
+	if not loadedAnim.IsPlaying then
+		return
+	end
+
 	local character = hit:FindFirstAncestorOfClass("Model")
 	if not character then
 		return
@@ -47,9 +51,11 @@ part.Touched:Connect(function(hit: BasePart)
 end)
 
 tool.Activated:Connect(function()
-	if loadedAnim then
-		loadedAnim:Stop()
+	if loadedAnim and loadedAnim.IsPlaying then
+		-- Animation is already playing, don't play again
+		return
 	end
+
 	loadedAnim = animator:LoadAnimation(animation)
 	loadedAnim:Play()
 end)

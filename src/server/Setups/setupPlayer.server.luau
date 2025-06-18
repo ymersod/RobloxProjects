@@ -45,15 +45,14 @@ function SetupStarterTools(player)
 end
 
 game:GetService("Players").PlayerAdded:Connect(function(player)
-	player.CharacterAdded:Connect(function(char)
-		SetupStarterTools(player)
+	local character = player.Character or player.CharacterAdded:Wait()
+	SetupStarterTools(player)
 
-		if not char:FindFirstChildOfClass("Humanoid") then
-			return
-		end
-		local humanoidLoaded = char:WaitForChild("Humanoid")
-		humanoidLoaded.MaxSlopeAngle = 45
-	end)
+	if not character:FindFirstChildOfClass("Humanoid") then
+		return
+	end
+	local humanoidLoaded = character:WaitForChild("Humanoid")
+	humanoidLoaded.MaxSlopeAngle = 45
 end)
 
 --TODO: This should be in a setup file for players together with other set ups... well at least the folders i think
@@ -65,4 +64,8 @@ game.Players.PlayerAdded:Connect(function(player)
 	safeState.Name = "Safe"
 	safeState.Value = false
 	safeState.Parent = playerState
+
+	local inventory = Instance.new("Folder")
+	inventory.Name = "Inventory"
+	inventory.Parent = player
 end)
