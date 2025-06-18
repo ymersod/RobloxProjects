@@ -34,10 +34,11 @@ function findRandomPlayer(players)
 
 	return randomPlayer
 end
-
+--FOR TEST
+task.wait(5)
 while true do
 	local players = game:GetService("Players"):GetPlayers()
-	if #players >= 5 then
+	if #players >= 1 then
 		local randomPlayer = findRandomPlayer(players)
 		if randomPlayer then
 			giveBombToPlayer(randomPlayer)

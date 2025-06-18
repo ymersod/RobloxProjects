@@ -7,7 +7,7 @@ local slapScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("Dynami
 local safezoneScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("Safezone")
 
 local bombPrefab: Tool = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb")
-local slapPrefab: Tool = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle0")
+local slapPrefabs: Folder = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles")
 
 kingZoneScript.Parent = workspace:FindFirstChild("Kingzone")
 safezoneScript.Parent = workspace:FindFirstChild("Safezone")
@@ -15,5 +15,13 @@ safezoneScript.Parent = workspace:FindFirstChild("Safezone")
 local bombScriptClone = bombScript:Clone()
 bombScriptClone.Parent = bombPrefab.PrimaryPart
 
-local slapScriptClone = slapScript:Clone()
-slapScriptClone.Parent = slapPrefab.PrimaryPart
+for _, slapPrefab in ipairs(slapPrefabs:GetChildren()) do
+	local slapScriptClone = slapScript:Clone()
+	local primaryPart: Part? = slapPrefab.PrimaryPart
+
+	if primaryPart then
+		slapScriptClone.Parent = primaryPart
+	else
+		slapScriptClone.Parent = slapPrefab
+	end
+end

@@ -19,6 +19,7 @@ local icon: ImageLabel = activeSlapInfoGUI:WaitForChild("SlapstyleIcon")
 local damageImg: ImageLabel = activeSlapInfoGUI:WaitForChild("Stats"):WaitForChild("Damage"):WaitForChild("Fill")
 local rangeImg: ImageLabel = activeSlapInfoGUI:WaitForChild("Stats"):WaitForChild("Range"):WaitForChild("Fill")
 local speedImg: ImageLabel = activeSlapInfoGUI:WaitForChild("Stats"):WaitForChild("Speed"):WaitForChild("Fill")
+local slayStyleParentFrame: Frame = slapGUI:WaitForChild("SlapStyle")
 local slotArr: { Frame } = {}
 for _, child in ipairs(backpackGUI:WaitForChild("InventoryOpen"):GetChildren()) do
 	if child:HasTag("InventorySlot") then
@@ -107,17 +108,6 @@ function trackActiveTool()
 			updateActiveGUI(data, { damageImgRef = damageImg, rangeImgRef = rangeImg, speedImgRef = speedImg }, icon)
 		end
 	end
-
-	playerChar.ChildAdded:Connect(function(child)
-		if child:IsA("Tool") and child.PrimaryPart then
-			local data = extractDataFromTool(child)
-			if data.Icon == nil or data.Damage == nil or data.Range == nil or data.Speed == nil then
-				warn("Some attributtes were nil")
-				return
-			end
-			updateActiveGUI(data, { damageImgRef = damageImg, rangeImgRef = rangeImg, speedImgRef = speedImg }, icon)
-		end
-	end)
 end
 trackActiveTool()
 
@@ -153,6 +143,18 @@ function updateEquippedInInventoryGUI()
 		else
 			buttonToUpdate.Transparency = equippedSlapStyleTransparency.Backpack
 		end
+	end
+
+	if equippedToolNew then
+		local data = extractDataFromTool(equippedToolNew)
+		if data.Icon == nil or data.Damage == nil or data.Range == nil or data.Speed == nil then
+			warn("Some attributtes were nil")
+			return
+		end
+		slayStyleParentFrame.BackgroundTransparency = 1
+		updateActiveGUI(data, { damageImgRef = damageImg, rangeImgRef = rangeImg, speedImgRef = speedImg }, icon)
+	else
+		slayStyleParentFrame.BackgroundTransparency = 0
 	end
 end
 
@@ -199,8 +201,34 @@ function updateBackpackGUI(tool: Tool?)
 			updateEquippedInInventoryGUI()
 
 			equipButton.MouseButton1Click:Connect(function()
-				local result = inventoryFunctionsServerEvent:InvokeServer(tool) -- equip tool
-				if result == "Success" then
+				local slot = equipButton:FindFirstAncestor("SlotSpace") :: Frame?
+				local id = slot and slot:GetAttribute("ToolIdRef") :: string?
+				if not id then
+					warn("Cant find id of weap to equip")
+					return
+				end
+				local playerInventory = player:FindFirstChild("Inventory")
+				local toolToEquip: Tool? = nil
+				for _, toolInBp in ipairs(playerInventory:GetChildren()) do
+					local bpId = toolInBp:GetAttribute("ToolId") :: string?
+					if bpId and bpId == id then
+						toolToEquip = toolInBp
+						break
+					end
+				end
+				if not toolToEquip then
+					warn("No bp-tool mathcing UI Slot")
+					return
+				end
+
+				playerChar = player.Character
+				if not playerChar then
+					warn("Playerchar not existing")
+					return
+				end
+				local result = inventoryFunctionsServerEvent:InvokeServer(toolToEquip) -- equip tool
+				print("Now equipped: ", result)
+				if result and result ~= "Bomb" then
 					updateEquippedInInventoryGUI()
 				end
 			end)
@@ -211,17 +239,20 @@ function updateBackpackGUI(tool: Tool?)
 end
 
 function trackBackpack()
-	local backpack = player.Backpack
+	local inventory = player:FindFirstChild("Inventory")
 
-	if not backpack then
-		warn("backpack not initialized")
+	if not inventory then
+		warn("inventory not initialized")
 		return
 	end
-	for _, tool in ipairs(backpack:GetChildren()) do
+	for _, tool in ipairs(inventory:GetChildren()) do
 		updateBackpackGUI(tool)
 	end
 
-	backpack.ChildAdded:Connect(function(child)
+	inventory.ChildAdded:Connect(function(child)
+		if child.Name == "Bomb" then
+			return
+		end
 		updateBackpackGUI(child)
 	end)
 end
@@ -239,3 +270,5 @@ openCloseImgButton.MouseButton1Click:Connect(function()
 		openCloseImgButton.Image = closeImg
 	end
 end)
+
+player.CharacterAdded:Connect(updateEquippedInInventoryGUI)
