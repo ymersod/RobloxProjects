@@ -27,11 +27,15 @@ for _, child in ipairs(backpackGUI:WaitForChild("InventoryOpen"):GetChildren()) 
 end
 
 -- OTHER VARS
-local colors = {
+local statBarColors = {
 	DarkRed = Color3.fromRGB(139, 0, 0),
 	Yellow = Color3.fromRGB(255, 255, 0),
 	Blue = Color3.fromRGB(0, 0, 255),
 	Purple = Color3.fromRGB(128, 0, 128),
+}
+local equippedSlapStyleTransparency = {
+	Equipped = 0.15,
+	Backpack = 0.75,
 }
 local openImg = "rbxassetid://108893418916619"
 local closeImg = "rbxassetid://82931248911040"
@@ -46,6 +50,7 @@ function extractDataFromTool(tool: Tool)
 		Range = primaryPart:GetAttribute("Range") :: number?,
 		Speed = primaryPart:GetAttribute("Speed") :: number?,
 		Icon = primaryPart:GetAttribute("InventoryImageID") :: string?,
+		ToolId = tool:GetAttribute("ToolId") :: string?,
 	}
 end
 
@@ -54,16 +59,16 @@ function updateStatBar(bar: ImageLabel, val: number)
 		local scale, color
 
 		if val == 1 then
-			color = colors.DarkRed
+			color = statBarColors.DarkRed
 			scale = 0.25
 		elseif val == 2 then
-			color = colors.Yellow
+			color = statBarColors.Yellow
 			scale = 0.5
 		elseif val == 3 then
-			color = colors.Blue
+			color = statBarColors.Blue
 			scale = 0.75
 		elseif val == 4 then
-			color = colors.Purple
+			color = statBarColors.Purple
 			scale = 1
 		else
 			warn(bar.Name .. " value of: " .. val .. " is not 1, 2, 3 or 4")
@@ -79,7 +84,7 @@ function updateStatBar(bar: ImageLabel, val: number)
 end
 
 function updateActiveGUI(
-	data: { Damage: number, Range: number, Speed: number, Icon: string },
+	data: { Damage: number, Range: number, Speed: number, Icon: string, id: string },
 	imgArr: { damageImgRef: ImageLabel, rangeImgRef: ImageLabel, speedImgRef: ImageLabel },
 	iconRef: ImageLabel
 )
@@ -119,6 +124,92 @@ trackActiveTool()
 ----------------------------------------------------------------
 -- >> Section: Track and update backpack GUI
 ----------------------------------------------------------------
+
+function updateEquippedInInventoryGUI()
+	local playerChar = player.Character
+	if not playerChar then
+		warn("Player character not found")
+		return
+	end
+
+	local equippedToolNew = playerChar:FindFirstChildOfClass("Tool")
+	local equippedToolIdRef = equippedToolNew and equippedToolNew:GetAttribute("ToolId")
+	for _, slot in ipairs(slotArr) do
+		local inventoryToolIdRef = slot:GetAttribute("ToolIdRef")
+		local slapFrame = slot:FindFirstChild("SlapStyle")
+		local buttonToUpdate = slapFrame and slapFrame:FindFirstChildOfClass("ImageButton")
+
+		if not buttonToUpdate then
+			continue
+		end
+
+		if
+			buttonToUpdate
+			and equippedToolIdRef
+			and inventoryToolIdRef ~= nil
+			and equippedToolIdRef == inventoryToolIdRef
+		then
+			buttonToUpdate.Transparency = equippedSlapStyleTransparency.Equipped
+		else
+			buttonToUpdate.Transparency = equippedSlapStyleTransparency.Backpack
+		end
+	end
+end
+
+function updateBackpackGUI(tool: Tool?)
+	if tool and tool:IsA("Tool") then
+		local chosenSlot = nil
+		local chosenSlotUi = nil
+		for _, slot in ipairs(slotArr) do
+			local slotUI = slot:FindFirstChild("SlotUI")
+			local toolIdRef: string? = slotUI and slot:GetAttribute("ToolIdRef")
+			-- print("idref = nil: ", toolIdRef ~= nil)
+			-- print("toolIdRef val: ", toolIdRef)
+			-- print("Toolidref == 0: ", toolIdRef == "0")
+			if toolIdRef ~= nil and toolIdRef == "0" then
+				chosenSlot = slot
+				chosenSlotUi = slotUI
+				break
+			end
+		end
+
+		if not chosenSlot or not chosenSlotUi then
+			warn("No slot for tool found")
+			return
+		end
+
+		chosenSlotUi:Destroy()
+		local newSlotGUI = activeSlapSlotUIPrefab:Clone()
+		newSlotGUI.Parent = chosenSlot
+
+		local statsFrame = newSlotGUI:FindFirstChild("Info"):FindFirstChild("Stats")
+		local dmgRef: ImageLabel? = statsFrame:FindFirstChild("Damage"):FindFirstChild("Fill")
+		local rangeRef: ImageLabel? = statsFrame:FindFirstChild("Range"):FindFirstChild("Fill")
+		local speedRef: ImageLabel? = statsFrame:FindFirstChild("Speed"):FindFirstChild("Fill")
+		local newIcon: ImageLabel? = newSlotGUI:FindFirstChild("Info"):FindFirstChild("SlapstyleIcon")
+		local equipButton: ImageButton? = newSlotGUI:FindFirstChildOfClass("ImageButton")
+		local chosenSlotToolIdRef: string? = chosenSlot:GetAttribute("ToolIdRef")
+		local playerChar = player.Character
+
+		if dmgRef and rangeRef and speedRef and newIcon and equipButton and playerChar and chosenSlotToolIdRef then
+			local data = extractDataFromTool(tool)
+			chosenSlot:SetAttribute("ToolIdRef", data.ToolId)
+			updateActiveGUI(data, { damageImgRef = dmgRef, rangeImgRef = rangeRef, speedImgRef = speedRef }, newIcon)
+
+			updateEquippedInInventoryGUI()
+
+			equipButton.MouseButton1Click:Connect(function()
+				local result = inventoryFunctionsServerEvent:InvokeServer(tool) -- equip tool
+				if result == "Success" then
+					updateEquippedInInventoryGUI()
+				end
+			end)
+		else
+			warn("1 or more of the prefab images were not found")
+		end
+	end
+end
+
 function trackBackpack()
 	local backpack = player.Backpack
 
@@ -127,57 +218,11 @@ function trackBackpack()
 		return
 	end
 	for _, tool in ipairs(backpack:GetChildren()) do
-		if tool:IsA("Tool") then
-			local chosenSlot = nil
-			local chosenSlotUi = nil
-			for _, slot in ipairs(slotArr) do
-				local slotUI = slot:FindFirstChild("SlotUI")
-				local toolIdRef: string? = slotUI and slot:GetAttribute("ToolIdRef")
-				-- print("idref = nil: ", toolIdRef ~= nil)
-				-- print("toolIdRef val: ", toolIdRef)
-				-- print("Toolidref == 0: ", toolIdRef == "0")
-				if toolIdRef ~= nil and toolIdRef == "0" then
-					chosenSlot = slot
-					chosenSlotUi = slotUI
-					break
-				end
-			end
-
-			if not chosenSlot or not chosenSlotUi then
-				warn("No slot for tool found")
-				return
-			end
-
-			chosenSlotUi:Destroy()
-			local newSlotGUI = activeSlapSlotUIPrefab:Clone()
-			newSlotGUI.Parent = chosenSlot
-
-			local statsFrame = newSlotGUI:FindFirstChild("Info"):FindFirstChild("Stats")
-			local dmgRef: ImageLabel? = statsFrame:FindFirstChild("Damage"):FindFirstChild("Fill")
-			local rangeRef: ImageLabel? = statsFrame:FindFirstChild("Range"):FindFirstChild("Fill")
-			local speedRef: ImageLabel? = statsFrame:FindFirstChild("Speed"):FindFirstChild("Fill")
-			local newIcon: ImageLabel? = newSlotGUI:FindFirstChild("Info"):FindFirstChild("SlapstyleIcon")
-			local equipButton: ImageButton? = newSlotGUI:FindFirstChildOfClass("ImageButton")
-
-			if dmgRef and rangeRef and speedRef and newIcon and equipButton then
-				local data = extractDataFromTool(tool)
-				updateActiveGUI(
-					data,
-					{ damageImgRef = dmgRef, rangeImgRef = rangeRef, speedImgRef = speedRef },
-					newIcon
-				)
-
-				equipButton.MouseButton1Click:Connect(function()
-					inventoryFunctionsServerEvent:FireServer(tool)
-				end)
-			else
-				warn("Didnt find imagelabels of inventory GUI slot prefab stats")
-			end
-		end
+		updateBackpackGUI(tool)
 	end
 
 	backpack.ChildAdded:Connect(function(child)
-		-- Update backpack on changes
+		updateBackpackGUI(child)
 	end)
 end
 trackBackpack()

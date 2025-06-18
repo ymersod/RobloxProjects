@@ -4,7 +4,9 @@ local serverInventoryFunctionsEvent =
 
 local inventoryFuncs = require(ReplicatedStorage.Shared.ModuleScripts.inventoryFunctions)
 
-serverInventoryFunctionsEvent.OnServerEvent:Connect(function(player: Player, tool: Tool)
+serverInventoryFunctionsEvent.OnServerInvoke = function(player: Player, tool: Tool)
 	-- print(player, tool)
 	inventoryFuncs.EquipTool(player, tool)
-end)
+
+	return "Success"
+end
