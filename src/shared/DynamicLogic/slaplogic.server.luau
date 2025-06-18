@@ -1,6 +1,17 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ragdollClientEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("RagdollClient")
 local part = script.Parent :: Part
+local tool = part.Parent :: Tool
+
+local animationId = "rbxassetid://121694662752238"
+local animation = Instance.new("Animation")
+animation.AnimationId = animationId
+
+local characterRoot = script:FindFirstAncestorOfClass("Model") :: Model?
+local humanoid = characterRoot and characterRoot:WaitForChild("Humanoid") :: Humanoid
+local animator = humanoid and humanoid:WaitForChild("Animator") :: Animator
+
+local loadedAnim -- so we can stop it later if needed
 
 local POWER_MULT = 1000
 
@@ -33,4 +44,12 @@ part.Touched:Connect(function(hit: BasePart)
 	local hitDirection = (rootPart.Position - part.Position).Unit * POWER_MULT
 	print("Hitting from direction: ", hitDirection)
 	ragdollClientEvent:FireClient(targetPlayer, hit.Position, hitDirection)
+end)
+
+tool.Activated:Connect(function()
+	if loadedAnim then
+		loadedAnim:Stop()
+	end
+	loadedAnim = animator:LoadAnimation(animation)
+	loadedAnim:Play()
 end)

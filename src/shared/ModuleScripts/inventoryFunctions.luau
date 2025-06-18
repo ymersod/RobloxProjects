@@ -33,8 +33,15 @@ function Equip(playerChar: Model, tool: Tool)
 	end
 
 	local toolClone = toolRef:Clone()
-
 	toolClone.Parent = playerChar
+
+	local slapLogic: Script? = toolClone.PrimaryPart and toolClone.PrimaryPart:FindFirstChildOfClass("Script")
+	if not slapLogic then
+		warn("Could not find slaplogic")
+		return
+	end
+
+	slapLogic.Enabled = true
 end
 
 function inventoryFunctions.EquipTool(player: Player, tool: Tool)
