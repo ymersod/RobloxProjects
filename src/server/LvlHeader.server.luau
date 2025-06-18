@@ -30,4 +30,10 @@ game.Players.PlayerAdded:Connect(function(player: Player)
 	player.CharacterAdded:Connect(function(char)
 		char:WaitForChild("Humanoid").DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
 	end)
+	if player.Character then
+		local humanoid = player.Character:WaitForChild("Humanoid")
+		if humanoid then
+			humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+		end
+	end
 end)

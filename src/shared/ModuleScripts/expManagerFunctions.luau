@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local expLevelClient = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("ExpLevelClient")
 
 local expStore = DataStoreService:GetDataStore("PlayerExp")
+local orderedExpStore = DataStoreService:GetOrderedDataStore("OrderedPlayerExp")
 
 local OpenFunctions = {}
 
@@ -98,11 +99,14 @@ end
 
 function OpenFunctions.onPlayerRemoving(player)
 	-- Set data store key
-	local success, err = pcall(function()
-		expStore:SetAsync(player.UserId, playerExp[player.UserId])
-	end)
-	if not success then
-		warn(err)
+	if player.UserId > 0 then
+		local success, err = pcall(function()
+			expStore:SetAsync(player.UserId, playerExp[player.UserId])
+			orderedExpStore:SetAsync(player.UserId, calcLevelAndExpWindow(playerExp[player.UserId]).lvl)
+		end)
+		if not success then
+			warn(err)
+		end
 	end
 	-- Clean up entry so that the table doesn't grow for the lifespan of the server
 	playerExp[player.UserId] = nil
