@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
+--Turn this to true if you want to see your own
 local deactivated = false
 
 local function hideOwnBillboardGui(character)

@@ -54,3 +54,14 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 		humanoidLoaded.MaxSlopeAngle = 45
 	end)
 end)
+
+--TODO: This should be in a setup file for players together with other set ups... well at least the folders i think
+game.Players.PlayerAdded:Connect(function(player)
+	local playerState = Instance.new("Folder")
+	playerState.Name = "States"
+	playerState.Parent = player
+	local safeState = Instance.new("BoolValue")
+	safeState.Name = "Safe"
+	safeState.Value = false
+	safeState.Parent = playerState
+end)

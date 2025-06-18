@@ -1,5 +1,6 @@
 local Gui = game:GetService("ReplicatedStorage"):WaitForChild("UI"):WaitForChild("LevelBillboard")
 
+--TODO: Need some better naming, both in file name and variables(eg. levelTest)
 game.Players.PlayerAdded:Connect(function(player)
 	local levelTest = player:WaitForChild("LocalStats"):WaitForChild("Level")
 
