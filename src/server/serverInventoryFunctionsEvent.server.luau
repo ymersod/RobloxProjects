@@ -4,7 +4,14 @@ local serverInventoryFunctionsEvent =
 
 local inventoryFuncs = require(ReplicatedStorage.Shared.ModuleScripts.inventoryFunctions)
 
-serverInventoryFunctionsEvent.OnServerInvoke = function(player: Player, tool: Tool)
+serverInventoryFunctionsEvent.OnServerInvoke = function(player: Player, tool: Tool, arg: string)
 	-- print(player, tool)
-	return inventoryFuncs.EquipTool(player, tool)
+
+	if arg and arg == "Equip" then
+		return inventoryFuncs.EquipTool(player, tool)
+	elseif arg == "GetInventory" then
+		return inventoryFuncs.GetInventory(player)
+	else
+		return nil
+	end
 end

@@ -6,7 +6,7 @@ local CoreGui = game:GetService("StarterGui")
 CoreGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
 
 local activeSlapSlotUIPrefab = ReplicatedStorage:WaitForChild("UI"):WaitForChild("DynamicGUI"):WaitForChild("SlapStyle")
-
+local slotUIPrefab = ReplicatedStorage:WaitForChild("UI"):WaitForChild("DynamicGUI"):WaitForChild("SlotUI")
 -- PLAYER GUI
 local inventoryGUI = player.PlayerGui:WaitForChild("ScreenGui"):WaitForChild("Inventory")
 local slapGUI = inventoryGUI:WaitForChild("ActiveSlapStyle"):WaitForChild("Active")
@@ -41,9 +41,18 @@ local equippedSlapStyleTransparency = {
 local openImg = "rbxassetid://108893418916619"
 local closeImg = "rbxassetid://82931248911040"
 
-----------------------------------------------------------------
--- >> Section: Track and update active tool
-----------------------------------------------------------------
+function updateSlotsOpenGUI(newValue: number)
+	for i, frame in ipairs(slotArr) do
+		local slotUI = frame:FindFirstChild("SlotUI")
+		local img: ImageLabel? = slotUI and slotUI:FindFirstChild("UnlockedBG")
+		if slotUI and img and i <= newValue then
+			img.Transparency = 0
+		elseif slotUI and img then
+			img.Transparency = 1
+		end
+	end
+end
+
 function extractDataFromTool(tool: Tool)
 	local primaryPart = tool.PrimaryPart
 	return {
@@ -95,26 +104,6 @@ function updateActiveGUI(
 	updateStatBar(imgArr.speedImgRef, data.Speed)
 end
 
-function trackActiveTool()
-	local playerChar = player.Character
-	if not playerChar then
-		warn("Character not spawned")
-		return
-	end
-
-	for _, child in ipairs(playerChar:GetChildren()) do
-		if child:IsA("Tool") then
-			local data = extractDataFromTool(child)
-			updateActiveGUI(data, { damageImgRef = damageImg, rangeImgRef = rangeImg, speedImgRef = speedImg }, icon)
-		end
-	end
-end
-trackActiveTool()
-
-----------------------------------------------------------------
--- >> Section: Track and update backpack GUI
-----------------------------------------------------------------
-
 function updateEquippedInInventoryGUI()
 	local playerChar = player.Character
 	if not playerChar then
@@ -158,84 +147,116 @@ function updateEquippedInInventoryGUI()
 	end
 end
 
-function updateBackpackGUI(tool: Tool?)
-	if tool and tool:IsA("Tool") then
-		local chosenSlot = nil
-		local chosenSlotUi = nil
-		for _, slot in ipairs(slotArr) do
-			local slotUI = slot:FindFirstChild("SlotUI")
-			local toolIdRef: string? = slotUI and slot:GetAttribute("ToolIdRef")
-			-- print("idref = nil: ", toolIdRef ~= nil)
-			-- print("toolIdRef val: ", toolIdRef)
-			-- print("Toolidref == 0: ", toolIdRef == "0")
-			if toolIdRef ~= nil and toolIdRef == "0" then
-				chosenSlot = slot
-				chosenSlotUi = slotUI
-				break
-			end
-		end
+function trackActiveTool()
+	local playerChar = player.Character
+	if not playerChar then
+		warn("Character not spawned")
+		return
+	end
 
-		if not chosenSlot or not chosenSlotUi then
-			warn("No slot for tool found")
-			return
-		end
-
-		chosenSlotUi:Destroy()
-		local newSlotGUI = activeSlapSlotUIPrefab:Clone()
-		newSlotGUI.Parent = chosenSlot
-
-		local statsFrame = newSlotGUI:FindFirstChild("Info"):FindFirstChild("Stats")
-		local dmgRef: ImageLabel? = statsFrame:FindFirstChild("Damage"):FindFirstChild("Fill")
-		local rangeRef: ImageLabel? = statsFrame:FindFirstChild("Range"):FindFirstChild("Fill")
-		local speedRef: ImageLabel? = statsFrame:FindFirstChild("Speed"):FindFirstChild("Fill")
-		local newIcon: ImageLabel? = newSlotGUI:FindFirstChild("Info"):FindFirstChild("SlapstyleIcon")
-		local equipButton: ImageButton? = newSlotGUI:FindFirstChildOfClass("ImageButton")
-		local chosenSlotToolIdRef: string? = chosenSlot:GetAttribute("ToolIdRef")
-		local playerChar = player.Character
-
-		if dmgRef and rangeRef and speedRef and newIcon and equipButton and playerChar and chosenSlotToolIdRef then
-			local data = extractDataFromTool(tool)
-			chosenSlot:SetAttribute("ToolIdRef", data.ToolId)
-			updateActiveGUI(data, { damageImgRef = dmgRef, rangeImgRef = rangeRef, speedImgRef = speedRef }, newIcon)
-
-			updateEquippedInInventoryGUI()
-
-			equipButton.MouseButton1Click:Connect(function()
-				local slot = equipButton:FindFirstAncestor("SlotSpace") :: Frame?
-				local id = slot and slot:GetAttribute("ToolIdRef") :: string?
-				if not id then
-					warn("Cant find id of weap to equip")
-					return
-				end
-				local playerInventory = player:FindFirstChild("Inventory")
-				local toolToEquip: Tool? = nil
-				for _, toolInBp in ipairs(playerInventory:GetChildren()) do
-					local bpId = toolInBp:GetAttribute("ToolId") :: string?
-					if bpId and bpId == id then
-						toolToEquip = toolInBp
-						break
-					end
-				end
-				if not toolToEquip then
-					warn("No bp-tool mathcing UI Slot")
-					return
-				end
-
-				playerChar = player.Character
-				if not playerChar then
-					warn("Playerchar not existing")
-					return
-				end
-				local result = inventoryFunctionsServerEvent:InvokeServer(toolToEquip) -- equip tool
-				print("Now equipped: ", result)
-				if result and result ~= "Bomb" then
-					updateEquippedInInventoryGUI()
-				end
-			end)
+	for _, child in ipairs(playerChar:GetChildren()) do
+		if child:IsA("Tool") then
+			local data = extractDataFromTool(child)
+			updateActiveGUI(data, { damageImgRef = damageImg, rangeImgRef = rangeImg, speedImgRef = speedImg }, icon)
 		else
-			warn("1 or more of the prefab images were not found")
+			updateEquippedInInventoryGUI()
 		end
 	end
+end
+trackActiveTool()
+
+function updateBackpackGUI()
+	local playerInventory = player:FindFirstChild("Inventory")
+	local openSlots = playerInventory:FindFirstChildOfClass("IntValue").Value
+	local inventoryArr = playerInventory:GetChildren()
+
+	for _, slot in ipairs(slotArr) do
+		local slotUI = slot:FindFirstChildOfClass("Frame")
+		local saveSlot: number = slot:GetAttribute("SlotNumber")
+
+		local foundTool = nil
+		for _, inventoryTool in ipairs(inventoryArr) do
+			if inventoryTool:IsA("Tool") then
+				local toolSlot: number? = inventoryTool:GetAttribute("SaveSlot")
+				if toolSlot and tostring(toolSlot) == tostring(saveSlot) then
+					foundTool = inventoryTool
+					print("saveslot: ", saveSlot, " toolslot: ", toolSlot)
+					break
+				end
+			end
+		end
+		if foundTool then
+			if not foundTool then
+				warn("No slot for tool found")
+				return
+			end
+			slotUI:Destroy()
+			local newSlotGUI = activeSlapSlotUIPrefab:Clone()
+			newSlotGUI.Parent = slot
+
+			local statsFrame = newSlotGUI:FindFirstChild("Info"):FindFirstChild("Stats")
+			local dmgRef: ImageLabel? = statsFrame:FindFirstChild("Damage"):FindFirstChild("Fill")
+			local rangeRef: ImageLabel? = statsFrame:FindFirstChild("Range"):FindFirstChild("Fill")
+			local speedRef: ImageLabel? = statsFrame:FindFirstChild("Speed"):FindFirstChild("Fill")
+			local newIcon: ImageLabel? = newSlotGUI:FindFirstChild("Info"):FindFirstChild("SlapstyleIcon")
+			local equipButton: ImageButton? = newSlotGUI:FindFirstChildOfClass("ImageButton")
+			local chosenSlotToolIdRef: string? = slot:GetAttribute("ToolIdRef")
+			local playerChar = player.Character
+			if dmgRef and rangeRef and speedRef and newIcon and equipButton and playerChar and chosenSlotToolIdRef then
+				local data = extractDataFromTool(foundTool)
+				slot:SetAttribute("ToolIdRef", data.ToolId)
+				updateActiveGUI(
+					data,
+					{ damageImgRef = dmgRef, rangeImgRef = rangeRef, speedImgRef = speedRef },
+					newIcon
+				)
+
+				updateEquippedInInventoryGUI()
+
+				equipButton.MouseButton1Click:Connect(function()
+					local curSlot = equipButton:FindFirstAncestor("SlotSpace") :: Frame?
+					local id = curSlot and curSlot:GetAttribute("ToolIdRef") :: string?
+					if not id then
+						warn("Cant find id of weap to equip")
+						return
+					end
+					local curPlayerInventory = player:FindFirstChild("Inventory")
+					local toolToEquip: Tool? = nil
+					for _, toolInBp in ipairs(curPlayerInventory:GetChildren()) do
+						local bpId = toolInBp:GetAttribute("ToolId") :: string?
+						if bpId and bpId == id then
+							toolToEquip = toolInBp
+							break
+						end
+					end
+					if not toolToEquip then
+						warn("No bp-tool mathcing UI Slot")
+						return
+					end
+
+					playerChar = player.Character
+					if not playerChar then
+						warn("Playerchar not existing")
+						return
+					end
+					local result = inventoryFunctionsServerEvent:InvokeServer(toolToEquip, "Equip") -- equip tool
+					print("Now equipped: ", result)
+					if result and result ~= "Bomb" then
+						updateEquippedInInventoryGUI()
+					end
+				end)
+			else
+				warn("1 or more of the prefab images were not found")
+			end
+		else
+			slotUI:Destroy()
+			local newSlotGUI = slotUIPrefab:Clone()
+			newSlotGUI.Parent = slot
+		end
+	end
+
+	updateEquippedInInventoryGUI()
+	updateSlotsOpenGUI(openSlots)
 end
 
 function trackBackpack()
@@ -245,15 +266,21 @@ function trackBackpack()
 		warn("inventory not initialized")
 		return
 	end
-	for _, tool in ipairs(inventory:GetChildren()) do
-		updateBackpackGUI(tool)
-	end
+	updateBackpackGUI()
 
 	inventory.ChildAdded:Connect(function(child)
+		print("Adding tool")
 		if child.Name == "Bomb" then
 			return
 		end
-		updateBackpackGUI(child)
+		updateBackpackGUI()
+	end)
+
+	inventory.ChildRemoved:Connect(function(child)
+		if child.Name == "Bomb" then
+			return
+		end
+		updateBackpackGUI()
 	end)
 end
 trackBackpack()
@@ -272,3 +299,15 @@ openCloseImgButton.MouseButton1Click:Connect(function()
 end)
 
 player.CharacterAdded:Connect(updateEquippedInInventoryGUI)
+
+local inventory: Folder = player:FindFirstChild("Inventory")
+local slotsOpen = inventory:FindFirstChildOfClass("IntValue")
+
+if inventory and slotsOpen then
+	updateSlotsOpenGUI(slotsOpen.Value)
+	slotsOpen.Changed:Connect(function(newValue)
+		updateSlotsOpenGUI(newValue)
+	end)
+else
+	warn("Inventory or slotsopen not found")
+end

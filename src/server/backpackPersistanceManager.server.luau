@@ -5,65 +5,80 @@ local players = game:GetService("Players")
 
 local slapStyleFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools"):WaitForChild("Slapstyles")
 
-local inventoryFunctionsScript = game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("ModuleScripts"):WaitForChild("inventoryFunctions")
+local inventoryFunctionsScript = game:GetService("ReplicatedStorage")
+	:WaitForChild("Shared")
+	:WaitForChild("ModuleScripts")
+	:WaitForChild("inventoryFunctions")
 local inventoryFunctions = require(inventoryFunctionsScript)
 
 backpackPersistenceClone = {}
 
 players.PlayerAdded:Connect(function(player)
-    backpackPersistenceClone[player.UserId] = {}
-    player:WaitForChild("Inventory").ChildAdded:Connect(function(instance)
-        if not instance:IsA("Tool") then return end
-        if not instance:GetAttribute("ToolId") then return end
+	backpackPersistenceClone[player.UserId] = {}
+	player:WaitForChild("Inventory").ChildAdded:Connect(function(instance)
+		if not instance:IsA("Tool") then
+			return
+		end
+		if not instance:GetAttribute("ToolId") and not instance:GetAttribute("SaveSlot") then
+			return
+		end
 
-        print("adding tool: " .. instance:GetAttribute("ToolId"))
-        backpackPersistenceClone[player.UserId][#backpackPersistenceClone[player.UserId]+1] = instance:GetAttribute("ToolId")
-    end)
-    player:WaitForChild("Inventory").ChildRemoved:Connect(function(instance)
-        if not instance:IsA("Tool") then return end
-        if not instance:GetAttribute("ToolId") then return end
+		print("adding tool: " .. instance:GetAttribute("ToolId"))
+		backpackPersistenceClone[player.UserId][#backpackPersistenceClone[player.UserId] + 1] =
+			instance:GetAttribute("ToolId")
+	end)
+	player:WaitForChild("Inventory").ChildRemoved:Connect(function(instance)
+		if not instance:IsA("Tool") then
+			return
+		end
+		if not instance:GetAttribute("ToolId") then
+			return
+		end
 
-        for i,toolId in ipairs(backpackPersistenceClone[player.UserId]) do
-            if toolId == instance:GetAttribute("ToolId") then
-                backpackPersistenceClone[player.UserId][i] = nil
-            end
-            if backpackPersistenceClone[player.UserId][i] == nil and backpackPersistenceClone[player.UserId][i+1] ~= nil then
-                backpackPersistenceClone[player.UserId][i] = backpackPersistenceClone[player.UserId][i+1]
-                backpackPersistenceClone[player.UserId][i+1] = nil
-            end
-        end
-    end)
+		for i, toolId in ipairs(backpackPersistenceClone[player.UserId]) do
+			if toolId == instance:GetAttribute("ToolId") then
+				backpackPersistenceClone[player.UserId][i] = nil
+			end
+			if
+				backpackPersistenceClone[player.UserId][i] == nil
+				and backpackPersistenceClone[player.UserId][i + 1] ~= nil
+			then
+				backpackPersistenceClone[player.UserId][i] = backpackPersistenceClone[player.UserId][i + 1]
+				backpackPersistenceClone[player.UserId][i + 1] = nil
+			end
+		end
+	end)
 
-    local success, storedInventory = pcall(function()
-        return inventoryStore:GetAsync(player.UserId)
-    end)
-    if success then
-        local currentInventory:string
-        if storedInventory then
-            currentInventory = storedInventory
-        else
-            currentInventory = ""
-        end
-
-        local slapstyles = slapStyleFolder:GetDescendants()
-        for i, itemId in ipairs(currentInventory:split(",")) do
-            for j, style in ipairs(slapstyles) do
-                if itemId == style:GetAttribute("ToolId") then
-                    inventoryFunctions.AddToInventory(player, style)
-                end
-            end
-        end
-    end
+	local success, storedInventory = pcall(function()
+		return inventoryStore:GetAsync(player.UserId)
+	end)
+	if success then
+		local currentInventory: string
+		if storedInventory then
+			currentInventory = storedInventory
+		else
+			currentInventory = ""
+		end
+		print(currentInventory)
+		local slapstyles = slapStyleFolder:GetDescendants()
+		for i, itemId in ipairs(currentInventory:split(",")) do
+			for j, style in ipairs(slapstyles) do
+				if itemId == style:GetAttribute("ToolId") then
+					inventoryFunctions.AddToInventory(player, style, 1)
+				end
+			end
+		end
+	end
 end)
 
 players.PlayerRemoving:Connect(function(player)
-    local success, err = pcall(function()
-        print("saving: " .. table.concat(backpackPersistenceClone[player.UserId],","))
-        inventoryStore:SetAsync(player.UserId, table.concat(backpackPersistenceClone[player.UserId],","))
-    end)
-    if not success then
-        warn(err)
-    end
-    -- Clean up entry so that the table doesn't grow for the lifespan of the server
-    backpackPersistenceClone[player.UserId] = nil
+	local success, err = pcall(function()
+		print("saving: " .. table.concat(backpackPersistenceClone[player.UserId], ","))
+		inventoryStore:SetAsync(player.UserId, table.concat(backpackPersistenceClone[player.UserId], ","))
+	end)
+	if not success then
+		warn(err)
+	end
+	-- Clean up entry so that the table doesn't grow for the lifespan of the server
+	backpackPersistenceClone[player.UserId] = nil
 end)

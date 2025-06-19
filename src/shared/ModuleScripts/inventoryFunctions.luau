@@ -1,11 +1,21 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local inventoryFunctions = {}
 local toolsFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools"):WaitForChild("Slapstyles")
-function inventoryFunctions.AddToInventory(player: Player, tool: Tool)
+
+function inventoryFunctions.AddToInventory(player: Player, tool: Tool, slot: number)
 	local inventory = player:FindFirstChild("Inventory")
-	if inventory then
-		local toolClone = tool:Clone()
-		toolClone.Parent = inventory
+	local slotsAvailable = inventory:FindFirstChildOfClass("IntValue").Value
+
+	if inventory and slotsAvailable then
+		local invetoryCount = #inventory:GetChildren()
+
+		if invetoryCount - 1 < slotsAvailable then
+			local toolClone = tool:Clone()
+			toolClone.Parent = inventory
+			toolClone:SetAttribute("SaveSlot", slot)
+		else
+			warn("No more room in inventory")
+		end
 	else
 		warn("Cant find inventory on player, might not be initialized yet")
 	end
@@ -23,10 +33,24 @@ function inventoryFunctions.GetInventory(player: Player)
 
 	return bpItems
 end
+function inventoryFunctions.RemoveFromInventory(player: Player, tool: Tool) end
+
+function inventoryFunctions.RemoveAllFromInventory(player: Player)
+	local inventory = player:FindFirstChild("Inventory")
+
+	if inventory then
+		for _, tool in ipairs(inventory:GetChildren()) do
+			if tool:IsA("Tool") then
+				tool:Destroy()
+			end
+		end
+	else
+		warn("Cant find inventory")
+	end
+end
 
 function Equip(playerChar: Model, tool: Tool)
 	local toolRef = toolsFolder:FindFirstChild(tool.Name)
-
 	if not toolRef then
 		warn("Cant find tool")
 		return
