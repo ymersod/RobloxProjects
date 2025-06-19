@@ -25,18 +25,22 @@ players.PlayerAdded:Connect(function(player)
 
 		print("adding tool: " .. instance:GetAttribute("ToolId"))
 		backpackPersistenceClone[player.UserId][#backpackPersistenceClone[player.UserId] + 1] =
-			instance:GetAttribute("ToolId")
+			instance:GetAttribute("SaveSlot") .. "," .. instance:GetAttribute("ToolId")
 	end)
 	player:WaitForChild("Inventory").ChildRemoved:Connect(function(instance)
 		if not instance:IsA("Tool") then
 			return
 		end
-		if not instance:GetAttribute("ToolId") then
+		if not instance:GetAttribute("ToolId") and not instance:GetAttribute("SaveSlot") then
 			return
 		end
 
-		for i, toolId in ipairs(backpackPersistenceClone[player.UserId]) do
-			if toolId == instance:GetAttribute("ToolId") then
+        for i, toolId in ipairs(backpackPersistenceClone[player.UserId]) do
+            print("trying to remove tool: " .. toolId)
+			if 
+                toolId.split(",")[1] == instance:GetAttribute("SaveSlot")
+                and toolId.split(",")[2] == instance:GetAttribute("ToolId")
+            then
 				backpackPersistenceClone[player.UserId][i] = nil
 			end
 			if
@@ -61,10 +65,12 @@ players.PlayerAdded:Connect(function(player)
 		end
 		print(currentInventory)
 		local slapstyles = slapStyleFolder:GetDescendants()
-		for i, itemId in ipairs(currentInventory:split(",")) do
+		for i, itemId in ipairs(currentInventory:split(";")) do
+            print("trying to instantiate tool:" .. itemId)
+            local itemValues = itemId:split(",")
 			for j, style in ipairs(slapstyles) do
-				if itemId == style:GetAttribute("ToolId") then
-					inventoryFunctions.AddToInventory(player, style, 1)
+				if #itemValues > 1 and itemValues[2] == style:GetAttribute("ToolId") then
+					inventoryFunctions.AddToInventory(player, style, tonumber(itemValues[1]) :: number)
 				end
 			end
 		end
@@ -73,8 +79,9 @@ end)
 
 players.PlayerRemoving:Connect(function(player)
 	local success, err = pcall(function()
-		print("saving: " .. table.concat(backpackPersistenceClone[player.UserId], ","))
-		inventoryStore:SetAsync(player.UserId, table.concat(backpackPersistenceClone[player.UserId], ","))
+		print("saving: " .. table.concat(backpackPersistenceClone[player.UserId], ";"))
+        -- saving as: {SaveSlot},{ToolId};{SaveSlot},{ToolId}...
+		inventoryStore:SetAsync(player.UserId, table.concat(backpackPersistenceClone[player.UserId], ";"))
 	end)
 	if not success then
 		warn(err)

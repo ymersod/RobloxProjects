@@ -8,7 +8,7 @@ function leaderBoards.GetTop10()
 		return orderedExpStore:GetSortedAsync(false, 10)
 	end)
 	if success then
-		print(playersSorted:GetCurrentPage())
+		-- print(playersSorted:GetCurrentPage())
 		return playersSorted:GetCurrentPage()
 	else
 		return {}
