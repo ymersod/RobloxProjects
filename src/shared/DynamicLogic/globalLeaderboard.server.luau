@@ -36,17 +36,29 @@ local function CreateText(rank, playerName, playerLvl)
 	return frame0, frame1, frame2
 end
 
-players.PlayerAdded:Connect(function()
-	local sortedLevels = funcs.GetTop10()
-	for i, e in ipairs(sortedLevels) do
-		local success, playerName = pcall(function() 
-			return players:GetNameFromUserIdAsync(e.key)
-		end)
-		if success then
-			local frame0, frame1, frame2 = CreateText( i, playerName, e.value)
+local leaderboardCoroutine = coroutine.create(function()
+	while true do
+		local sortedLevels = funcs.GetTop10()
+		local playerRanks = {}
+		for i, e in ipairs(sortedLevels) do
+			local success, playerName = pcall(function() 
+				return players:GetNameFromUserIdAsync(e.key)
+			end)
+			if success then
+				table.insert(playerRanks,{rank = i, name = playerName, lvl = e.value})
+			end
+		end
+		local layout = gridframe:FindFirstChildOfClass("UIListLayout"):Clone()
+		gridframe:ClearAllChildren()
+		layout.Parent = gridframe
+		for i, p in ipairs(playerRanks) do
+			local frame0, frame1, frame2 = CreateText( p.rank, p.name, p.lvl)
 			frame0.Parent = gridframe
 			frame1.Parent = gridframe
 			frame2.Parent = gridframe
 		end
+		wait(1)
 	end
 end)
+
+coroutine.resume(leaderboardCoroutine)

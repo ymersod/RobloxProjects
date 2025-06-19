@@ -93,6 +93,17 @@ function OpenFunctions.onPlayerAdded(player)
 		levelTest.Value = level.lvl
 		levelTest.Parent = localStats
 
+		levelTest.Changed:Connect(function(level)
+			if player.UserId > 0 then
+				local success, err = pcall(function()
+					orderedExpStore:SetAsync(player.UserId, level)
+				end)
+				if not success then
+					warn(err)
+				end
+			end
+		end)
+
 		expLevelClient:FireClient(player, level)
 	end
 end
