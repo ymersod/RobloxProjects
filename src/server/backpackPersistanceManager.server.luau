@@ -2,19 +2,24 @@ local DataStoreService = game:GetService("DataStoreService")
 local inventoryStore = DataStoreService:GetDataStore("PlayerInventory")
 
 local players = game:GetService("Players")
--- local player = game:GetService("Players").LocalPlayer
+
+local slapStyleFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools"):WaitForChild("Slapstyles")
+
+local inventoryFunctionsScript = game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("ModuleScripts"):WaitForChild("inventoryFunctions")
+local inventoryFunctions = require(inventoryFunctionsScript)
 
 backpackPersistenceClone = {}
 
 players.PlayerAdded:Connect(function(player)
     backpackPersistenceClone[player.UserId] = {}
-    player.Backpack.ChildAdded:Connect(function(instance)
+    player:WaitForChild("Inventory").ChildAdded:Connect(function(instance)
         if not instance:IsA("Tool") then return end
         if not instance:GetAttribute("ToolId") then return end
 
-        backpackPersistenceClone[player.UserId][#backpackPersistenceClone[player.UserId]] = instance:GetAttribute("ToolId")
+        print("adding tool: " .. instance:GetAttribute("ToolId"))
+        backpackPersistenceClone[player.UserId][#backpackPersistenceClone[player.UserId]+1] = instance:GetAttribute("ToolId")
     end)
-    player.Backpack.ChildRemoved:Connect(function(instance)
+    player:WaitForChild("Inventory").ChildRemoved:Connect(function(instance)
         if not instance:IsA("Tool") then return end
         if not instance:GetAttribute("ToolId") then return end
 
@@ -39,13 +44,21 @@ players.PlayerAdded:Connect(function(player)
         else
             currentInventory = ""
         end
-        backpackPersistenceClone[player.UserId] = currentInventory:split(",")
-        print(currentInventory)
+
+        local slapstyles = slapStyleFolder:GetDescendants()
+        for i, itemId in ipairs(currentInventory:split(",")) do
+            for j, style in ipairs(slapstyles) do
+                if itemId == style:GetAttribute("ToolId") then
+                    inventoryFunctions.AddToInventory(player, style)
+                end
+            end
+        end
     end
 end)
 
 players.PlayerRemoving:Connect(function(player)
     local success, err = pcall(function()
+        print("saving: " .. table.concat(backpackPersistenceClone[player.UserId],","))
         inventoryStore:SetAsync(player.UserId, table.concat(backpackPersistenceClone[player.UserId],","))
     end)
     if not success then
