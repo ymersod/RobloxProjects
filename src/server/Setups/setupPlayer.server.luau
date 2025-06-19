@@ -38,10 +38,10 @@ function SetupStarterTools(player)
 		return
 	end
 
-	inventoryFunctions.EquipTool(player, tool1)
-	inventoryFunctions.AddToInventory(player, tool1)
+	--inventoryFunctions.EquipTool(player, tool1)
+	--inventoryFunctions.AddToInventory(player, tool1)
 
-	inventoryFunctions.AddToInventory(player, tool2)
+	--inventoryFunctions.AddToInventory(player, tool2)
 end
 
 game:GetService("Players").PlayerAdded:Connect(function(player)

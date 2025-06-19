@@ -5,6 +5,11 @@ local ragdollEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Even
 local expManagerFunctions = game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("ModuleScripts"):WaitForChild("expManagerFunctions")
 local expFuncs = require(expManagerFunctions)
 
+local inventoryFunctionsScript = game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("ModuleScripts"):WaitForChild("inventoryFunctions")
+local inventoryFunctions = require(inventoryFunctionsScript)
+
+local slapStyleFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools"):WaitForChild("Slapstyles")
+
 local function subSet(array:{any}, iStart:number, iEnd:number?)
 	if iEnd == nil then iEnd = #array end
 	local window = {}
@@ -37,6 +42,15 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 		elseif command.command == "/setselfxp" then
 			if #command.args > 0 then
 				expFuncs.setExp(player.UserId, tonumber(command.args[1]))
+			end
+		elseif command.command == "/addtool" then
+			if #command.args > 0 then
+				local styles = slapStyleFolder:GetDescendants()
+				for i, style in ipairs(styles) do
+					if style:GetAttribute("ToolId") == command.args[1] then
+						inventoryFunctions.AddToInventory(player, style)
+					end
+				end
 			end
 		end
 	end)
