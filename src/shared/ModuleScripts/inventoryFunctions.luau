@@ -2,12 +2,66 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local inventoryFunctions = {}
 local toolsFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools"):WaitForChild("Slapstyles")
 
-function inventoryFunctions.AddToInventory(player: Player, tool: Tool, slot: number)
-	local inventory = player:FindFirstChild("Inventory")
-	local slotsAvailable = inventory:FindFirstChildOfClass("IntValue").Value
+function getCharacter(player)
+	if player.Character then
+		return player.Character
+	else
+		return player.CharacterAdded:Wait()
+	end
+end
 
-	if inventory and slotsAvailable then
+function UnequipTool(playerChar: Model, tool: Tool)
+	local equippedTool = playerChar:FindFirstChildOfClass("Tool")
+
+	if equippedTool and equippedTool.Name ~= "Bomb" and tool.Name == equippedTool.Name then
+		equippedTool:Destroy()
+	else
+		warn("Cant unequip that tool")
+	end
+end
+
+function Equip(playerChar: Model, tool: Tool)
+	local toolRef = toolsFolder:FindFirstChild(tool.Name)
+	if not toolRef then
+		warn("Cant find tool")
+		return
+	end
+
+	local toolClone = toolRef:Clone()
+	toolClone.Parent = playerChar
+
+	local slapLogic: Script? = toolClone.PrimaryPart and toolClone.PrimaryPart:FindFirstChildOfClass("Script")
+	if not slapLogic then
+		warn("Could not find slaplogic")
+		return
+	end
+
+	slapLogic.Enabled = true
+
+	return toolClone
+end
+
+function removeToolsInSlot(playerChar: Model, inventory: Folder, slot: number)
+	for _, toolInInventory in ipairs(inventory:GetChildren()) do
+		if toolInInventory:IsA("Tool") then
+			local toolInInventorySaveSlot = toolInInventory:GetAttribute("SaveSlot")
+			if toolInInventorySaveSlot and tostring(toolInInventorySaveSlot) == tostring(slot) then
+				toolInInventory:Destroy()
+				UnequipTool(playerChar, toolInInventory)
+			end
+		end
+	end
+end
+
+function inventoryFunctions.AddToInventory(player: Player, tool: Tool, slot: number)
+	local inventory = player:FindFirstChild("Inventory") :: Folder?
+	local slotsAvailable = inventory:FindFirstChildOfClass("IntValue").Value
+	local playerChar = getCharacter(player)
+
+	if inventory and slotsAvailable and playerChar then
 		local invetoryCount = #inventory:GetChildren()
+
+		removeToolsInSlot(playerChar, inventory, slot)
 
 		if invetoryCount - 1 < slotsAvailable then
 			local toolClone = tool:Clone()
@@ -33,7 +87,15 @@ function inventoryFunctions.GetInventory(player: Player)
 
 	return bpItems
 end
-function inventoryFunctions.RemoveFromInventory(player: Player, tool: Tool) end
+function inventoryFunctions.RemoveFromInventory(player: Player, slotToRemove: number)
+	local inventory = player:FindFirstChild("Inventory")
+	local playerChar = getCharacter(player)
+	if inventory then
+		removeToolsInSlot(playerChar, inventory, slotToRemove)
+	else
+		warn("Inventory or tool not found")
+	end
+end
 
 function inventoryFunctions.RemoveAllFromInventory(player: Player)
 	local inventory = player:FindFirstChild("Inventory")
@@ -49,29 +111,8 @@ function inventoryFunctions.RemoveAllFromInventory(player: Player)
 	end
 end
 
-function Equip(playerChar: Model, tool: Tool)
-	local toolRef = toolsFolder:FindFirstChild(tool.Name)
-	if not toolRef then
-		warn("Cant find tool")
-		return
-	end
-
-	local toolClone = toolRef:Clone()
-	toolClone.Parent = playerChar
-
-	local slapLogic: Script? = toolClone.PrimaryPart and toolClone.PrimaryPart:FindFirstChildOfClass("Script")
-	if not slapLogic then
-		warn("Could not find slaplogic")
-		return
-	end
-
-	slapLogic.Enabled = true
-
-	return toolClone
-end
-
 function inventoryFunctions.EquipTool(player: Player, tool: Tool)
-	local playerChar = player.Character
+	local playerChar = getCharacter(player)
 	if not playerChar then
 		return
 	end
@@ -107,7 +148,7 @@ function inventoryFunctions.EquipTool(player: Player, tool: Tool)
 end
 
 function inventoryFunctions.EquipBomb(player: Player, bomb: Tool, cd: number)
-	local playerChar = player.Character
+	local playerChar = getCharacter(player)
 	if not playerChar then
 		warn("Playerchar not found")
 		return

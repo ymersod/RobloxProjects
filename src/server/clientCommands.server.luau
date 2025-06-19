@@ -64,6 +64,10 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 			end
 		elseif command.command == "/clearinventory" then
 			inventoryFunctions.RemoveAllFromInventory(player)
+		elseif command.command == "/clearslot" then
+			if #command.args > 0 then
+				inventoryFunctions.RemoveFromInventory(player, command.args[1])
+			end
 		end
 	end)
 end)
