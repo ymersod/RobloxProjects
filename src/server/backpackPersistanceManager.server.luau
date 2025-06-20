@@ -38,8 +38,8 @@ players.PlayerAdded:Connect(function(player)
         for i, toolId in ipairs(backpackPersistenceClone[player.UserId]) do
             print("trying to remove tool: " .. toolId)
 			if 
-                toolId.split(",")[1] == instance:GetAttribute("SaveSlot")
-                and toolId.split(",")[2] == instance:GetAttribute("ToolId")
+                tonumber(toolId:split(",")[1]) == instance:GetAttribute("SaveSlot")
+                and toolId:split(",")[2] == instance:GetAttribute("ToolId")
             then
 				backpackPersistenceClone[player.UserId][i] = nil
 			end
