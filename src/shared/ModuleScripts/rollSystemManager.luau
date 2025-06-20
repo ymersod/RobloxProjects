@@ -10,6 +10,8 @@ local ROLL_CLASSES = {
 	legendary = 0.002,
 }
 
+local VALID_TAG = "ValidSlapStyle"
+
 -- local testItems = {
 -- 	common = {
 -- 		{ item = "commonTestItem1" },
@@ -38,7 +40,7 @@ local availableItems = {
 }
 
 for i, style in ipairs(slapstyles) do
-	if not style:IsA("Tool") then
+	if not style:IsA("Tool") or not style:HasTag(VALID_TAG) then
 		continue
 	end
 	local rarity = style:GetAttribute("Rarity")
@@ -53,8 +55,8 @@ for i, style in ipairs(slapstyles) do
 	end
 end
 
-print(availableItems)
-function rollsystemManager.getNewItem(player: Player)
+-- print(availableItems)
+function rollsystemManager.getNewItem(player: Player, rollSlot: number)
 	local change = math.random()
 	local rolledStyle: Tool?
 	if change >= 1 - ROLL_CLASSES.legendary then

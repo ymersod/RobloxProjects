@@ -4,6 +4,10 @@ local rollEvent = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("RollFunctions")
 	:WaitForChild("RollServer")
+local addToInventoryServer = ReplicatedStorage:WaitForChild("Shared")
+	:WaitForChild("Events")
+	:WaitForChild("InventoryFunctions")
+	:WaitForChild("AddToInventoryServer")
 
 -- GUI LOCALS
 local activeSlapSlotUIPrefab =
@@ -103,25 +107,31 @@ function updateActiveGUI(
 end
 
 function updateActiveRollSlot()
-	local playerChar = player.Character
-	if not playerChar then
-		warn("Player character not found")
-		return
-	end
-
 	for _, slot in ipairs(slotArr) do
-		local inventoryToolIdRef = slot:GetAttribute("ToolIdRef")
-		local slapFrame = slot:FindFirstChild("SlapStyle")
-		local buttonToUpdate = slapFrame and slapFrame:FindFirstChildOfClass("ImageButton")
-
-		if not buttonToUpdate then
+		local curSlot: number? = slot:GetAttribute("SlotNumber")
+		if curSlot < 0 then
 			continue
 		end
 
-		if buttonToUpdate and inventoryToolIdRef ~= nil then
-			buttonToUpdate.Transparency = equippedSlapStyleTransparency.Backpack
-		else
+		local buttonToUpdate = slot and slot:FindFirstChild("EquipButton", true)
+
+		if buttonToUpdate and curSlot and activeRollSlot and tostring(curSlot) == tostring(activeRollSlot) then
 			buttonToUpdate.Transparency = equippedSlapStyleTransparency.Equipped
+
+			local curActiveChoiceUI = activeChoice:FindFirstChildOfClass("Frame")
+
+			if curActiveChoiceUI then
+				curActiveChoiceUI:Destroy()
+
+				local chosenGUIClone = slot:Clone()
+				chosenGUIClone.Parent = activeChoice
+			else
+				warn("Cant find data on GUI elements")
+			end
+		elseif not buttonToUpdate then
+			continue
+		else
+			buttonToUpdate.Transparency = equippedSlapStyleTransparency.Backpack
 		end
 	end
 end
@@ -173,22 +183,13 @@ function updateBackpackGUI()
 				)
 
 				equipButton.MouseButton1Click:Connect(function()
-					print("IM A FISK AND IM CLICK UWU")
 					local curSlot = equipButton:FindFirstAncestor("SlotSpace") :: Frame?
-					local curSlotGUI = curSlot and curSlot:FindFirstChildOfClass("Frame")
 					local slotNumber = curSlot and curSlot:GetAttribute("SlotNumber")
 
-					local curActiveChoiceUI = activeChoice:FindFirstChildOfClass("Frame")
+					activeRollSlot = slotNumber
 
-					if curSlotGUI and slotNumber and curActiveChoiceUI then
-						activeRollSlot = slotNumber
-						curActiveChoiceUI:Destroy()
-
-						local chosenGUIClone = curSlotGUI:Clone()
-						chosenGUIClone.Parent = activeChoice
-					else
-						warn("Cant find data on GUI elements")
-					end
+					print("Activeslot is: ", activeRollSlot)
+					updateActiveRollSlot()
 				end)
 			else
 				warn("1 or more of the prefab images were not found")
@@ -200,7 +201,6 @@ function updateBackpackGUI()
 		end
 	end
 
-	-- updateActiveRollSlot()
 	updateSlotsOpenGUI(openSlots)
 	updateActiveRollSlot()
 end
@@ -236,7 +236,12 @@ closeButton.MouseButton1Click:Connect(function()
 end)
 
 rollButton.MouseButton1Click:Connect(function()
-	print("ROLLINGGGGG!!! Active slot is: ", activeRollSlot)
-	local recieved = rollEvent:InvokeServer()
-	print(recieved)
+	local recieved: Tool? = rollEvent:InvokeServer(activeRollSlot)
+
+	if recieved and recieved:IsA("Tool") then
+		addToInventoryServer:InvokeServer(recieved, activeRollSlot)
+		recieved:Destroy()
+	else
+		warn("Didnt recieve a new slapstyle ")
+	end
 end)
