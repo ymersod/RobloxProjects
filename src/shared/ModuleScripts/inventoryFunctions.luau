@@ -21,6 +21,7 @@ function UnequipTool(playerChar: Model, tool: Tool)
 end
 
 function Equip(playerChar: Model, tool: Tool)
+	local toEquipToolSaveSlot = tool:GetAttribute("SaveSlot")
 	local toolRef = toolsFolder:FindFirstChild(tool.Name)
 	if not toolRef then
 		warn("Cant find tool")
@@ -29,6 +30,7 @@ function Equip(playerChar: Model, tool: Tool)
 
 	local toolClone = toolRef:Clone()
 	toolClone.Parent = playerChar
+	toolClone:SetAttribute("SaveSlot", toEquipToolSaveSlot)
 
 	local slapLogic: Script? = toolClone.PrimaryPart and toolClone.PrimaryPart:FindFirstChildOfClass("Script")
 	if not slapLogic then
@@ -55,15 +57,13 @@ end
 
 function inventoryFunctions.AddToInventory(player: Player, tool: Tool, slot: number)
 	local inventory = player:FindFirstChild("Inventory") :: Folder?
-	local slotsAvailable = inventory:FindFirstChildOfClass("IntValue").Value
 	local playerChar = getCharacter(player)
 
-	if inventory and slotsAvailable and playerChar then
-		local invetoryCount = #inventory:GetChildren()
-
+	if inventory and playerChar then
 		removeToolsInSlot(playerChar, inventory, slot)
-
-		if invetoryCount - 1 < slotsAvailable then
+		local slotsAvailable = inventory:FindFirstChildOfClass("IntValue").Value
+		local invetoryCount = #inventory:GetChildren()
+		if slotsAvailable and invetoryCount - 1 < slotsAvailable then
 			local toolClone = tool:Clone()
 			toolClone.Parent = inventory
 			toolClone:SetAttribute("SaveSlot", slot)
@@ -175,4 +175,5 @@ function inventoryFunctions.EquipBomb(player: Player, bomb: Tool, cd: number)
 		bomb.Parent = player
 	end
 end
+
 return inventoryFunctions

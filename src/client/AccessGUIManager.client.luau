@@ -1,10 +1,15 @@
+local player = game:GetService("Players").LocalPlayer
+
 -- GUI elements
-local accessBarGui =
-	game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("ScreenGui"):WaitForChild("AccessBar")
+local screenGui = player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
+local accessBarGui = screenGui:WaitForChild("AccessBar")
+local gachaGUI: Frame = screenGui:WaitForChild("Gacha")
 local accessParentGui: Frame = accessBarGui:WaitForChild("AccessParent")
 local openCloseGui = accessBarGui:WaitForChild("OpenClose")
 local openCloseButton: ImageButton = accessBarGui:WaitForChild("OpenClose"):WaitForChild("OpenCloseButton")
 local openCloseBg: ImageLabel = accessBarGui:WaitForChild("OpenClose"):WaitForChild("OpenCloseIcon")
+local openCloseGacha: ImageButton =
+	accessBarGui:WaitForChild("AccessParent"):WaitForChild("Roll"):WaitForChild("OpenCloseButton")
 
 local TweenService = game:GetService("TweenService")
 local tweenInInfo = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
@@ -51,16 +56,24 @@ closeTween:Play()
 openCloseButton.MouseButton1Click:Connect(function()
 	pulseOpenClose()
 	if accessParentGui.Visible then
-		print("Closing...")
+		-- print("Closing...")
 		openCloseBg.Image = openImageId
 		closeTween:Play()
 		closeTween.Completed:Once(function()
 			accessParentGui.Visible = false
 		end)
 	elseif not accessParentGui.Visible then
-		print("Opening...")
+		-- print("Opening...")
 		accessParentGui.Visible = true
 		openCloseBg.Image = closeImageId
 		openTween:Play()
+	end
+end)
+
+openCloseGacha.MouseButton1Click:Connect(function()
+	if gachaGUI.Visible then
+		gachaGUI.Visible = false
+	elseif not gachaGUI.Visible then
+		gachaGUI.Visible = true
 	end
 end)

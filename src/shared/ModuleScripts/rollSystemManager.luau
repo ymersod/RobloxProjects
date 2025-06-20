@@ -10,26 +10,26 @@ local ROLL_CLASSES = {
 	legendary = 0.002,
 }
 
-local testItems = {
-	common = {
-		{ item = "commonTestItem1" },
-		{ item = "commonTestItem2" },
-		{ item = "commonTestItem3" },
-		{ item = "commonTestItem4" },
-	},
-	uncommon = {
-		{ item = "uncommonTestItem1" },
-		{ item = "uncommonTestItem2" },
-		{ item = "uncommonTestItem3" },
-	},
-	rare = {
-		{ item = "rareTestItem1" },
-		{ item = "rareTestItem2" },
-	},
-	legendary = {
-		{ item = "legendaryTestItem1" },
-	},
-}
+-- local testItems = {
+-- 	common = {
+-- 		{ item = "commonTestItem1" },
+-- 		{ item = "commonTestItem2" },
+-- 		{ item = "commonTestItem3" },
+-- 		{ item = "commonTestItem4" },
+-- 	},
+-- 	uncommon = {
+-- 		{ item = "uncommonTestItem1" },
+-- 		{ item = "uncommonTestItem2" },
+-- 		{ item = "uncommonTestItem3" },
+-- 	},
+-- 	rare = {
+-- 		{ item = "rareTestItem1" },
+-- 		{ item = "rareTestItem2" },
+-- 	},
+-- 	legendary = {
+-- 		{ item = "legendaryTestItem1" },
+-- 	},
+-- }
 local availableItems = {
 	common = {},
 	uncommon = {},
@@ -54,16 +54,25 @@ for i, style in ipairs(slapstyles) do
 end
 
 print(availableItems)
-function rollsystemManager.getNewItem()
+function rollsystemManager.getNewItem(player: Player)
 	local change = math.random()
+	local rolledStyle: Tool?
 	if change >= 1 - ROLL_CLASSES.legendary then
-		return availableItems.legendary[math.random(#availableItems.legendary)]
+		rolledStyle = availableItems.legendary[math.random(#availableItems.legendary)]:Clone()
 	elseif change >= 1 - ROLL_CLASSES.rare then
-		return availableItems.rare[math.random(#availableItems.rare)]
+		rolledStyle = availableItems.rare[math.random(#availableItems.rare)]:Clone()
 	elseif change >= 1 - ROLL_CLASSES.uncommon then
-		return availableItems.uncommon[math.random(#availableItems.uncommon)]
+		rolledStyle = availableItems.uncommon[math.random(#availableItems.uncommon)]:Clone()
 	else
-		return availableItems.common[math.random(#availableItems.common)]
+		rolledStyle = availableItems.common[math.random(#availableItems.common)]:Clone()
+	end
+
+	if rolledStyle then
+		rolledStyle.Parent = player
+		return rolledStyle
+	else
+		warn("Something went wrong rolling for a new style")
+		return nil
 	end
 end
 
