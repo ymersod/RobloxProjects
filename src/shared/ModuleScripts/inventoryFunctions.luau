@@ -172,7 +172,7 @@ function inventoryFunctions.EquipBomb(player: Player, bomb: Tool, cd: number)
 			Equip(playerChar, equippedClone)
 		end)
 	else
-		bomb.Parent = player
+		bomb.Parent = playerChar
 	end
 end
 

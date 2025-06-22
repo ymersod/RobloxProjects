@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
 local inventoryFuncs = require(ReplicatedStorage.Shared.ModuleScripts.inventoryFunctions)
-local BOMB_TIMER = 15
+local BOMB_TIMER = 5
 
 function giveBombToPlayer(player: Player)
 	if player and player.Character then
@@ -21,7 +21,7 @@ function findRandomPlayer(players)
 	if #players == 0 then
 		return nil
 	end
-
+	print("here")
 	local random = Random.new()
 	local randomIndex = random:NextInteger(1, #players)
 	local randomPlayer: Player = players[randomIndex]
@@ -38,8 +38,18 @@ end
 -- task.wait(5)
 while true do
 	local players = game:GetService("Players"):GetPlayers()
-	if #players >= 5 then
-		local randomPlayer = findRandomPlayer(players)
+	if #players >= 1 then
+		local unsafePlayers = {}
+		for _, player in ipairs(players) do
+			if not player.States.Safe.Value then
+				table.insert(unsafePlayers, player)
+			end
+		end
+		if #unsafePlayers == 0 then
+			print("All players are in a safezone!")
+		end
+
+		local randomPlayer = findRandomPlayer(unsafePlayers)
 		if randomPlayer then
 			giveBombToPlayer(randomPlayer)
 		end
