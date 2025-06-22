@@ -32,6 +32,11 @@ part.Touched:Connect(function(hit: BasePart)
 		return
 	end
 
+	if targetPlayer.States.Safe.Value then
+		print(targetPlayer.Name, " is safe!")
+		return
+	end
+
 	if debounce[targetPlayer] then
 		return
 	end
