@@ -38,7 +38,8 @@ end
 -- task.wait(5)
 while true do
 	local players = game:GetService("Players"):GetPlayers()
-	if #players >= 1 then
+	if #players >= 2 then
+		--Filter for if players are in safeZone
 		local unsafePlayers = {}
 		for _, player in ipairs(players) do
 			if not player.States.Safe.Value then

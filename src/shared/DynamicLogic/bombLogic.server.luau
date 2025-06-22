@@ -67,6 +67,11 @@ bomb.Touched:Connect(function(hit: BasePart)
 		return
 	end
 
+	-- Prevent giving bomb to player in safezone
+	if playerHit.States.Safe.Value then
+		return
+	end
+
 	lastTransferTime = now
 	previousOwnerUserId = curOwnerPlayer and curOwnerPlayer.UserId or nil
 
