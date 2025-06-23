@@ -1,3 +1,4 @@
+local players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local killModule = require(
@@ -18,6 +19,10 @@ local expFuncs = require(expManagerFunctions)
 local inventoryFunctionsScript =
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("inventoryFunctions")
 local inventoryFunctions = require(inventoryFunctionsScript)
+
+local dataStoreDevManagementFunctionsScript =
+	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("dataStoreDevManagement")
+local dataStoreDevManagementFunctions = require(dataStoreDevManagementFunctionsScript)
 
 local slapStyleFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools"):WaitForChild("Slapstyles")
 
@@ -84,6 +89,35 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 		elseif command.command == "/resetdaily" then
 			local resetResponse = dailyRewardFunctions.resetPlayer(player.UserId)
 			print(resetResponse)
+		elseif command.command == "/removeplayerfromstore" then
+			if #command.args >= 0 then
+				if #command.args == 1 or #command.args == 2 and command.args[2] == "daily" then
+					local response = dataStoreDevManagementFunctions.removePlayerDailyRewardStore(command.args[1])
+					print(response)
+				end
+				if #command.args == 1 or #command.args == 2 and command.args[2] == "xp" then
+					local response = dataStoreDevManagementFunctions.removePlayerExpStore(command.args[1])
+					print(response)
+				end
+				if #command.args == 1 or #command.args == 2 and command.args[2] == "orderedxp" then
+					local response = dataStoreDevManagementFunctions.removePlayerOrderedExpStore(command.args[1])
+					print(response)
+				end
+				if #command.args == 1 or #command.args == 2 and command.args[2] == "inventory" then
+					local response = dataStoreDevManagementFunctions.removePlayerInventoryStore(command.args[1])
+					print(response)
+				end
+				if #command.args == 1 or #command.args == 2 and command.args[2] == "ticket" then
+					local response = dataStoreDevManagementFunctions.removePlayerTicketStore(command.args[1])
+					print(response)
+				end
+			end
+		elseif command.command == "/getuserid" then
+			print(player.UserId)
+		elseif command.command == "/lookupusername" then
+			if #command.args > 0 then
+				print(players:GetNameFromUserIdAsync(command.args[1]))
+			end
 		end
 	end)
 end)
