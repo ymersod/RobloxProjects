@@ -20,8 +20,9 @@ local inventoryFunctionsScript =
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("inventoryFunctions")
 local inventoryFunctions = require(inventoryFunctionsScript)
 
-local dataStoreDevManagementFunctionsScript =
-	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("dataStoreDevManagement")
+local dataStoreDevManagementFunctionsScript = ServerScriptService:WaitForChild("Server")
+	:WaitForChild("ServerModuleScripts")
+	:WaitForChild("dataStoreDevManagement")
 local dataStoreDevManagementFunctions = require(dataStoreDevManagementFunctionsScript)
 
 local slapStyleFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools"):WaitForChild("Slapstyles")
@@ -82,10 +83,8 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 			local dailyRewards = dailyRewardFunctions.getRewardProgress(player.UserId)
 			print(dailyRewards)
 		elseif command.command == "/claimdaily" then
-			if #command.args > 0 then
-				local dailyReward = dailyRewardFunctions.progressRewards(player.UserId)
-				print(dailyReward)
-			end
+			local dailyReward = dailyRewardFunctions.progressRewards(player.UserId)
+			print(dailyReward)
 		elseif command.command == "/resetdaily" then
 			local resetResponse = dailyRewardFunctions.resetPlayer(player.UserId)
 			print(resetResponse)
