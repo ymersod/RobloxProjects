@@ -1,15 +1,21 @@
 local player = game:GetService("Players").LocalPlayer
 
 -- GUI elements
+local accessGuis: { Frame } = {}
 local screenGui = player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
 local accessBarGui = screenGui:WaitForChild("AccessBar")
 local gachaGUI: Frame = screenGui:WaitForChild("Gacha")
+table.insert(accessGuis, gachaGUI)
+local dailyLoginRewards: Frame = screenGui:WaitForChild("DailyLoginRewards")
+table.insert(accessGuis, dailyLoginRewards)
 local accessParentGui: Frame = accessBarGui:WaitForChild("AccessParent")
 local openCloseGui = accessBarGui:WaitForChild("OpenClose")
 local openCloseButton: ImageButton = accessBarGui:WaitForChild("OpenClose"):WaitForChild("OpenCloseButton")
 local openCloseBg: ImageLabel = accessBarGui:WaitForChild("OpenClose"):WaitForChild("OpenCloseIcon")
 local openCloseGacha: ImageButton =
 	accessBarGui:WaitForChild("AccessParent"):WaitForChild("Roll"):WaitForChild("OpenCloseButton")
+local openCloseDaily: ImageButton =
+	accessBarGui:WaitForChild("AccessParent"):WaitForChild("LevelUpRewards"):WaitForChild("OpenCloseButton")
 
 local TweenService = game:GetService("TweenService")
 local tweenInInfo = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
@@ -70,10 +76,26 @@ openCloseButton.MouseButton1Click:Connect(function()
 	end
 end)
 
+function closeOtherGuiOnNewOpen()
+	for _, gui in ipairs(accessGuis) do
+		gui.Visible = false
+	end
+end
+
 openCloseGacha.MouseButton1Click:Connect(function()
 	if gachaGUI.Visible then
 		gachaGUI.Visible = false
 	elseif not gachaGUI.Visible then
+		closeOtherGuiOnNewOpen()
 		gachaGUI.Visible = true
+	end
+end)
+
+openCloseDaily.MouseButton1Click:Connect(function()
+	if dailyLoginRewards.Visible then
+		dailyLoginRewards.Visible = false
+	elseif not dailyLoginRewards.Visible then
+		closeOtherGuiOnNewOpen()
+		dailyLoginRewards.Visible = true
 	end
 end)

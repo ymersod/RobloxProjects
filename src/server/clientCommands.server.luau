@@ -77,10 +77,7 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 			local dailyRewards = dailyRewardFunctions.getRewardProgress(player.UserId)
 			print(dailyRewards)
 		elseif command.command == "/claimdaily" then
-			if #command.args > 0 then				
-				local dailyReward = dailyRewardFunctions.progressRewards(player.UserId)
-				print(dailyReward)
-			else
+			if #command.args > 0 then
 				local dailyReward = dailyRewardFunctions.progressRewards(player.UserId)
 				print(dailyReward)
 			end
