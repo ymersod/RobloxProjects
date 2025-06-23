@@ -13,18 +13,51 @@ function dailyRewardFunctions.getRewardProgress(playerId)
 		return rewardsStore:GetAsync(playerId)
 	end)
 	if success then
-		return { lastClaimedDate = rewardProgress:split(";")[1], count = rewardProgress:split(";")[2] }
+		if rewardProgress == nil then
+			return {success = true, payload = {lastClaimedDate = "-1", count = "0"}}
+		end
+		local value = {success = true, payload = { lastClaimedDate = rewardProgress:split(";")[1], count = rewardProgress:split(";")[2] }}
+		if 
+			(tonumber(value.payload.lastClaimedDate) :: number) % 29 == 0 
+			or math.floor((tonumber(value.payload.lastClaimedDate) :: number)/28) < math.floor(math.floor(os.time()/86400)/28)
+		then
+			value.payload.count = "0"
+		end
+		return value
 	end
-	return { lastClaimedDate = "n/a", count = "-1" }
+	return {success = false, payload = { lastClaimedDate = "n/a", count = "-1" }}
 end
 
 function dailyRewardFunctions.progressRewards(playerId)
-	local success, err = pcall(function()
-		return rewardsStore:SetAsync(playerId,os.date("%x")..";"..1)
-	end)
-	if not success then
-		warn(err)
+	local rewardprogress = dailyRewardFunctions.getRewardProgress(playerId)
+
+	local unixDateToday = math.floor(os.time()/86400)
+
+	if not rewardprogress.success then
+		return { success = false, "Something went wrong"}
+	else
+		if tonumber(rewardprogress.payload.lastClaimedDate) >= unixDateToday then
+			return { success = false, "Already claimed"}
+		end
 	end
+
+	local success, err = pcall(function()
+		return rewardsStore:SetAsync(playerId,unixDateToday..";"..(tonumber(rewardprogress.payload.count) :: number + 1))
+	end)
+	if success then
+		return {success = true, payload = "something"}
+	end
+	return {success = false, payload = err}
+end
+
+function dailyRewardFunctions.resetPlayer(playerId)
+		local success, err = pcall(function()
+		return rewardsStore:RemoveAsync(playerId)
+	end)
+	if success then
+		return {success = true, payload = "player reset"}
+	end
+	return {success = false, payload = err}
 end
 
 return dailyRewardFunctions
