@@ -20,7 +20,7 @@ function dailyRewardFunctions.getRewardProgress(playerId)
 			payload = { lastClaimedDate = rewardProgress:split(";")[1], count = rewardProgress:split(";")[2] },
 		}
 		if
-			(tonumber(value.payload.lastClaimedDate) :: number) % 29 == 0
+			(tonumber(value.payload.lastClaimedDate) :: number) % 28 == 0
 			or math.floor((tonumber(value.payload.lastClaimedDate) :: number) / 28)
 				< math.floor(math.floor(os.time() / 86400) / 28)
 		then
