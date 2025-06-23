@@ -45,6 +45,11 @@ function TicketFuncs.onPlayerAdded(player:Player)
 end
 
 function TicketFuncs.onPlayerRemoving(player:Player)
+	if player.UserId <= 0 then
+		playerTickets[player.UserId] = nil
+		return
+	end
+
 	-- Set data store key
 	local success, err = pcall(function()
 		ticketStore:SetAsync(player.UserId, playerTickets[player.UserId])

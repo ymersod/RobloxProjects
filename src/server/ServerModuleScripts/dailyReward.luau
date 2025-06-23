@@ -32,6 +32,10 @@ function dailyRewardFunctions.getRewardProgress(playerId)
 end
 
 function dailyRewardFunctions.progressRewards(playerId)
+	if playerId <= 0 then
+		return
+	end
+
 	local rewardprogress = dailyRewardFunctions.getRewardProgress(playerId)
 
 	local unixDateToday = math.floor(os.time() / 86400)

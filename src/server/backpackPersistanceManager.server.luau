@@ -79,6 +79,11 @@ players.PlayerAdded:Connect(function(player)
 end)
 
 players.PlayerRemoving:Connect(function(player)
+	if player.UserId <= 0 then
+		backpackPersistenceClone[player.UserId] = nil
+		return
+	end
+
 	local success, err = pcall(function()
 		print("saving: " .. table.concat(backpackPersistenceClone[player.UserId], ";"))
 		-- saving as: {SaveSlot},{ToolId};{SaveSlot},{ToolId}...
