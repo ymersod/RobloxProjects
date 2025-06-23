@@ -5,9 +5,9 @@ local players = game:GetService("Players")
 
 local slapStyleFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools"):WaitForChild("Slapstyles")
 
-local inventoryFunctionsScript = game:GetService("ReplicatedStorage")
-	:WaitForChild("Shared")
-	:WaitForChild("ModuleScripts")
+local inventoryFunctionsScript = game:GetService("ServerScriptService")
+	:WaitForChild("Server")
+	:WaitForChild("ServerModuleScripts")
 	:WaitForChild("inventoryFunctions")
 local inventoryFunctions = require(inventoryFunctionsScript)
 

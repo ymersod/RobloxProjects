@@ -1,7 +1,8 @@
 local Players = game:GetService("Players")
+local ServerScriptService = game:GetService("ServerScriptService")
 
-local ticketFunctions = game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("ModuleScripts"):WaitForChild("rollTickets")
-
+local ticketFunctions =
+	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("rollTickets")
 local funcs = require(ticketFunctions)
 
 Players.PlayerAdded:Connect(funcs.onPlayerAdded)

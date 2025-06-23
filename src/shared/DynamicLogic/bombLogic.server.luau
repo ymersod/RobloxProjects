@@ -1,9 +1,10 @@
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 local bomb = script.Parent :: Part
 local FUSE_TIME = 5
-local killModule = require(ReplicatedStorage.Shared.ModuleScripts.killPlayerServer)
-local inventoryFuncs = require(ReplicatedStorage.Shared.ModuleScripts.inventoryFunctions)
+
+local inventoryFunctions = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
+local killPlayerServer = require(ServerScriptService.Server.ServerModuleScripts.killPlayerServer)
 
 local curOwnerModel = script:FindFirstAncestorOfClass("Model")
 local curOwnerPlayer = Players:GetPlayerFromCharacter(curOwnerModel)
@@ -34,7 +35,7 @@ local lastTransferTime = 0
 local previousOwnerUserId = nil
 
 function explode()
-	killModule.killPlayer(curOwnerModel, curOwnerPlayer)
+	killPlayerServer.killPlayer(curOwnerModel, curOwnerPlayer)
 	bomb:Destroy()
 end
 
@@ -79,7 +80,7 @@ bomb.Touched:Connect(function(hit: BasePart)
 	curOwnerPlayer = playerHit
 
 	local bombTool = bomb.Parent
-	inventoryFuncs.EquipBomb(playerHit, bombTool, 0)
+	inventoryFunctions.EquipBomb(playerHit, bombTool, 0)
 end)
 
 for timeLeft = FUSE_TIME, 0, -1 do

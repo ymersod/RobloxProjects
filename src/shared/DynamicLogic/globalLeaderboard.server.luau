@@ -1,11 +1,7 @@
-local globalLeaderBoardScript = game:GetService("ReplicatedStorage")
-	:WaitForChild("Shared")
-	:WaitForChild("ModuleScripts")
-	:WaitForChild("globalLeaderBoard")
-
-local funcs = require(globalLeaderBoardScript)
+local ServerScriptService = game:GetService("ServerScriptService")
 
 local players = game:GetService("Players")
+local globalLeaderBoard = require(ServerScriptService.Server.ServerModuleScripts.globalLeaderBoard)
 
 local gridframe = script.Parent:WaitForChild("SurfaceGui"):WaitForChild("GridFrame")
 
@@ -41,7 +37,7 @@ end
 
 local leaderboardCoroutine = coroutine.create(function()
 	while true do
-		local sortedLevels = funcs.GetTop10()
+		local sortedLevels = globalLeaderBoard.GetTop10()
 		local playerRanks = {}
 		for i, e in ipairs(sortedLevels) do
 			local success, playerName = pcall(function()

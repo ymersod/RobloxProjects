@@ -1,3 +1,5 @@
-local rollSystemManager = game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("ModuleScripts"):WaitForChild("rollSystemManager")
+local ServerScriptService = game:GetService("ServerScriptService")
+local rollSystemManager =
+	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("rollSystemManager")
 
 local funcs = require(rollSystemManager)

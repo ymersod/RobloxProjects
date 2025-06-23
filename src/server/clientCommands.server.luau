@@ -1,17 +1,15 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local killModule =
-	require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ModuleScripts"):WaitForChild("killPlayerServer"))
+local ServerScriptService = game:GetService("ServerScriptService")
+local killModule = require(
+	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("killPlayerServer")
+)
 local ragdollEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("RagdollClient")
-local expManagerFunctions = game:GetService("ReplicatedStorage")
-	:WaitForChild("Shared")
-	:WaitForChild("ModuleScripts")
-	:WaitForChild("expManagerFunctions")
+local expManagerFunctions =
+	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("expManagerFunctions")
 local expFuncs = require(expManagerFunctions)
 
-local inventoryFunctionsScript = game:GetService("ReplicatedStorage")
-	:WaitForChild("Shared")
-	:WaitForChild("ModuleScripts")
-	:WaitForChild("inventoryFunctions")
+local inventoryFunctionsScript =
+	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("inventoryFunctions")
 local inventoryFunctions = require(inventoryFunctionsScript)
 
 local slapStyleFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools"):WaitForChild("Slapstyles")

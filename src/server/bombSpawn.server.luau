@@ -1,7 +1,7 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
-local inventoryFuncs = require(ReplicatedStorage.Shared.ModuleScripts.inventoryFunctions)
+local inventoryFuncs = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 local BOMB_TIMER = 5
 
 function giveBombToPlayer(player: Player)

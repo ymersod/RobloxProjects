@@ -4,7 +4,6 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local tool1 = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle0")
 local tool2 = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle1")
-local inventoryFunctions = require(ReplicatedStorage.Shared.ModuleScripts.inventoryFunctions)
 
 -- function ignorePhysicsOnOwner(char: Model, hitBox: Part)
 -- 	for _, charPart in char:GetDescendants() do

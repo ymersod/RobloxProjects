@@ -6,7 +6,7 @@ local uiButton: ImageButton = abilityGUI:WaitForChild("ActivateAbility")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
-local platformEnums = require(ReplicatedStorage.Shared.ModuleScripts.enums)
+local platformEnums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local ContextActionService = game:GetService("ContextActionService")
 
 function UpdateUIToPlatform()

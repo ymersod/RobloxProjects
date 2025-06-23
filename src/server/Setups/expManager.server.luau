@@ -1,8 +1,6 @@
 local Players = game:GetService("Players")
+local ServerScriptService = game:GetService("ServerScriptService")
+local expManagerFunctions = require(ServerScriptService.Server.ServerModuleScripts.expManagerFunctions)
 
-local expManagerFunctions = game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("ModuleScripts"):WaitForChild("expManagerFunctions")
-
-local funcs = require(expManagerFunctions)
-
-Players.PlayerAdded:Connect(funcs.onPlayerAdded)
-Players.PlayerRemoving:Connect(funcs.onPlayerRemoving)
+Players.PlayerAdded:Connect(expManagerFunctions.onPlayerAdded)
+Players.PlayerRemoving:Connect(expManagerFunctions.onPlayerRemoving)
