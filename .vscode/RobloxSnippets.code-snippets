@@ -28,5 +28,22 @@
 			"\t$4",
 			"end"
 		]
+	},
+	"Console Command" : {
+		"scope": "luau",
+		"prefix": "ccommand",
+		"body": [
+			"elseif command.command == \"/$1\" then",
+			"\t$2"
+		]
+	},
+	"Console Command args" : {
+		"scope": "luau",
+		"prefix": "carg",
+		"body": [
+			"if #command.args > 0 then",
+			"\t$1",
+			"end"
+		]
 	}
 }

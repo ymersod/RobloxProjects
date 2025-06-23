@@ -4,6 +4,13 @@ local killModule = require(
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("killPlayerServer")
 )
 local ragdollEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("RagdollClient")
+
+local ServerScriptService = game:GetService("ServerScriptService")
+local dailyRewardScript =
+	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("dailyReward")
+
+local dailyRewardFunctions = require(dailyRewardScript)
+
 local expManagerFunctions =
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("expManagerFunctions")
 local expFuncs = require(expManagerFunctions)
@@ -66,6 +73,20 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 			if #command.args > 0 then
 				inventoryFunctions.RemoveFromInventory(player, command.args[1])
 			end
+		elseif command.command == "/getdailyprogress" then
+			local dailyRewards = dailyRewardFunctions.getRewardProgress(player.UserId)
+			print(dailyRewards)
+		elseif command.command == "/claimdaily" then
+			if #command.args > 0 then				
+				local dailyReward = dailyRewardFunctions.progressRewards(player.UserId)
+				print(dailyReward)
+			else
+				local dailyReward = dailyRewardFunctions.progressRewards(player.UserId)
+				print(dailyReward)
+			end
+		elseif command.command == "/resetdaily" then
+			local resetResponse = dailyRewardFunctions.resetPlayer(player.UserId)
+			print(resetResponse)
 		end
 	end)
 end)
