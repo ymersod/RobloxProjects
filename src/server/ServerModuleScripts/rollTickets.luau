@@ -22,7 +22,7 @@ function TicketFuncs.SpendTickets(playerId, amount)
 	return false
 end
 
-function TicketFuncs.onPlayerAdded(player:Player)
+function TicketFuncs.onPlayerAdded(player: Player)
 	-- Read data store key
 	local success, storedTickets = pcall(function()
 		return ticketStore:GetAsync(player.UserId)
@@ -38,13 +38,13 @@ function TicketFuncs.onPlayerAdded(player:Player)
 		print(currentTickets)
 	end
 
-	local bindablePlayerLevel:IntValue = player:WaitForChild("LocalStats"):WaitForChild("Level") :: IntValue
+	local bindablePlayerLevel: IntValue = player:WaitForChild("LocalStats"):WaitForChild("Level") :: IntValue
 	bindablePlayerLevel.Changed:Connect(function(newLevel)
 		TicketFuncs.AddTickets(player.UserId, 1)
 	end)
 end
 
-function TicketFuncs.onPlayerRemoving(player:Player)
+function TicketFuncs.onPlayerRemoving(player: Player)
 	if player.UserId <= 0 then
 		playerTickets[player.UserId] = nil
 		return

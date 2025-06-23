@@ -8,6 +8,8 @@ local gachaGUI: Frame = screenGui:WaitForChild("Gacha")
 table.insert(accessGuis, gachaGUI)
 local dailyLoginRewards: Frame = screenGui:WaitForChild("DailyLoginRewards")
 table.insert(accessGuis, dailyLoginRewards)
+local levelUpRewards: Frame = screenGui:WaitForChild("LevelUpRewards")
+table.insert(accessGuis, levelUpRewards)
 local accessParentGui: Frame = accessBarGui:WaitForChild("AccessParent")
 local openCloseGui = accessBarGui:WaitForChild("OpenClose")
 local openCloseButton: ImageButton = accessBarGui:WaitForChild("OpenClose"):WaitForChild("OpenCloseButton")
@@ -15,6 +17,8 @@ local openCloseBg: ImageLabel = accessBarGui:WaitForChild("OpenClose"):WaitForCh
 local openCloseGacha: ImageButton =
 	accessBarGui:WaitForChild("AccessParent"):WaitForChild("Roll"):WaitForChild("OpenCloseButton")
 local openCloseDaily: ImageButton =
+	accessBarGui:WaitForChild("AccessParent"):WaitForChild("DailyRewards"):WaitForChild("OpenCloseButton")
+local openCloseLevelUp: ImageButton =
 	accessBarGui:WaitForChild("AccessParent"):WaitForChild("LevelUpRewards"):WaitForChild("OpenCloseButton")
 
 local TweenService = game:GetService("TweenService")
@@ -97,5 +101,14 @@ openCloseDaily.MouseButton1Click:Connect(function()
 	elseif not dailyLoginRewards.Visible then
 		closeOtherGuiOnNewOpen()
 		dailyLoginRewards.Visible = true
+	end
+end)
+
+openCloseLevelUp.MouseButton1Click:Connect(function()
+	if levelUpRewards.Visible then
+		levelUpRewards.Visible = false
+	elseif not levelUpRewards.Visible then
+		closeOtherGuiOnNewOpen()
+		levelUpRewards.Visible = true
 	end
 end)
