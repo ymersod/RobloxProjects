@@ -3,7 +3,7 @@ local ragdollClientEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild
 local part = script:FindFirstAncestorOfClass("Tool"):FindFirstChildOfClass("MeshPart") :: MeshPart
 local tool = part.Parent :: Tool
 
-local animationId = "rbxassetid://121694662752238"
+local animationId = "rbxassetid://80829167986150"
 local animation = Instance.new("Animation")
 animation.AnimationId = animationId
 

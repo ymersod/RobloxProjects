@@ -53,7 +53,7 @@ function updateGUI()
 			count: string, -- or number
 		},
 	}
-	print("Response: ", response)
+	-- print("Response: ", response)
 	if not response.success then
 		warn("Something went wrong getting progress of daily")
 		return
