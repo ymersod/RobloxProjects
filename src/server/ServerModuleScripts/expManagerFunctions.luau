@@ -1,4 +1,5 @@
 local DataStoreService = game:GetService("DataStoreService")
+local MemoryStoreService = game:GetService("MemoryStoreService")
 local Players = game:GetService("Players")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -6,6 +7,7 @@ local expLevelClient = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Ev
 
 local expStore = DataStoreService:GetDataStore("PlayerExp")
 local orderedExpStore = DataStoreService:GetOrderedDataStore("OrderedPlayerExp")
+local orderedExpMemoryStore = MemoryStoreService:GetSortedMap("OrderedPlayerExp")
 
 local OpenFunctions = {}
 
@@ -69,6 +71,7 @@ function OpenFunctions.getExp(playerId)
 end
 
 function OpenFunctions.onPlayerAdded(player)
+	print("player added exp function")
 	-- Read data store key
 	local success, storedExp = pcall(function()
 		return expStore:GetAsync(player.UserId)
@@ -85,6 +88,13 @@ function OpenFunctions.onPlayerAdded(player)
 
 		local level = calcLevelAndExpWindow(currentExp)
 
+		local success, err = pcall(function()
+			return orderedExpMemoryStore:SetAsync(player.UserId, level.lvl, 38e5, level.lvl)
+		end)
+		if not success then
+			warn(err)
+		end
+
 		local localStats = Instance.new("Folder")
 		localStats.Name = "LocalStats"
 		localStats.Parent = player
@@ -96,7 +106,8 @@ function OpenFunctions.onPlayerAdded(player)
 		levelTest.Changed:Connect(function(level)
 			if player.UserId > 0 then
 				local success, err = pcall(function()
-					orderedExpStore:SetAsync(player.UserId, level)
+					-- orderedExpStore:SetAsync(player.UserId, level)
+					orderedExpMemoryStore:SetAsync(player.UserId, level, 38e5, level)
 				end)
 				if not success then
 					warn(err)
