@@ -5,7 +5,7 @@ local equipServerEvent = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("InventoryFunctions")
 	:WaitForChild("EquipServer")
 local CoreGui = game:GetService("StarterGui")
-local TweenService = game:GetService("TweenService")
+local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 CoreGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
 
 local activeSlapSlotUIPrefab =
@@ -33,6 +33,22 @@ for _, child in ipairs(backpackGUI:WaitForChild("InventoryOpen"):GetChildren()) 
 end
 
 -- Tween Setups
+local scaleFactor = 0.05 -- 5% increase
+local duration = 0.1
+local pulseGrowTween, pulseShrinkTween = createTweenFunctions.Pulse(
+	slapGUI:WaitForChild("OpenClose"):WaitForChild("OpenContainer") :: Frame,
+	scaleFactor,
+	duration
+)
+local openTween, closeTween = createTweenFunctions.GoInOut(
+	backpackGUI,
+	TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+	TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+	-0.6,
+	1,
+	0,
+	0
+)
 
 -- OTHER VARS
 local statBarColors = {
@@ -287,16 +303,22 @@ function trackBackpack()
 end
 trackBackpack()
 
+closeTween:Play()
 openCloseImgButton.MouseButton1Click:Connect(function()
-	-- CLOSE BACKPACK
+	pulseGrowTween:Play()
+	pulseGrowTween.Completed:Once(function()
+		pulseShrinkTween:Play()
+	end)
 	if backpackGUI.Visible then
-		backpackGUI.Visible = false
 		openCloseImgButton.Image = openImg
-
-	-- OPEN BACKPACK
+		closeTween:Play()
+		closeTween.Completed:Once(function()
+			backpackGUI.Visible = false
+		end)
 	else
 		backpackGUI.Visible = true
 		openCloseImgButton.Image = closeImg
+		openTween:Play()
 	end
 end)
 

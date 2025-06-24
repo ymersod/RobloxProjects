@@ -35,7 +35,11 @@ local closeImageId = "rbxassetid://89593175570849"
 local openTween, closeTween = createTweenFunctions.GoInOut(
 	accessParentGui,
 	TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-	TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+	TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+	-0.5,
+	0,
+	0,
+	0
 )
 -- Pulses
 local scaleFactor = 0.05 -- 5% increase

@@ -17,7 +17,20 @@ function tweenCreate.Pulse(gui: Frame, scaleFactor: number, duration: number)
 end
 
 -- GoInOut: Creates "open" and "close" tweens for panels (position + size)
-function tweenCreate.GoInOut(gui: Frame, tweenInInfo: TweenInfo, tweenOutInfo: TweenInfo)
+function tweenCreate.GoInOut(
+	gui: Frame,
+	tweenInInfo: TweenInfo,
+	tweenOutInfo: TweenInfo,
+	offsetXScale: number?,
+	offsetYScale: number?,
+	offsetXOffset: number?,
+	offsetYOffset: number?
+)
+	local offsetXScaleT = offsetXScale or 0
+	local offsetYScaleT = offsetYScale or 0
+	local offsetXOffsetT = offsetXOffset or 0
+	local offsetYOffsetT = offsetYOffset or 0
+
 	local tweenInProps = {
 		Size = gui.Size,
 		Position = gui.Position,
@@ -26,10 +39,10 @@ function tweenCreate.GoInOut(gui: Frame, tweenInInfo: TweenInfo, tweenOutInfo: T
 	local tweenOutProps = {
 		Size = UDim2.new(0, 0, 0, 0),
 		Position = UDim2.new(
-			gui.Position.X.Scale - 0.5,
-			gui.Position.X.Offset,
-			gui.Position.Y.Scale,
-			gui.Position.Y.Offset
+			gui.Position.X.Scale + offsetXScaleT,
+			gui.Position.X.Offset + offsetXOffsetT,
+			gui.Position.Y.Scale + offsetYScaleT,
+			gui.Position.Y.Offset + offsetYOffsetT
 		),
 	}
 

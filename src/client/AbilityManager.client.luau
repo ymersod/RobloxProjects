@@ -17,7 +17,8 @@ local scaleFactor = 0.05 -- 5% increase
 local duration = 0.1
 
 local tweenGrowCD = createTweenFunctions.Grow(cooldownGUI, cd)
-local pulseTween = createTweenFunctions.Pulse(abilityGUI, scaleFactor, duration)
+local pulseGrowTween, pulseShrinkTween =
+	createTweenFunctions.Pulse(abilityGUI:WaitForChild("MainColor") :: Frame, scaleFactor, duration)
 
 function UpdateUIToPlatform()
 	local newPlatform = player:GetAttribute("Platform")
@@ -45,7 +46,10 @@ local function activateAbility(actionName, inputState, inputObject)
 				canActivate = true -- Cooldown over, ability can be used again
 			end
 		end)
-		pulseTween:Play()
+		pulseGrowTween:Play()
+		pulseGrowTween.Completed:Once(function()
+			pulseShrinkTween:Play()
+		end)
 		tweenGrowCD:Play()
 
 		-- Add your ability logic here (e.g., effects, damage, etc.)
