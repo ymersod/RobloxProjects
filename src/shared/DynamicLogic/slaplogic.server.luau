@@ -1,17 +1,16 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
+
 local ragdollClientEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("RagdollClient")
+local slapAnimation = ServerStorage:WaitForChild("Animations"):WaitForChild("SlapAni")
 local part = script:FindFirstAncestorOfClass("Tool"):FindFirstChildOfClass("MeshPart") :: MeshPart
 local tool = part.Parent :: Tool
-
-local animationId = "rbxassetid://80829167986150"
-local animation = Instance.new("Animation")
-animation.AnimationId = animationId
 
 local characterRoot = script:FindFirstAncestorOfClass("Model") :: Model?
 local humanoid = characterRoot and characterRoot:WaitForChild("Humanoid") :: Humanoid
 local animator = humanoid and humanoid:WaitForChild("Animator") :: Animator
 
-local loadedAnim = animator:LoadAnimation(animation)
+local loadedAnim = animator:LoadAnimation(slapAnimation)
 
 local POWER_MULT = 1000
 
@@ -61,6 +60,6 @@ tool.Activated:Connect(function()
 		return
 	end
 
-	loadedAnim = animator:LoadAnimation(animation)
+	loadedAnim = animator:LoadAnimation(slapAnimation)
 	loadedAnim:Play()
 end)
