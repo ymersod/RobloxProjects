@@ -1,4 +1,6 @@
 local player = game:GetService("Players").LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 
 -- GUI elements
 local accessGuis: { Frame } = {}
@@ -11,60 +13,47 @@ table.insert(accessGuis, dailyLoginRewards)
 local levelUpRewards: Frame = screenGui:WaitForChild("LevelUpRewards")
 table.insert(accessGuis, levelUpRewards)
 local accessParentGui: Frame = accessBarGui:WaitForChild("AccessParent")
+
 local openCloseGui = accessBarGui:WaitForChild("OpenClose")
 local openCloseButton: ImageButton = accessBarGui:WaitForChild("OpenClose"):WaitForChild("OpenCloseButton")
 local openCloseBg: ImageLabel = accessBarGui:WaitForChild("OpenClose"):WaitForChild("OpenCloseIcon")
-local openCloseGacha: ImageButton =
-	accessBarGui:WaitForChild("AccessParent"):WaitForChild("Roll"):WaitForChild("OpenCloseButton")
-local openCloseDaily: ImageButton =
-	accessBarGui:WaitForChild("AccessParent"):WaitForChild("DailyRewards"):WaitForChild("OpenCloseButton")
-local openCloseLevelUp: ImageButton =
-	accessBarGui:WaitForChild("AccessParent"):WaitForChild("LevelUpRewards"):WaitForChild("OpenCloseButton")
 
-local TweenService = game:GetService("TweenService")
-local tweenInInfo = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-local tweenOutInfo = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+local openCloseGachaGUI: Frame = accessBarGui:WaitForChild("AccessParent"):WaitForChild("Roll")
+local openCloseGachaButton = openCloseGachaGUI:WaitForChild("OpenCloseButton") :: ImageButton
+
+local openCloseDailyGUI: Frame = accessBarGui:WaitForChild("AccessParent"):WaitForChild("DailyRewards")
+local openCloseDailyButton = openCloseDailyGUI:WaitForChild("OpenCloseButton") :: ImageButton
+
+local openCloseLevelUpGUI: Frame = accessBarGui:WaitForChild("AccessParent"):WaitForChild("LevelUpRewards")
+local openCloseLevelUpButton = openCloseLevelUpGUI:WaitForChild("OpenCloseButton") :: ImageButton
 
 local openImageId = "rbxassetid://93555922850987"
 local closeImageId = "rbxassetid://89593175570849"
 
--- Should be size of frame
-local tweenInProps = { Size = accessParentGui.Size, Position = accessParentGui.Position }
-local tweenOutProps = {
-	Size = UDim2.new(0, 0, 0, 0),
-	Position = UDim2.new(
-		accessParentGui.Position.X.Scale - 0.5,
-		accessParentGui.Position.X.Offset,
-		accessParentGui.Position.Y.Scale,
-		accessParentGui.Position.Y.Offset
-	),
-}
+-- TWEEN SETUPS
+-- Access guis
+local openTween, closeTween = createTweenFunctions.GoInOut(
+	accessParentGui,
+	TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+	TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+)
+-- Pulses
+local scaleFactor = 0.05 -- 5% increase
+local duration = 0.1
 
-local openTween = TweenService:Create(accessParentGui, tweenInInfo, tweenInProps)
-local closeTween = TweenService:Create(accessParentGui, tweenOutInfo, tweenOutProps)
-
-local function pulseOpenClose()
-	local originalSize = openCloseGui.Size
-
-	local scaleFactor = 0.05 -- 5% increase
-	local pulseSize = UDim2.new(originalSize.X.Scale + scaleFactor, 0, originalSize.Y.Scale + scaleFactor, 0)
-
-	local pulseInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	local shrinkInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-
-	local growTween = TweenService:Create(openCloseGui, pulseInfo, { Size = pulseSize })
-	local shrinkTween = TweenService:Create(openCloseGui, shrinkInfo, { Size = originalSize })
-
-	growTween:Play()
-	growTween.Completed:Once(function()
-		shrinkTween:Play()
-	end)
-end
+-- openClose GUI
+local growTweenOpenClose, shrinkTweenOpenClose = createTweenFunctions.Pulse(openCloseGui, scaleFactor, duration)
+local growTweenDaily, shrinkTweenDaily = createTweenFunctions.Pulse(openCloseDailyGUI, scaleFactor, duration)
+local growTweenGacha, shrinkTweenGacha = createTweenFunctions.Pulse(openCloseGachaGUI, scaleFactor, duration)
+local growTweenLevelUp, shrinkTweenLevelUp = createTweenFunctions.Pulse(openCloseLevelUpGUI, scaleFactor, duration)
 
 closeTween:Play()
 
 openCloseButton.MouseButton1Click:Connect(function()
-	pulseOpenClose()
+	growTweenOpenClose:Play()
+	growTweenOpenClose.Completed:Once(function()
+		shrinkTweenOpenClose:Play()
+	end)
 	if accessParentGui.Visible then
 		-- print("Closing...")
 		openCloseBg.Image = openImageId
@@ -86,29 +75,21 @@ function closeOtherGuiOnNewOpen()
 	end
 end
 
-openCloseGacha.MouseButton1Click:Connect(function()
-	if gachaGUI.Visible then
-		gachaGUI.Visible = false
-	elseif not gachaGUI.Visible then
-		closeOtherGuiOnNewOpen()
-		gachaGUI.Visible = true
-	end
-end)
+local function handleOpenCloseAccessGUIS(button, growTween, shrinkTween, guiToToggle, closeOthers)
+	button.MouseButton1Click:Connect(function()
+		growTween:Play()
+		growTween.Completed:Once(function()
+			shrinkTween:Play()
+		end)
 
-openCloseDaily.MouseButton1Click:Connect(function()
-	if dailyLoginRewards.Visible then
-		dailyLoginRewards.Visible = false
-	elseif not dailyLoginRewards.Visible then
-		closeOtherGuiOnNewOpen()
-		dailyLoginRewards.Visible = true
-	end
-end)
+		local isVisible = guiToToggle.Visible
 
-openCloseLevelUp.MouseButton1Click:Connect(function()
-	if levelUpRewards.Visible then
-		levelUpRewards.Visible = false
-	elseif not levelUpRewards.Visible then
-		closeOtherGuiOnNewOpen()
-		levelUpRewards.Visible = true
-	end
-end)
+		if closeOthers then
+			closeOtherGuiOnNewOpen()
+		end
+		guiToToggle.Visible = not isVisible
+	end)
+end
+handleOpenCloseAccessGUIS(openCloseLevelUpButton, growTweenLevelUp, shrinkTweenLevelUp, levelUpRewards, true)
+handleOpenCloseAccessGUIS(openCloseDailyButton, growTweenDaily, shrinkTweenDaily, dailyLoginRewards, true)
+handleOpenCloseAccessGUIS(openCloseGachaButton, growTweenGacha, shrinkTweenGacha, gachaGUI, true)

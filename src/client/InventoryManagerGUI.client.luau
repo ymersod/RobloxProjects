@@ -5,6 +5,7 @@ local equipServerEvent = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("InventoryFunctions")
 	:WaitForChild("EquipServer")
 local CoreGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
 CoreGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
 
 local activeSlapSlotUIPrefab =
@@ -30,6 +31,8 @@ for _, child in ipairs(backpackGUI:WaitForChild("InventoryOpen"):GetChildren()) 
 		table.insert(slotArr, child)
 	end
 end
+
+-- Tween Setups
 
 -- OTHER VARS
 local statBarColors = {

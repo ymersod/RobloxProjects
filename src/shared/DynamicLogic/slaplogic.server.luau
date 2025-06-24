@@ -9,7 +9,6 @@ local tool = part.Parent :: Tool
 local characterRoot = script:FindFirstAncestorOfClass("Model") :: Model?
 local humanoid = characterRoot and characterRoot:WaitForChild("Humanoid") :: Humanoid
 local animator = humanoid and humanoid:WaitForChild("Animator") :: Animator
-
 local loadedAnim = animator:LoadAnimation(slapAnimation)
 
 local POWER_MULT = 1000
@@ -60,6 +59,5 @@ tool.Activated:Connect(function()
 		return
 	end
 
-	loadedAnim = animator:LoadAnimation(slapAnimation)
 	loadedAnim:Play()
 end)
