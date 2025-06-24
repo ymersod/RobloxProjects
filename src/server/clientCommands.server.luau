@@ -1,6 +1,7 @@
 local players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ServerStorage = game:GetService("ServerStorage")
 local killModule = require(
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("killPlayerServer")
 )
@@ -25,7 +26,12 @@ local dataStoreDevManagementFunctionsScript = ServerScriptService:WaitForChild("
 	:WaitForChild("dataStoreDevManagement")
 local dataStoreDevManagementFunctions = require(dataStoreDevManagementFunctionsScript)
 
-local slapStyleFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools"):WaitForChild("Slapstyles")
+local inventoryFuncs = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
+
+local slapStyleFolder: Folder = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles")
+
+local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
+local kingCoin = ServerStorage:WaitForChild("Pickups"):WaitForChild("KingCoin") :: Part
 
 local function subSet(array: { any }, iStart: number, iEnd: number?)
 	if iEnd == nil then
@@ -117,6 +123,35 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 			if #command.args > 0 then
 				print(players:GetNameFromUserIdAsync(command.args[1]))
 			end
+		elseif command.command == "/givebomb" then
+			if player and player.Character then
+				local bombClone = bombPrefab:Clone()
+				local bombLogic: Script? = bombClone.PrimaryPart:FindFirstChildOfClass("Script")
+				if not bombLogic then
+					warn("Cant find bomblogic")
+					return
+				end
+				bombLogic.Enabled = true
+				inventoryFuncs.EquipBomb(player, bombClone, 0.1)
+			end				
+		elseif command.command == "/spawnkingcoin" then
+			if player and player.Character then
+				local coinClone = kingCoin:Clone()
+				coinClone.Parent = workspace
+				coinClone.Position = player.Character.PrimaryPart.Position + Vector3.xAxis * 10
+				local coinLogic: Script? = coinClone:FindFirstChildOfClass("Script")
+				local coinScore: IntValue? = coinClone:FindFirstChild("Coin score")
+				if not coinLogic then
+					warn("Cant find coinlogic")
+					return
+				end
+				if not coinScore then
+					warn("Cant find coin score")
+					return
+				end
+				coinScore.Value = 50
+				coinLogic.Enabled = true
+			end				
 		end
 	end)
 end)
