@@ -3,6 +3,10 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local bomb = script.Parent :: Part
 local FUSE_TIME = 5
 
+local ServerStorage = game:GetService("ServerStorage")
+
+local kingCoin = ServerStorage:WaitForChild("Pickups"):WaitForChild("KingCoin") :: Part
+
 local inventoryFunctions = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 local killPlayerServer = require(ServerScriptService.Server.ServerModuleScripts.killPlayerServer)
 
@@ -34,9 +38,50 @@ local GRACE_PERIOD = 2 -- seconds
 local lastTransferTime = 0
 local previousOwnerUserId = nil
 
+local COIN_VALUE = 10
+local DROP_VARIANTS = 3
+
+function spawnKingCoin(value)
+	local SPAWN_RADIUS = 10
+	local coinClone = kingCoin:Clone()
+	coinClone.Parent = workspace
+	coinClone.Position = curOwnerPlayer.Character.PrimaryPart.Position + Vector3.new(math.random(-SPAWN_RADIUS,SPAWN_RADIUS),0,math.random(-SPAWN_RADIUS,SPAWN_RADIUS))
+	local coinLogic: Script? = coinClone:FindFirstChildOfClass("Script")
+	local coinScore: IntValue? = coinClone:FindFirstChild("Coin score")
+	if not coinLogic then
+		warn("Cant find coinlogic")
+		return
+	end
+	if not coinScore then
+		warn("Cant find coin score")
+		return
+	end
+
+	local leaderstats = curOwnerPlayer and curOwnerPlayer:FindFirstChild("leaderstats")
+	local kingScore: IntValue = leaderstats and leaderstats:FindFirstChild("King Score")
+
+	if kingScore and coinScore then
+		coinScore.Value = value
+		kingScore.Value -= coinScore.Value
+	end
+
+	coinLogic.Enabled = true
+end 
+
 function explode()
 	killPlayerServer.killPlayer(curOwnerModel, curOwnerPlayer)
 	bomb:Destroy()
+
+	local leaderstats = curOwnerPlayer and curOwnerPlayer:FindFirstChild("leaderstats")
+	local kingScore: IntValue = leaderstats and leaderstats:FindFirstChild("King Score")
+
+	if kingScore then
+		for i=COIN_VALUE, kingScore.Value * 0.3, COIN_VALUE do
+			local randomVariants = math.round(math.random(-DROP_VARIANTS,DROP_VARIANTS))
+			spawnKingCoin(COIN_VALUE + randomVariants)
+			i += randomVariants
+		end
+	end
 end
 
 bomb.Touched:Connect(function(hit: BasePart)
