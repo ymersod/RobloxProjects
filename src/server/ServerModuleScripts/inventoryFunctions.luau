@@ -33,12 +33,14 @@ function Equip(playerChar: Model, tool: Tool)
 	toolClone:SetAttribute("SaveSlot", toEquipToolSaveSlot)
 
 	local slapLogic: Script? = toolClone.PrimaryPart and toolClone.PrimaryPart:FindFirstChildOfClass("Script")
-	if not slapLogic then
-		warn("Could not find slaplogic")
+	local abilityLogic: Script? = toolClone and toolClone:FindFirstChildOfClass("Script")
+	if not slapLogic or not abilityLogic then
+		warn("Could not find 1 or mroe logic scripts")
 		return
 	end
 
 	slapLogic.Enabled = true
+	abilityLogic.Enabled = true
 
 	return toolClone
 end

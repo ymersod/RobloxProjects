@@ -14,6 +14,8 @@ local activeSlapSlotUIPrefab =
 	ReplicatedStorage:WaitForChild("UI"):WaitForChild("DynamicGUI"):WaitForChild("Gacha"):WaitForChild("SlapStyle")
 local slotUIPrefab =
 	ReplicatedStorage:WaitForChild("UI"):WaitForChild("DynamicGUI"):WaitForChild("Gacha"):WaitForChild("SlotUI")
+local buttonPrefab: ImageButton =
+	ReplicatedStorage:WaitForChild("UI"):WaitForChild("DynamicGUI"):WaitForChild("DailyRewards"):WaitForChild("Button")
 
 local screenGui = player.PlayerGui:WaitForChild("ScreenGui")
 local gachaGUIParent = screenGui:WaitForChild("Gacha") :: Frame
@@ -49,6 +51,18 @@ function updateSlotsOpenGUI(newValue: number)
 		local slot = frame:GetAttribute("SlotNumber")
 		if slotUI and img and slot <= newValue then
 			img.Transparency = 0
+			local buttonClone = buttonPrefab:Clone()
+			buttonClone.Parent = slotUI
+
+			buttonClone.MouseButton1Click:Connect(function()
+				local curSlot = buttonClone:FindFirstAncestor("SlotSpace") :: Frame?
+				local slotNumber = curSlot and curSlot:GetAttribute("SlotNumber")
+
+				activeRollSlot = slotNumber
+
+				print("Activeslot is: ", activeRollSlot)
+				updateActiveRollSlot()
+			end)
 		elseif slotUI and img then
 			img.Transparency = 1
 		end
@@ -198,6 +212,7 @@ function updateBackpackGUI()
 			slotUI:Destroy()
 			local newSlotGUI = slotUIPrefab:Clone()
 			newSlotGUI.Parent = slot
+			print("oii")
 		end
 	end
 

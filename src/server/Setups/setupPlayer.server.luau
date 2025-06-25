@@ -47,11 +47,11 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 	local character = player.Character or player.CharacterAdded:Wait()
 	SetupStarterTools(player)
 
-	if not character:FindFirstChildOfClass("Humanoid") then
-		return
-	end
-	local humanoidLoaded = character:WaitForChild("Humanoid")
-	humanoidLoaded.MaxSlopeAngle = 45
+	-- if not character:FindFirstChildOfClass("Humanoid") then
+	-- 	return
+	-- end
+	-- local humanoidLoaded = character:WaitForChild("Humanoid")
+	-- humanoidLoaded.MaxSlopeAngle = 45
 end)
 
 --TODO: This should be in a setup file for players together with other set ups... well at least the folders i think

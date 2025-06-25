@@ -52,11 +52,25 @@ function tweenCreate.GoInOut(
 	return openTween, closeTween
 end
 
-function tweenCreate.Grow(gui: Frame, duration: number, targetSize: UDim2?)
-	local finalSize = targetSize or UDim2.new(1, 0, 1, 0)
-	gui.Size = UDim2.new(0, 0, 0, 0)
+function tweenCreate.Grow(gui: Frame, duration: number, startSize: UDim2?, endSize: UDim2?)
+	local initialSize = startSize or UDim2.new(0, 0, 0, 0)
+	local finalSize = endSize or UDim2.new(1, 0, 1, 0)
+
+	gui.Size = initialSize
 
 	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+	local tween = TweenService:Create(gui, tweenInfo, { Size = finalSize })
+
+	return tween
+end
+
+function tweenCreate.Shrink(gui: Frame, duration: number, startSize: UDim2?, endSize: UDim2?)
+	local initialSize = startSize or UDim2.new(1, 0, 1, 0)
+	local finalSize = endSize or UDim2.new(0, 0, 0, 0)
+
+	gui.Size = initialSize
+
+	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
 	local tween = TweenService:Create(gui, tweenInfo, { Size = finalSize })
 
 	return tween

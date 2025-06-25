@@ -12,20 +12,26 @@ local dailyLoginRewards: Frame = screenGui:WaitForChild("DailyLoginRewards")
 table.insert(accessGuis, dailyLoginRewards)
 local levelUpRewards: Frame = screenGui:WaitForChild("LevelUpRewards")
 table.insert(accessGuis, levelUpRewards)
+local shopGUI: Frame = screenGui:WaitForChild("Shop")
+table.insert(accessGuis, shopGUI)
+
 local accessParentGui: Frame = accessBarGui:WaitForChild("AccessParent")
 
 local openCloseGui = accessBarGui:WaitForChild("OpenClose")
 local openCloseButton: ImageButton = accessBarGui:WaitForChild("OpenClose"):WaitForChild("OpenCloseButton")
 local openCloseBg: ImageLabel = accessBarGui:WaitForChild("OpenClose"):WaitForChild("OpenCloseIcon")
 
-local openCloseGachaGUI: Frame = accessBarGui:WaitForChild("AccessParent"):WaitForChild("Roll")
+local openCloseGachaGUI = accessParentGui:WaitForChild("Roll") :: Frame
 local openCloseGachaButton = openCloseGachaGUI:WaitForChild("OpenCloseButton") :: ImageButton
 
-local openCloseDailyGUI: Frame = accessBarGui:WaitForChild("AccessParent"):WaitForChild("DailyRewards")
+local openCloseDailyGUI = accessParentGui:WaitForChild("DailyRewards") :: Frame
 local openCloseDailyButton = openCloseDailyGUI:WaitForChild("OpenCloseButton") :: ImageButton
 
-local openCloseLevelUpGUI: Frame = accessBarGui:WaitForChild("AccessParent"):WaitForChild("LevelUpRewards")
+local openCloseLevelUpGUI = accessParentGui:WaitForChild("LevelUpRewards") :: Frame
 local openCloseLevelUpButton = openCloseLevelUpGUI:WaitForChild("OpenCloseButton") :: ImageButton
+
+local openCloseShopGUI: Frame = accessParentGui:WaitForChild("Shop") :: Frame
+local openCloseShopButton = openCloseShopGUI:WaitForChild("OpenCloseButton") :: ImageButton
 
 local openImageId = "rbxassetid://93555922850987"
 local closeImageId = "rbxassetid://89593175570849"
@@ -50,6 +56,7 @@ local growTweenOpenClose, shrinkTweenOpenClose = createTweenFunctions.Pulse(open
 local growTweenDaily, shrinkTweenDaily = createTweenFunctions.Pulse(openCloseDailyGUI, scaleFactor, duration)
 local growTweenGacha, shrinkTweenGacha = createTweenFunctions.Pulse(openCloseGachaGUI, scaleFactor, duration)
 local growTweenLevelUp, shrinkTweenLevelUp = createTweenFunctions.Pulse(openCloseLevelUpGUI, scaleFactor, duration)
+local growTweenShop, shrinkTweenShop = createTweenFunctions.Pulse(openCloseShopGUI, scaleFactor, duration)
 
 closeTween:Play()
 
@@ -97,3 +104,4 @@ end
 handleOpenCloseAccessGUIS(openCloseLevelUpButton, growTweenLevelUp, shrinkTweenLevelUp, levelUpRewards, true)
 handleOpenCloseAccessGUIS(openCloseDailyButton, growTweenDaily, shrinkTweenDaily, dailyLoginRewards, true)
 handleOpenCloseAccessGUIS(openCloseGachaButton, growTweenGacha, shrinkTweenGacha, gachaGUI, true)
+handleOpenCloseAccessGUIS(openCloseShopButton, growTweenShop, shrinkTweenShop, shopGUI, true)

@@ -16,7 +16,7 @@ local slotUIPrefab =
 local inventoryGUI = player.PlayerGui:WaitForChild("ScreenGui"):WaitForChild("Inventory")
 local slapGUI = inventoryGUI:WaitForChild("ActiveSlapStyle"):WaitForChild("Active")
 local activeSlapInfoGUI = slapGUI:WaitForChild("SlapStyle"):WaitForChild("Info")
-local backpackGUI = inventoryGUI:WaitForChild("InventoryOutline")
+local backpackGUI = inventoryGUI:WaitForChild("InventoryOutline") :: Frame
 
 local openCloseImgButton: ImageButton =
 	slapGUI:WaitForChild("OpenClose"):WaitForChild("OpenContainer"):WaitForChild("OpenCloseButton")
@@ -44,11 +44,14 @@ local openTween, closeTween = createTweenFunctions.GoInOut(
 	backpackGUI,
 	TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
 	TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
-	-0.6,
-	1,
+	-0.4,
+	0.5,
 	0,
 	0
 )
+local shrinkedSize = UDim2.new(0, 0, 0, 0)
+local shrinkTween = createTweenFunctions.Shrink(backpackGUI, 0.5, backpackGUI.Size, shrinkedSize)
+local growTween = createTweenFunctions.Grow(backpackGUI, 0.5, shrinkedSize, backpackGUI.Size)
 
 -- OTHER VARS
 local statBarColors = {
@@ -143,7 +146,7 @@ function updateEquippedInInventoryGUI()
 		local inventorySaveSlot = slot:GetAttribute("SlotNumber")
 		local slapFrame = slot:FindFirstChild("SlapStyle")
 		local buttonToUpdate = slapFrame and slapFrame:FindFirstChildOfClass("ImageButton")
-		print("EquippedToolSlot: ", equippedToolSlot, " SlotChecking: ", inventorySaveSlot)
+		-- print("EquippedToolSlot: ", equippedToolSlot, " SlotChecking: ", inventorySaveSlot)
 		if not buttonToUpdate then
 			continue
 		end
@@ -191,7 +194,7 @@ function updateBackpackGUI()
 				local toolSlot: number? = inventoryTool:GetAttribute("SaveSlot")
 				if toolSlot and tostring(toolSlot) == tostring(saveSlot) then
 					foundTool = inventoryTool
-					print("saveslot: ", saveSlot, " toolslot: ", toolSlot)
+					-- print("saveslot: ", saveSlot, " toolslot: ", toolSlot)
 					break
 				end
 			end
@@ -258,7 +261,7 @@ function updateBackpackGUI()
 						return
 					end
 					local result = equipServerEvent:InvokeServer(toolToEquip) -- equip tool
-					print("Now equipped: ", result)
+					-- print("Now equipped: ", result)
 					if result and result ~= "Bomb" then
 						updateEquippedInInventoryGUI()
 					end
@@ -287,7 +290,7 @@ function trackBackpack()
 	updateBackpackGUI()
 
 	inventory.ChildAdded:Connect(function(child)
-		print("Adding tool")
+		-- print("Adding tool")
 		if child.Name == "Bomb" then
 			return
 		end
@@ -312,12 +315,15 @@ openCloseImgButton.MouseButton1Click:Connect(function()
 	if backpackGUI.Visible then
 		openCloseImgButton.Image = openImg
 		closeTween:Play()
+		shrinkTween:Play()
+
 		closeTween.Completed:Once(function()
 			backpackGUI.Visible = false
 		end)
 	else
 		backpackGUI.Visible = true
 		openCloseImgButton.Image = closeImg
+		growTween:Play()
 		openTween:Play()
 	end
 end)

@@ -6,23 +6,47 @@ local uiButton: ImageButton = abilityGUI:WaitForChild("ActivateAbility")
 local cooldownGUI: Frame = abilityGUI:WaitForChild("Cooldown")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
-local platformEnums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
+local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local ContextActionService = game:GetService("ContextActionService")
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
-local cd = 2 -- TODO: Should be set from slapstyle
 local canActivate = true
+local abilityValsT: Instance? = nil
+local abilityEvent: RemoteEvent? = nil
 
 -- Tweens
 local scaleFactor = 0.05 -- 5% increase
 local duration = 0.1
 
-local tweenGrowCD = createTweenFunctions.Grow(cooldownGUI, cd)
 local pulseGrowTween, pulseShrinkTween =
 	createTweenFunctions.Pulse(abilityGUI:WaitForChild("MainColor") :: Frame, scaleFactor, duration)
 
+function setAbility()
+	print("im boutta set")
+	local playerChar = player.Character
+	local equippedTool = playerChar and playerChar:FindFirstChildOfClass("Tool")
+
+	if not equippedTool then
+		warn("Cant set vals, has bomb")
+		return
+	elseif equippedTool.Name == "Bomb" then
+		warn("No tool equipped")
+		return
+	end
+
+	local abilityValsRef = equippedTool:FindFirstChild("AbilityVals")
+	local abilityEventRef = equippedTool:FindFirstChildOfClass("RemoteEvent")
+	abilityValsT = abilityValsRef
+	abilityEvent = abilityEventRef
+
+	if not abilityValsT and not abilityEvent then
+		warn("Cant find data on ability")
+		return
+	end
+end
+
 function UpdateUIToPlatform()
 	local newPlatform = player:GetAttribute("Platform")
-	if newPlatform == platformEnums.Mobile then
+	if newPlatform == enums.Platforms.Mobile then
 		pressE.Visible = false
 	else
 		pressE.Visible = true
@@ -35,7 +59,14 @@ UserInputService:GetAttributeChangedSignal("Platform"):Connect(function()
 end)
 
 local function activateAbility(actionName, inputState, inputObject)
-	if inputState == Enum.UserInputState.Begin and canActivate then
+	if inputState == Enum.UserInputState.Begin and canActivate and abilityValsT and abilityEvent then
+		local cd = abilityValsT:GetAttribute("cooldown") :: number?
+		if not cd or not abilityEvent then
+			warn("Cant find cd or abilityevent")
+			return
+		end
+		local tweenGrowCD = createTweenFunctions.Grow(cooldownGUI, cd)
+
 		canActivate = false -- Prevent reactivation
 
 		-- Start cooldown animation
@@ -53,7 +84,7 @@ local function activateAbility(actionName, inputState, inputObject)
 		tweenGrowCD:Play()
 
 		-- Add your ability logic here (e.g., effects, damage, etc.)
-		print("Ability activated!")
+		abilityEvent:FireServer(abilityValsT)
 	end
 end
 
@@ -62,3 +93,23 @@ uiButton.MouseButton1Click:Connect(function()
 end)
 
 ContextActionService:BindAction("useAbility", activateAbility, true, Enum.KeyCode.E, Enum.KeyCode.ButtonX)
+
+local function onCharacter(character: Model)
+	setAbility()
+	character.ChildAdded:Connect(function()
+		setAbility()
+	end)
+	character.ChildRemoved:Connect(function()
+		setAbility()
+	end)
+end
+
+local function Setup()
+	if player.Character then
+		onCharacter(player.Character)
+	end
+
+	player.CharacterAdded:Connect(onCharacter)
+end
+
+Setup()

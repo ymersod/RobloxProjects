@@ -1,5 +1,7 @@
 -- ModuleScript: PlatformEnum.lua
-local PlatformEnum = {
+local enums = {}
+
+enums.Platforms = {
 	PC = "PC",
 	Mobile = "Mobile",
 	Console = "Console",
@@ -7,4 +9,4 @@ local PlatformEnum = {
 	Unknown = "Unknown",
 }
 
-return PlatformEnum
+return enums

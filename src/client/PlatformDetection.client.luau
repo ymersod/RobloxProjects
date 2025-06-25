@@ -2,7 +2,7 @@ local Player = game:GetService("Players").LocalPlayer
 local GuiService = game:GetService("GuiService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
-local platformEnums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
+local platformEnums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums).Platforms
 
 Player:SetAttribute("Platform", "Unknown")
 
