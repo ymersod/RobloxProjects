@@ -40,9 +40,15 @@ function scoreKing()
 	local leaderstats = king and king:FindFirstChild("leaderstats")
 	local kingScore: IntValue = leaderstats and leaderstats:FindFirstChild("King Score")
 
+	local xpBoost = 1
+	local xpBoostIntValue : IntValue = king and king:WaitForChild("LocalStats"):WaitForChild("ExpBoost")
+	if xpBoostIntValue then
+		xpBoost = xpBoostIntValue.Value/100
+	end
+
 	if kingScore then
 		kingScore.Value += 1
-		expManagerFunctions.incrementExp(king.UserId, 5)
+		expManagerFunctions.incrementExp(king.UserId, 5 * xpBoost)
 	end
 end
 
@@ -54,8 +60,9 @@ local function kingZoneMainLoop()
 			if #kingCandidates == 1 then
 				part.Color = Color3.fromRGB(9, 255, 0)
 				scoreKing()
+			else
+				part.Color = Color3.fromRGB(255, 0, 0)
 			end
-			part.Color = Color3.fromRGB(255, 0, 0)
 		else
 			part.Color = Color3.fromRGB(163, 162, 165)
 		end

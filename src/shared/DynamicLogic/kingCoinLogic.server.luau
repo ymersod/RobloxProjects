@@ -53,7 +53,14 @@ coin.Touched:Connect(function(other)
 
 	if kingScore and coinScore then
 		kingScore.Value += coinScore.Value
-		expManagerFunctions.incrementExp(playerHit.UserId, 50)
+		local xpBoost = 1
+
+		local xpBoostIntValue : IntValue = playerHit:WaitForChild("LocalStats"):WaitForChild("ExpBoost")
+		if xpBoostIntValue and xpBoostIntValue.Value then
+			xpBoost = xpBoostIntValue.Value / 100
+		end
+
+		expManagerFunctions.incrementExp(playerHit.UserId, 50 * xpBoost)
 	end
 
 	coin:Destroy()

@@ -15,8 +15,17 @@ runner.Heartbeat:Connect(function()
 			topScore = kingScore.Value
 			leader = child
 		end
+		local xpBoostIntValue : IntValue = child and child:WaitForChild("LocalStats"):WaitForChild("ExpBoost")
+		if xpBoostIntValue then
+			xpBoostIntValue.Value = 100
+		end
 	end
-	if leader and leader.Character then
+	if leader and leader.Character then	
+		local xpBoostIntValue : IntValue = leader:WaitForChild("LocalStats"):WaitForChild("ExpBoost") :: IntValue
+		if xpBoostIntValue then
+			xpBoostIntValue.Value = 130
+		end
+
 		local leaderChar = leader.Character
 		local leaderHumanoid = leaderChar:FindFirstChildOfClass("Humanoid")
 		if leader.Character:FindFirstChild("Crown") or (leaderHumanoid and leaderHumanoid.Health <= 0) then
