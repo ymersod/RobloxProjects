@@ -71,4 +71,16 @@ game.Players.PlayerAdded:Connect(function(player)
 	slotAccess.Name = "AvailableSlots"
 	slotAccess.Value = 2
 	slotAccess.Parent = inventory
+
+	local localStats = Instance.new("Folder")
+	localStats.Name = "LocalStats"
+	localStats.Parent = player
+	local levelTest = Instance.new("IntValue")
+	levelTest.Name = "Level"
+	levelTest.Value = 0
+	levelTest.Parent = localStats
+	local expBoost = Instance.new("IntValue")
+	expBoost.Name = "ExpBoost"
+	expBoost.Value = 100
+	expBoost.Parent = localStats
 end)

@@ -70,7 +70,7 @@ function OpenFunctions.getExp(playerId)
 	return playerExp[playerId]
 end
 
-function OpenFunctions.onPlayerAdded(player)
+function OpenFunctions.onPlayerAdded(player : Player)
 	print("player added exp function")
 	-- Read data store key
 	local success, storedExp = pcall(function()
@@ -95,26 +95,22 @@ function OpenFunctions.onPlayerAdded(player)
 			warn(err)
 		end
 
-		local localStats = Instance.new("Folder")
-		localStats.Name = "LocalStats"
-		localStats.Parent = player
-		local levelTest = Instance.new("IntValue")
-		levelTest.Name = "Level"
-		levelTest.Value = level.lvl
-		levelTest.Parent = localStats
-
-		levelTest.Changed:Connect(function(level)
-			if player.UserId > 0 then
-				local success, err = pcall(function()
-					-- orderedExpStore:SetAsync(player.UserId, level)
-					orderedExpMemoryStore:SetAsync(player.UserId, level, 38e5, level)
-				end)
-				if not success then
-					warn(err)
+		local levelTest = player:WaitForChild("LocalStats"):WaitForChild("Level")
+		
+		if levelTest then
+			levelTest.Value = level.lvl
+			levelTest.Changed:Connect(function(level)
+				if player.UserId > 0 then
+					local success, err = pcall(function()
+						-- orderedExpStore:SetAsync(player.UserId, level)
+						orderedExpMemoryStore:SetAsync(player.UserId, level, 38e5, level)
+					end)
+					if not success then
+						warn(err)
+					end
 				end
-			end
-		end)
-
+			end)
+		end
 		expLevelClient:FireClient(player, level)
 	end
 end
