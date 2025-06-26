@@ -1,5 +1,6 @@
 local player = game:GetService("Players").LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
 local equipServerEvent = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("InventoryFunctions")
@@ -179,6 +180,47 @@ function updateEquippedInInventoryGUI()
 	end
 end
 
+function onEquip(curSlot: Frame?)
+	local id = curSlot and curSlot:GetAttribute("ToolIdRef") :: string?
+	local inventorySaveSlot = curSlot and curSlot:GetAttribute("SlotNumber") :: number?
+	if not id then
+		warn("Cant find id of weap to equip")
+		return
+	end
+	local curPlayerInventory = player:FindFirstChild("Inventory")
+	local toolToEquip: Tool? = nil
+	for _, toolInBp in ipairs(curPlayerInventory:GetChildren()) do
+		local bpId = toolInBp:GetAttribute("ToolId") :: string?
+		local toolSaveSlot = toolInBp:GetAttribute("SaveSlot") :: number?
+		if
+			bpId
+			and toolSaveSlot
+			and id
+			and inventorySaveSlot
+			and bpId == id
+			and tostring(inventorySaveSlot) == tostring(toolSaveSlot)
+		then
+			toolToEquip = toolInBp
+			break
+		end
+	end
+	if not toolToEquip then
+		warn("No bp-tool mathcing UI Slot")
+		return
+	end
+
+	local playerChar = player.Character
+	if not playerChar then
+		warn("Playerchar not existing")
+		return
+	end
+	local result = equipServerEvent:InvokeServer(toolToEquip) -- equip tool
+	-- print("Now equipped: ", result)
+	if result and result ~= "Bomb" then
+		updateEquippedInInventoryGUI()
+	end
+end
+
 function updateBackpackGUI()
 	local playerInventory = player:FindFirstChild("Inventory")
 	local openSlots = playerInventory:FindFirstChildOfClass("IntValue").Value
@@ -228,47 +270,9 @@ function updateBackpackGUI()
 					{ damageImgRef = dmgRef, rangeImgRef = rangeRef, speedImgRef = speedRef },
 					newIcon
 				)
-
 				equipButton.MouseButton1Click:Connect(function()
 					local curSlot = equipButton:FindFirstAncestor("SlotSpace") :: Frame?
-					local id = curSlot and curSlot:GetAttribute("ToolIdRef") :: string?
-					local inventorySaveSlot = curSlot and curSlot:GetAttribute("SlotNumber") :: number?
-					if not id then
-						warn("Cant find id of weap to equip")
-						return
-					end
-					local curPlayerInventory = player:FindFirstChild("Inventory")
-					local toolToEquip: Tool? = nil
-					for _, toolInBp in ipairs(curPlayerInventory:GetChildren()) do
-						local bpId = toolInBp:GetAttribute("ToolId") :: string?
-						local toolSaveSlot = toolInBp:GetAttribute("SaveSlot") :: number?
-						if
-							bpId
-							and toolSaveSlot
-							and id
-							and inventorySaveSlot
-							and bpId == id
-							and tostring(inventorySaveSlot) == tostring(toolSaveSlot)
-						then
-							toolToEquip = toolInBp
-							break
-						end
-					end
-					if not toolToEquip then
-						warn("No bp-tool mathcing UI Slot")
-						return
-					end
-
-					playerChar = player.Character
-					if not playerChar then
-						warn("Playerchar not existing")
-						return
-					end
-					local result = equipServerEvent:InvokeServer(toolToEquip) -- equip tool
-					-- print("Now equipped: ", result)
-					if result and result ~= "Bomb" then
-						updateEquippedInInventoryGUI()
-					end
+					onEquip(curSlot)
 				end)
 			else
 				warn("1 or more of the prefab images were not found")
@@ -345,3 +349,41 @@ if inventory and slotsOpen then
 else
 	warn("Inventory or slotsopen not found")
 end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then
+		return
+	end
+	if not slotsOpen or typeof(slotsOpen.Value) ~= "number" then
+		return
+	end
+
+	local keyMap = {
+		[Enum.KeyCode.One] = 1,
+		[Enum.KeyCode.Two] = 2,
+		[Enum.KeyCode.Three] = 3,
+		[Enum.KeyCode.Four] = 4,
+		[Enum.KeyCode.Five] = 5,
+		[Enum.KeyCode.Six] = 6,
+		[Enum.KeyCode.Seven] = 7,
+		[Enum.KeyCode.Eight] = 8,
+		[Enum.KeyCode.Nine] = 9,
+		[Enum.KeyCode.Zero] = 10,
+	}
+
+	local slotIndex = keyMap[input.KeyCode]
+	if slotIndex and slotIndex <= slotsOpen.Value then
+		local slotUIFound: Frame? = nil
+		for _, slotSpace in ipairs(slotArr) do
+			local slotSpaceVal = slotSpace:GetAttribute("SlotNumber")
+			if tostring(slotIndex) == tostring(slotSpaceVal) then
+				slotUIFound = slotSpace
+			end
+		end
+		if slotUIFound then
+			onEquip(slotUIFound)
+		else
+			warn("Didnt find ui matching slot: ", slotIndex)
+		end
+	end
+end)
