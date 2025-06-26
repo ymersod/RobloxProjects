@@ -1,7 +1,7 @@
-local CompositIntValue = {}
-CompositIntValue.__index = CompositIntValue
+local CompositeIntValue = {}
+CompositeIntValue.__index = CompositeIntValue
 
-local CompositIntValueMetaTable = {
+local CompositeIntValueMetaTable = {
 	__index = function(t,key)
 		if key == "Value" then
 			print(#t._originTable)
@@ -54,16 +54,15 @@ local CompositIntValueMetaTable = {
 		return a
 	end
 }
---setmetatable(CompositIntValue, CompositIntValueMetaTable)
 
-function CompositIntValue.new(value)
+function CompositeIntValue.new(value)
 	local obj = {}
 	obj._originTable = {}
-	setmetatable(obj, CompositIntValueMetaTable)
+	setmetatable(obj, CompositeIntValueMetaTable)
 	if value and (value > 0 or value < 0) then
 		obj._originTable[1] = { Name = "init", Value = value }
 	end
 	return obj
 end
 
-return CompositIntValue
+return CompositeIntValue
