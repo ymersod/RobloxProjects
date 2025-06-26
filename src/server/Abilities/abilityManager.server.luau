@@ -1,26 +1,62 @@
 local ServerScriptService = game:GetService("ServerScriptService")
 local delayUtil = require(ServerScriptService.Server.ServerModuleScripts.delayUtil)
-local speedBoostBind = ServerScriptService:WaitForChild("Server")
-	:WaitForChild("Abilities")
-	:WaitForChild("BindableEvents")
-	:WaitForChild("speedBoostBind")
+local bindableEvents =
+	ServerScriptService:WaitForChild("Server"):WaitForChild("Abilities"):WaitForChild("BindableEvents")
+local speedBoostBind = bindableEvents:WaitForChild("speedBoostBind")
+local jumpBoostBind = bindableEvents:WaitForChild("jumpBoostBind")
 
-speedBoostBind.Event:Connect(function(player: Player, abilityVals: Object)
-	print(abilityVals)
+-- GLOBAL VALS (Found in file -> gamesettings -> World -> ...) they are inaccessible
+local OG_SPEED = 16
+local OG_JUMP_HEIGHT = 7.2
+
+speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
+	print("SpeedVals: ", abilityVals)
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if not humanoid then
 		return
 	end
+	local speedAmp = abilityVals:GetAttribute("boostAmp") :: number?
+	local boostTime = abilityVals:GetAttribute("boostTime") :: number?
 
-	print("SpeedUp")
+	if not speedAmp or not boostTime then
+		warn("Cant find vars on abilityvals")
+		return
+	end
+
 	local originalSpeed = humanoid.WalkSpeed
-	humanoid.WalkSpeed = originalSpeed * 2
+	humanoid.WalkSpeed = originalSpeed * speedAmp
 
-	delayUtil.Delay(3, function()
+	delayUtil.Delay(boostTime, function()
 		if humanoid:IsDescendantOf(game) then
-			humanoid.WalkSpeed = originalSpeed
+			humanoid.WalkSpeed = OG_SPEED
 			print("Speedreset")
+		end
+	end)
+end)
+
+jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
+	print("Yump vals: ", abilityVals)
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if not humanoid then
+		return
+	end
+	local jumpAmp = abilityVals:GetAttribute("boostAmp") :: number?
+	local boostTime = abilityVals:GetAttribute("boostTime") :: number?
+
+	if not jumpAmp or not boostTime then
+		warn("Cant find vars on abilityvals")
+		return
+	end
+
+	local originalJump = humanoid.JumpHeight
+	humanoid.JumpHeight = originalJump * jumpAmp
+
+	delayUtil.Delay(boostTime, function()
+		if humanoid:IsDescendantOf(game) then
+			humanoid.JumpHeight = OG_JUMP_HEIGHT
+			print("Jump reset")
 		end
 	end)
 end)

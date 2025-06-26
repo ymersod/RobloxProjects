@@ -206,6 +206,10 @@ function updateBackpackGUI()
 			end
 			slotUI:Destroy()
 			local newSlotGUI = activeSlapSlotUIPrefab:Clone()
+			local slotText: { TextLabel } = newSlotGUI:FindFirstChild("SlotText"):GetChildren()
+			for _, text in ipairs(slotText) do
+				text.Text = tostring(saveSlot)
+			end
 			newSlotGUI.Parent = slot
 
 			local statsFrame = newSlotGUI:FindFirstChild("Info"):FindFirstChild("Stats")
