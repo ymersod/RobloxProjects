@@ -1,14 +1,11 @@
 local ServerScriptService = game:GetService("ServerScriptService")
-local CompositeIntValue = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValue)
 local delayUtil = require(ServerScriptService.Server.ServerModuleScripts.delayUtil)
 local bindableEvents =
 	ServerScriptService:WaitForChild("Server"):WaitForChild("Abilities"):WaitForChild("BindableEvents")
 local speedBoostBind = bindableEvents:WaitForChild("speedBoostBind")
 local jumpBoostBind = bindableEvents:WaitForChild("jumpBoostBind")
 
--- GLOBAL VALS (Found in file -> gamesettings -> World -> ...) they are inaccessible
-local OG_SPEED = CompositeIntValue.new(16)
-local OG_JUMP_HEIGHT = CompositeIntValue.new(7.2)
+local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
 
 speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 	print("SpeedVals: ", abilityVals)
@@ -25,14 +22,14 @@ speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 		return
 	end
 
-	local originalSpeed = humanoid.WalkSpeed
-	OG_SPEED += { Name = "SpeedAmp", Value = speedAmp }
-	humanoid.WalkSpeed = originalSpeed * speedAmp
+	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId.."SpeedValue")
+	compIntVal += { Name = "SpeedAmp", Value = speedAmp }
+	humanoid.WalkSpeed = compIntVal.Value
 
 	delayUtil.Delay(boostTime, function()
 		if humanoid:IsDescendantOf(game) then
-			OG_SPEED -= { Name = "SpeedAmp", Value = speedAmp }
-			humanoid.WalkSpeed = OG_SPEED.Value
+			compIntVal -= { Name = "SpeedAmp", Value = speedAmp }
+			humanoid.WalkSpeed = compIntVal.Value
 		end
 	end)
 end)
@@ -52,14 +49,14 @@ jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 		return
 	end
 
-	local originalJump = humanoid.JumpHeight
-	OG_JUMP_HEIGHT += { Name = "JumpAmp", Value = jumpAmp }
-	humanoid.JumpHeight = originalJump * jumpAmp
+	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId.."JumpValue")
+	compIntVal += { Name = "JumpAmp", Value = jumpAmp }
+	humanoid.JumpHeight = compIntVal.Value
 
 	delayUtil.Delay(boostTime, function()
 		if humanoid:IsDescendantOf(game) then
-			OG_JUMP_HEIGHT -= { Name = "JumpAmp", Value = jumpAmp }
-			humanoid.JumpHeight = OG_JUMP_HEIGHT.Value
+			compIntVal -= { Name = "JumpAmp", Value = jumpAmp }
+			humanoid.JumpHeight = compIntVal.Value
 			print("Jump reset")
 		end
 	end)

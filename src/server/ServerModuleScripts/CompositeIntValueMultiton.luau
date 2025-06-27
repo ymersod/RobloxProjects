@@ -5,12 +5,12 @@ local functions = {}
 
 local intValueInstances = {}
 
-function functions.getCompositeIntValue(key:string, initValue:number?)
-	if not intValueInstances[key] then
+function functions.getCompositeIntValue(key:string,mode:"sum"?|"mul"?, initValue:number?)
+	if not intValueInstances[key] and mode then
 		if initValue then
-			intValueInstances[key] = compositeIntValue.new(initValue)
+			intValueInstances[key] = compositeIntValue.new(mode,initValue)
 		else
-			intValueInstances[key] = compositeIntValue.new()
+			intValueInstances[key] = compositeIntValue.new(mode)
 		end
 	end
 
