@@ -2,9 +2,13 @@ local players = game:GetService("Players")
 local runner = game:GetService("RunService")
 local serverStorage = game:GetService("ServerStorage")
 
+local ServerScriptService = game:GetService("ServerScriptService")
+local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
+
 local crown = serverStorage:WaitForChild("Hats"):WaitForChild("Crown") :: Part
 local curCrown: Part? = nil
 
+local oldLeader: Player? = nil
 runner.Heartbeat:Connect(function()
 	local topScore = 0
 	local leader: Player?
@@ -15,15 +19,19 @@ runner.Heartbeat:Connect(function()
 			topScore = kingScore.Value
 			leader = child
 		end
-		local xpBoostIntValue : IntValue = child and child:WaitForChild("LocalStats"):WaitForChild("ExpBoost")
-		if xpBoostIntValue then
-			xpBoostIntValue.Value = 100
+		if child:IsA("Player") and (not oldLeader or child.UserId ~= oldLeader.UserId) then
+			local compIntValue = compositeIntValueMultiton.getCompositeIntValue(child.UserId.."ExpBoost")
+			if compIntValue.containsMod("KingExpBoost") then
+				compIntValue -= { Name = "KingExpBoost", Value = 30 }
+			end
 		end
 	end
 	if leader and leader.Character then	
-		local xpBoostIntValue : IntValue = leader:WaitForChild("LocalStats"):WaitForChild("ExpBoost") :: IntValue
-		if xpBoostIntValue then
-			xpBoostIntValue.Value = 130
+		if leader:IsA("Player") and (not oldLeader or leader.UserId ~= oldLeader.UserId) then
+			local compIntValue = compositeIntValueMultiton.getCompositeIntValue(leader.UserId.."ExpBoost")
+			if not compIntValue.containsMod("KingExpBoost") then
+				compIntValue += { Name = "KingExpBoost", Value = 30 }
+			end
 		end
 
 		local leaderChar = leader.Character
@@ -46,4 +54,5 @@ runner.Heartbeat:Connect(function()
 		crownClone.Parent = leader.Character
 		curCrown = crownClone
 	end
+	oldLeader = leader
 end)

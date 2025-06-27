@@ -2,6 +2,9 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
+local ServerScriptService = game:GetService("ServerScriptService")
+local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
+
 local tool1 = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle0")
 local tool2 = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle1")
 
@@ -83,4 +86,7 @@ game.Players.PlayerAdded:Connect(function(player)
 	expBoost.Name = "ExpBoost"
 	expBoost.Value = 100
 	expBoost.Parent = localStats
+
+	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId.."ExpBoost",100)
+	compIntVal.setBoundTarget(expBoost)
 end)
