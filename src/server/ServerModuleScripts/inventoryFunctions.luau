@@ -124,15 +124,16 @@ function inventoryFunctions.EquipTool(player: Player, tool: Tool)
 	end
 
 	local equippedTool = playerChar:FindFirstChildOfClass("Tool")
-
+	local equippedSaveSlot = equippedTool and equippedTool:GetAttribute("SaveSlot") :: number?
+	local toolSaveSlot = tool:GetAttribute("SaveSlot") :: number?
 	--Unequip active tool
 	if not equippedTool then
 		equippedTool = Equip(playerChar, tool)
-	elseif equippedTool then
+	elseif equippedTool and equippedSaveSlot and toolSaveSlot then
 		if equippedTool.Name == "Bomb" then
 			print("Cant equip got bomb")
 			return
-		elseif equippedTool.Name ~= tool.Name then
+		elseif equippedSaveSlot ~= toolSaveSlot then
 			print("Equip new tool tool")
 			equippedTool:Destroy()
 			equippedTool = Equip(playerChar, tool)

@@ -4,7 +4,7 @@ local UserInputService = game:GetService("UserInputService")
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local ContextActionService = game:GetService("ContextActionService")
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
-local activationTable: { { canActivate: boolean, abilityId: string } } = {}
+local activationTable: { { canActivate: boolean, saveSlot: number } } = {}
 local abilityValsT: Instance? = nil
 local abilityEvent: RemoteEvent? = nil
 
@@ -84,17 +84,17 @@ end)
 
 local function activateAbility(actionName, inputState, inputObject)
 	if abilityValsT and abilityEvent then
-		local curAbilityId = abilityValsT:GetAttribute("abilityId")
-		local activationPairMatch: { canActivate: boolean, abilityId: string }? = nil
+		local curSaveSlot = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("SaveSlot")
+		local activationPairMatch: { canActivate: boolean, saveSlot: number }? = nil
 		for _, acvationPair in ipairs(activationTable) do
-			if acvationPair.abilityId == curAbilityId then
+			if tostring(acvationPair.saveSlot) == tostring(curSaveSlot) then
 				activationPairMatch = acvationPair
 				continue
 			end
 		end
 
 		if not activationPairMatch then
-			local entry = { canActivate = true, abilityId = curAbilityId }
+			local entry = { canActivate = true, saveSlot = curSaveSlot }
 			table.insert(activationTable, entry)
 			activationPairMatch = entry
 		end
