@@ -86,7 +86,19 @@ game.Players.PlayerAdded:Connect(function(player)
 	expBoost.Name = "ExpBoost"
 	expBoost.Value = 100
 	expBoost.Parent = localStats
+	local speedBoost = Instance.new("IntValue")
+	speedBoost.Name = "SpeedValue"
+	speedBoost.Value = 16
+	speedBoost.Parent = localStats
+	local jumpBoost = Instance.new("IntValue")
+	jumpBoost.Name = "JumpValue"
+	jumpBoost.Value = 7.2
+	jumpBoost.Parent = localStats
 
-	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId.."ExpBoost",100)
+	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId.."ExpBoost","sum",100)
 	compIntVal.setBoundTarget(expBoost)
+	compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId.."SpeedValue","mul",16)
+	compIntVal.setBoundTarget(speedBoost)
+	compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId.."JumpValue","mul",7.2)
+	compIntVal.setBoundTarget(jumpBoost)
 end)

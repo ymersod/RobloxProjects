@@ -7,9 +7,13 @@ local CompositeIntValueMetaTable = {
 			print(#t._originTable)
 			local sum = 0
 			for i, v in ipairs(t._originTable) do
-				if v.Value then
+				if v.Value and not( t._mode == "mul" and v.Name == "init") then
 					sum += v.Value
 				end
+			end
+			if t._mode == "mul" then
+				if sum == 0 then sum = 1 end
+				return t._originTable[1].Value * sum
 			end
 			return sum
 		end
@@ -63,6 +67,7 @@ local CompositeIntValueMetaTable = {
 
 type CompositeIntValueType = { 
 	Value:number,
+	_mode: "sum"|"mul",
 	_originTable: {{Name:string,Value:number}},
 	_boundTarget: IntValue,
 	setBoundTarget:(IntValue)->(),
@@ -71,8 +76,14 @@ type CompositeIntValueType = {
 	__sub:(CompositeIntValueType,{Name:string,Value:number})->CompositeIntValueType 
 }
 
-function CompositeIntValue.new(value:number?,boundTarget:IntValue?) : CompositeIntValueType
+function CompositeIntValue.new(mode:"sum"|"mul",value:number?,boundTarget:IntValue?) : CompositeIntValueType
 	local obj = {}
+	obj._mode = mode
+
+	if mode == "mul" and not value then
+		error("mul mode requires an initial value")
+	end
+
 	obj._originTable = {}
 	setmetatable(obj, CompositeIntValueMetaTable)
 	if value and (value > 0 or value < 0) then
