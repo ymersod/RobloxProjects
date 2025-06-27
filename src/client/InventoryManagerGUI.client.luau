@@ -82,12 +82,12 @@ function updateSlotsOpenGUI(newValue: number)
 end
 
 function extractDataFromTool(tool: Tool)
-	local primaryPart = tool.PrimaryPart
+	local statVals = tool:FindFirstChild("StatVals")
 	return {
-		Damage = primaryPart:GetAttribute("Damage") :: number?,
-		Range = primaryPart:GetAttribute("Range") :: number?,
-		Speed = primaryPart:GetAttribute("Speed") :: number?,
-		Icon = primaryPart:GetAttribute("InventoryImageID") :: string?,
+		Damage = statVals:GetAttribute("Damage") :: number?,
+		Range = statVals:GetAttribute("Range") :: number?,
+		Speed = statVals:GetAttribute("Speed") :: number?,
+		Icon = tool:GetAttribute("InventoryImageID") :: string?,
 		ToolId = tool:GetAttribute("ToolId") :: string?,
 	}
 end

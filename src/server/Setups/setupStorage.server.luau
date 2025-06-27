@@ -13,7 +13,6 @@ local abilityScripts: { Script } =
 for _, abilityScript in ipairs(abilityScripts) do
 	abilityScript.Enabled = false
 end
-
 local kingCoinPrefab: Part = ServerStorage:WaitForChild("Pickups"):WaitForChild("KingCoin")
 local bombPrefab: Tool = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb")
 local slapPrefabs: Folder = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles")
