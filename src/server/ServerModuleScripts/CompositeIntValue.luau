@@ -32,6 +32,9 @@ local CompositeIntValueMetaTable = {
 		if not contains then
 			table.insert(a._originTable,{Name = b.Name, Value = b.Value})
 		end
+		if a._boundTarget then
+			(a._boundTarget :: IntValue).Value = a.Value
+		end
 		return a
 	end,
 	__sub = function(a,b)
@@ -51,18 +54,48 @@ local CompositeIntValueMetaTable = {
 		if not contains then
 			table.insert(a._originTable,{Name = b.Name, Value = -b.Value})
 		end
+		if a._boundTarget then
+			(a._boundTarget :: IntValue).Value = a.Value
+		end
 		return a
 	end
 }
 
-function CompositeIntValue.new(value)
+type CompositeIntValueType = { 
+	Value:number,
+	_originTable: {{Name:string,Value:number}},
+	_boundTarget: IntValue,
+	setBoundTarget:(IntValue)->(),
+	containsMod:(string)->boolean,
+	__add:(CompositeIntValueType,{Name:string,Value:number})->CompositeIntValueType,
+	__sub:(CompositeIntValueType,{Name:string,Value:number})->CompositeIntValueType 
+}
+
+function CompositeIntValue.new(value:number?,boundTarget:IntValue?) : CompositeIntValueType
 	local obj = {}
 	obj._originTable = {}
 	setmetatable(obj, CompositeIntValueMetaTable)
 	if value and (value > 0 or value < 0) then
 		obj._originTable[1] = { Name = "init", Value = value }
 	end
-	return obj
+	if boundTarget then
+		obj._boundTarget = boundTarget
+	end
+
+	function obj.setBoundTarget(target:IntValue)
+		obj._boundTarget = target
+	end
+
+	function obj.containsMod(key:string)
+		for i,v in ipairs(obj._originTable) do
+			if v.Name == key then
+				return true
+			end
+		end
+		return false
+	end
+
+	return obj :: any
 end
 
 return CompositeIntValue
