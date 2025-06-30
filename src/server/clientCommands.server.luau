@@ -28,6 +28,8 @@ local dataStoreDevManagementFunctions = require(dataStoreDevManagementFunctionsS
 
 local inventoryFuncs = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 
+local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
+
 local slapStyleFolder: Folder = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles")
 
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
@@ -151,7 +153,14 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 				end
 				coinScore.Value = 50
 				coinLogic.Enabled = true
-			end				
+			end
+		elseif command.command == "/getcompint" then
+			if #command.args > 1 then
+				local key = command.args[1] .. command.args[2]
+				if compositeIntValueMultiton.hasKeyEntry(key) then
+					print(compositeIntValueMultiton.getCompositeIntValue(key).Value)
+				end
+			end
 		end
 	end)
 end)

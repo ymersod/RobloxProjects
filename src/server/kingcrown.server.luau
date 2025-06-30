@@ -37,6 +37,11 @@ runner.Heartbeat:Connect(function()
 	if leader and leader.Character then	
 		local leaderChar = leader.Character
 		local leaderHumanoid = leaderChar:FindFirstChildOfClass("Humanoid")
+
+		if (not leaderHumanoid) or leaderHumanoid.Health < 1 or not leader.Character:FindFirstChild("HumanoidRootPart") then
+			return
+		end
+		
 		local speedCompIntValue = compositeIntValueMultiton.getCompositeIntValue(leader.UserId.."SpeedValue")
 		if leader:IsA("Player") and (not oldLeader or leader.UserId ~= oldLeader.UserId) then
 			local compIntValue = compositeIntValueMultiton.getCompositeIntValue(leader.UserId.."ExpBoost")

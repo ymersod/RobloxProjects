@@ -23,4 +23,11 @@ function functions.removeCompositeIntValue(key:string)
 	end
 end
 
+function functions.hasKeyEntry(key:string)
+	if intValueInstances[key] then
+		return true
+	end
+	return false
+end
+
 return functions
