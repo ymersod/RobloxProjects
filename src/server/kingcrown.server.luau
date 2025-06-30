@@ -26,7 +26,7 @@ runner.Heartbeat:Connect(function()
 			end
 			local speedCompIntValue = compositeIntValueMultiton.getCompositeIntValue(child.UserId.."SpeedValue")
 			if speedCompIntValue.containsMod("KingSpeedBoost") then
-				speedCompIntValue -= { Name = "KingSpeedBoost", Value = 1.5 }
+				speedCompIntValue.removeModifier("KingSpeedBoost")
 				local childHumanoid = child.Character:FindFirstChildOfClass("Humanoid")
 				if childHumanoid then
 					childHumanoid.WalkSpeed = speedCompIntValue.Value
@@ -41,7 +41,7 @@ runner.Heartbeat:Connect(function()
 		if (not leaderHumanoid) or leaderHumanoid.Health < 1 or not leader.Character:FindFirstChild("HumanoidRootPart") then
 			return
 		end
-		
+
 		local speedCompIntValue = compositeIntValueMultiton.getCompositeIntValue(leader.UserId.."SpeedValue")
 		if leader:IsA("Player") and (not oldLeader or leader.UserId ~= oldLeader.UserId) then
 			local compIntValue = compositeIntValueMultiton.getCompositeIntValue(leader.UserId.."ExpBoost")

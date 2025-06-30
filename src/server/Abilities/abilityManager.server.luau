@@ -1,3 +1,4 @@
+local players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 local delayUtil = require(ServerScriptService.Server.ServerModuleScripts.delayUtil)
 local bindableEvents =
@@ -9,6 +10,8 @@ local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModul
 
 speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 	print("SpeedVals: ", abilityVals)
+	local playerUserId = player.UserId
+
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if not humanoid then
@@ -27,15 +30,25 @@ speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 	humanoid.WalkSpeed = compIntVal.Value
 
 	delayUtil.Delay(boostTime, function()
-		if humanoid:IsDescendantOf(game) then
+		local newPlayer = players:GetPlayerByUserId(playerUserId)
+		local newCharacter = newPlayer.Character
+		local newHumanoid = newCharacter and newCharacter:WaitForChild("Humanoid")
+	
+		if newHumanoid:IsDescendantOf(game) then
 			compIntVal -= { Name = "SpeedAmp", Value = speedAmp }
-			humanoid.WalkSpeed = compIntVal.Value
-		end
+			newHumanoid.WalkSpeed = compIntVal.Value
+		else newPlayer.CharacterAdded:Once(function()
+				compIntVal -= { Name = "SpeedAmp", Value = speedAmp }
+				newHumanoid.WalkSpeed = compIntVal.Value
+			end
+		)end
 	end)
 end)
 
 jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 	print("Yump vals: ", abilityVals)
+	local playerUserId = player.UserId
+
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if not humanoid then
@@ -54,10 +67,20 @@ jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 	humanoid.JumpHeight = compIntVal.Value
 
 	delayUtil.Delay(boostTime, function()
-		if humanoid:IsDescendantOf(game) then
+		local newPlayer = players:GetPlayerByUserId(playerUserId)
+		local newCharacter = newPlayer.Character
+		local newHumanoid = newCharacter and newCharacter:WaitForChild("Humanoid")
+
+		if newHumanoid:IsDescendantOf(game) then
 			compIntVal -= { Name = "JumpAmp", Value = jumpAmp }
-			humanoid.JumpHeight = compIntVal.Value
+			newHumanoid.JumpHeight = compIntVal.Value
 			print("Jump reset")
-		end
+		else newPlayer.CharacterAdded:Once(function()
+				local newCharacter = player.Character
+				local newHumanoid = newCharacter and newCharacter:WaitForChild("Humanoid")
+				compIntVal -= { Name = "JumpAmp", Value = jumpAmp }
+				newHumanoid.WalkSpeed = compIntVal.Value
+			end
+		)end
 	end)
 end)
