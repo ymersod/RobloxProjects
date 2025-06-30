@@ -72,6 +72,7 @@ type CompositeIntValueType = {
 	_boundTarget: IntValue,
 	setBoundTarget:(IntValue)->(),
 	containsMod:(string)->boolean,
+	removeModifier:(string)->(),
 	__add:(CompositeIntValueType,{Name:string,Value:number})->CompositeIntValueType,
 	__sub:(CompositeIntValueType,{Name:string,Value:number})->CompositeIntValueType 
 }
@@ -104,6 +105,21 @@ function CompositeIntValue.new(mode:"sum"|"mul",value:number?,boundTarget:IntVal
 			end
 		end
 		return false
+	end
+
+	function obj.removeModifier(key)
+		for i, v in ipairs(obj._originTable) do
+			if obj._originTable[i] and obj._originTable[i].Name == key then
+				obj._originTable[i] = nil
+			end
+			if obj._originTable[i] == nil then
+				obj._originTable[i] = obj._originTable[i+1]
+			end
+		end
+		if obj._boundTarget then
+			(obj._boundTarget :: IntValue).Value = obj.Value
+		end
+
 	end
 
 	return obj :: any
