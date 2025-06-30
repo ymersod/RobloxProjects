@@ -43,11 +43,11 @@ local previousOwnerUserId = nil
 local COIN_VALUE = 10
 local DROP_VARIANTS = 3
 
-function spawnKingCoin(value)
+function spawnKingCoin(value, player)
 	local SPAWN_RADIUS = 10
 	local coinClone = kingCoin:Clone()
 	coinClone.Parent = workspace
-	coinClone.Position = curOwnerPlayer.Character.PrimaryPart.Position
+	coinClone.Position = player.Character.PrimaryPart.Position
 		+ Vector3.new(math.random(-SPAWN_RADIUS, SPAWN_RADIUS), 0, math.random(-SPAWN_RADIUS, SPAWN_RADIUS))
 	local coinLogic: Script? = coinClone:FindFirstChildOfClass("Script")
 	local coinScore: IntValue? = coinClone:FindFirstChild("Coin score")
@@ -60,7 +60,7 @@ function spawnKingCoin(value)
 		return
 	end
 
-	local leaderstats = curOwnerPlayer and curOwnerPlayer:FindFirstChild("leaderstats")
+	local leaderstats = player and player:FindFirstChild("leaderstats")
 	local kingScore: IntValue = leaderstats and leaderstats:FindFirstChild("King Score")
 
 	if kingScore and coinScore then
@@ -87,22 +87,19 @@ function explode()
 		local origin = bomb.Position
 		if (root.Position - origin).Magnitude <= Explosion_Radius then
 			killPlayerServer.killPlayer(char, player)
+			local leaderstats = player:FindFirstChild("leaderstats")
+			local kingScore: IntValue = leaderstats and leaderstats:FindFirstChild("King Score")
+			if kingScore then
+				for i = COIN_VALUE, kingScore.Value * 0.3, COIN_VALUE do
+					local randomVariants = math.round(math.random(-DROP_VARIANTS, DROP_VARIANTS))
+					spawnKingCoin(COIN_VALUE + randomVariants, player)
+					i += randomVariants
+				end
+			end
 		end
 	end
 
-	--killPlayerServer.killPlayer(curOwnerModel, curOwnerPlayer)
-	--bomb:Destroy()
-
-	local leaderstats = curOwnerPlayer and curOwnerPlayer:FindFirstChild("leaderstats")
-	local kingScore: IntValue = leaderstats and leaderstats:FindFirstChild("King Score")
-
-	if kingScore then
-		for i = COIN_VALUE, kingScore.Value * 0.3, COIN_VALUE do
-			local randomVariants = math.round(math.random(-DROP_VARIANTS, DROP_VARIANTS))
-			spawnKingCoin(COIN_VALUE + randomVariants)
-			i += randomVariants
-		end
-	end
+	bomb:Destroy()
 end
 
 function BombTouched(hit: BasePart)
