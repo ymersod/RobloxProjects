@@ -5,7 +5,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
 local inventoryFuncs = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 local BOMB_SPAWNER_TAG = "BombSpawner"
-local BOMB_TIMER = 20
+local BOMB_TIMER = 5
 local bombSpawners = CollectionService:GetTagged(BOMB_SPAWNER_TAG)
 local bombCds: { { bombSpawner: Instance, cooldown: number, lastSpawnTime: number, bombReady: boolean } } = {}
 
@@ -58,7 +58,7 @@ end
 task.spawn(function()
 	while true do
 		local players = game:GetService("Players"):GetPlayers()
-		if #players >= 3 then
+		if #players >= 0 then
 			--Filter for if players are in safeZone
 			local unsafePlayers = {}
 			for _, player in ipairs(players) do

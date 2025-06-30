@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 local bomb = script.Parent :: Part
 local FUSE_TIME = 5
+local Explosion_Radius = 20
 
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -45,7 +46,8 @@ function spawnKingCoin(value)
 	local SPAWN_RADIUS = 10
 	local coinClone = kingCoin:Clone()
 	coinClone.Parent = workspace
-	coinClone.Position = curOwnerPlayer.Character.PrimaryPart.Position + Vector3.new(math.random(-SPAWN_RADIUS,SPAWN_RADIUS),0,math.random(-SPAWN_RADIUS,SPAWN_RADIUS))
+	coinClone.Position = curOwnerPlayer.Character.PrimaryPart.Position
+		+ Vector3.new(math.random(-SPAWN_RADIUS, SPAWN_RADIUS), 0, math.random(-SPAWN_RADIUS, SPAWN_RADIUS))
 	local coinLogic: Script? = coinClone:FindFirstChildOfClass("Script")
 	local coinScore: IntValue? = coinClone:FindFirstChild("Coin score")
 	if not coinLogic then
@@ -66,24 +68,42 @@ function spawnKingCoin(value)
 	end
 
 	coinLogic.Enabled = true
-end 
+end
 
 function explode()
-	killPlayerServer.killPlayer(curOwnerModel, curOwnerPlayer)
-	bomb:Destroy()
+	--TODO: Generalize this to a func, similar to the func in SafeZone server. Make a func that return players who is within a sphere
+	for _, player in pairs(Players:GetPlayers()) do
+		local char = player.Character
+		if not char or (curOwnerPlayer ~= player and player.States.Safe.Value) then
+			continue
+		end
+
+		local root = char:FindFirstChild("HumanoidRootPart")
+		if not root then
+			continue
+		end
+
+		local origin = bomb.Position
+		if (root.Position - origin).Magnitude <= Explosion_Radius then
+			killPlayerServer.killPlayer(char, player)
+		end
+	end
+
+	--killPlayerServer.killPlayer(curOwnerModel, curOwnerPlayer)
+	--bomb:Destroy()
 
 	local leaderstats = curOwnerPlayer and curOwnerPlayer:FindFirstChild("leaderstats")
 	local kingScore: IntValue = leaderstats and leaderstats:FindFirstChild("King Score")
 
 	if kingScore then
-		for i=COIN_VALUE, kingScore.Value * 0.3, COIN_VALUE do
-			local randomVariants = math.round(math.random(-DROP_VARIANTS,DROP_VARIANTS))
+		for i = COIN_VALUE, kingScore.Value * 0.3, COIN_VALUE do
+			local randomVariants = math.round(math.random(-DROP_VARIANTS, DROP_VARIANTS))
 			spawnKingCoin(COIN_VALUE + randomVariants)
 			i += randomVariants
 		end
 	end
 end
-
+--TODO: might be here the Duplication bug exist. Give at key at start and then give it back at end for multithreading
 bomb.Touched:Connect(function(hit: BasePart)
 	local now = tick()
 
