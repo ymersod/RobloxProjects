@@ -5,9 +5,10 @@ local ServerStorage = game:GetService("ServerStorage")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
 local inventoryFuncs = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 local BOMB_SPAWNER_TAG = "BombSpawner"
-local BOMB_TIMER = 5
+local BOMB_TIMER = 30
 local bombSpawners = CollectionService:GetTagged(BOMB_SPAWNER_TAG)
-local bombCds: { { bombSpawner: Instance, cooldown: number, lastSpawnTime: number, bombReady: boolean } } = {}
+local bombCds: { { bombSpawner: Instance, cooldown: number, lastSpawnTime: number, bombReady: boolean, touched_key: boolean } } =
+	{}
 
 for _, bombSpawner in ipairs(bombSpawners) do
 	local entry = {
@@ -15,6 +16,7 @@ for _, bombSpawner in ipairs(bombSpawners) do
 		cooldown = bombSpawner:GetAttribute("cooldown"),
 		lastSpawnTime = os.time(),
 		bombReady = true,
+		touched_key = false,
 	}
 	table.insert(bombCds, entry)
 end
@@ -55,7 +57,8 @@ end
 --FOR TEST
 -- task.wait(5)
 
-task.spawn(function()
+--TODO: Remove func if no use later
+--[[task.spawn(function()
 	while true do
 		local players = game:GetService("Players"):GetPlayers()
 		if #players >= 0 then
@@ -79,9 +82,15 @@ task.spawn(function()
 		end
 		task.wait(BOMB_TIMER)
 	end
-end)
+end)--]]
 
-function spawnBomb(bomb: { bombSpawner: Instance, cooldown: number, lastSpawnTime: number, bombReady: boolean })
+function spawnBomb(bomb: {
+	bombSpawner: Instance,
+	cooldown: number,
+	lastSpawnTime: number,
+	bombReady: boolean,
+	touched_key: boolean,
+})
 	local existingGui = bomb.bombSpawner:FindFirstChild("BombCountdownGui")
 	if existingGui then
 		existingGui:Destroy()
@@ -102,6 +111,10 @@ function spawnBomb(bomb: { bombSpawner: Instance, cooldown: number, lastSpawnTim
 	end
 
 	part.Touched:Connect(function(hit)
+		if bomb.touched_key then
+			return
+		end
+		bomb.touched_key = true
 		local playerChar = hit:FindFirstAncestorOfClass("Model")
 		local player = playerChar and Players:GetPlayerFromCharacter(playerChar)
 
@@ -112,6 +125,7 @@ function spawnBomb(bomb: { bombSpawner: Instance, cooldown: number, lastSpawnTim
 			bomb.lastSpawnTime = os.time()
 			bomb.bombReady = true
 		end
+		bomb.touched_key = false
 	end)
 end
 

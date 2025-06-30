@@ -1,8 +1,9 @@
 local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 local bomb = script.Parent :: Part
-local FUSE_TIME = 5
+local FUSE_TIME = 30
 local Explosion_Radius = 20
+local touched_key: boolean = false
 
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -103,8 +104,8 @@ function explode()
 		end
 	end
 end
---TODO: might be here the Duplication bug exist. Give at key at start and then give it back at end for multithreading
-bomb.Touched:Connect(function(hit: BasePart)
+
+function BombTouched(hit: BasePart)
 	local now = tick()
 
 	local hitPlayerChar = hit:FindFirstAncestorOfClass("Model")
@@ -146,6 +147,16 @@ bomb.Touched:Connect(function(hit: BasePart)
 
 	local bombTool = bomb.Parent
 	inventoryFunctions.EquipBomb(playerHit, bombTool, 0)
+end
+
+bomb.Touched:Connect(function(hit: BasePart)
+	if touched_key then
+		return
+	end
+
+	touched_key = true
+	BombTouched(hit)
+	touched_key = false
 end)
 
 for timeLeft = FUSE_TIME, 0, -1 do
