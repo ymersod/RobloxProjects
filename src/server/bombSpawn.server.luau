@@ -1,11 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
-local Players = game:GetService("Players")
-local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
-local inventoryFuncs = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 local BOMB_SPAWNER_TAG = "BombSpawner"
-local BOMB_TIMER = 30
 local bombSpawners = CollectionService:GetTagged(BOMB_SPAWNER_TAG)
 local bombCds: { { bombSpawner: Instance, cooldown: number, lastSpawnTime: number, bombReady: boolean, touched_key: boolean } } =
 	{}
@@ -19,19 +15,6 @@ for _, bombSpawner in ipairs(bombSpawners) do
 		touched_key = false,
 	}
 	table.insert(bombCds, entry)
-end
-
-function giveBombToPlayer(player: Player)
-	if player and player.Character then
-		local bombClone = bombPrefab:Clone()
-		local bombLogic: Script? = bombClone.PrimaryPart:FindFirstChildOfClass("Script")
-		if not bombLogic then
-			warn("Cant find bomblogic")
-			return
-		end
-		bombLogic.Enabled = true
-		inventoryFuncs.EquipBomb(player, bombClone, 0.1)
-	end
 end
 
 -- //////////////////////////////////////////////////////////////
@@ -96,37 +79,32 @@ function spawnBomb(bomb: {
 		existingGui:Destroy()
 	end
 
-	local part = Instance.new("Part")
-	part.Parent = bomb.bombSpawner
-	part.CanCollide = false
-	part.CanTouch = true
-	part.Size = Vector3.new(1, 1, 1) -- Adjust as needed
-	part.Anchored = true
-	part.Name = "BombPickup"
+	local bombTool = bombPrefab:Clone()
+
 	if bomb.bombSpawner:IsA("Model") and bomb.bombSpawner.PrimaryPart then
 		local basePos = bomb.bombSpawner.PrimaryPart.Position
-		part.Position = basePos
+
+		local primary = bombTool.PrimaryPart or bombTool:FindFirstChild("Handle") --TODO: find out which one it is
+		if not primary then
+			warn("Bomb tool has no PrimaryPart or Handle to position")
+			return
+		end
+
+		-- Anchor the part and set its position, should be turned off when the bomb is taken by a player
+		primary.Anchored = true
+		primary.Position = basePos
+		bombTool.Parent = bomb.bombSpawner
+
+		local bombLogic: Script? = primary:FindFirstChildOfClass("Script")
+		if not bombLogic then
+			warn("Can't find bomb logic script")
+			return
+		end
+
+		bombLogic.Enabled = true
 	else
 		warn("rarrrr can set bomb")
 	end
-
-	part.Touched:Connect(function(hit)
-		if bomb.touched_key then
-			return
-		end
-		bomb.touched_key = true
-		local playerChar = hit:FindFirstAncestorOfClass("Model")
-		local player = playerChar and Players:GetPlayerFromCharacter(playerChar)
-
-		local hasBomb = playerChar:FindFirstChild("Bomb")
-		if player and not hasBomb then
-			giveBombToPlayer(player)
-			part:Destroy()
-			bomb.lastSpawnTime = os.time()
-			bomb.bombReady = true
-		end
-		bomb.touched_key = false
-	end)
 end
 
 task.spawn(function()
