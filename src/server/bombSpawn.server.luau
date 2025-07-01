@@ -3,7 +3,8 @@ local ServerStorage = game:GetService("ServerStorage")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
 local BOMB_SPAWNER_TAG = "BombSpawner"
 local bombSpawners = CollectionService:GetTagged(BOMB_SPAWNER_TAG)
-local bombCds: { { bombSpawner: Instance, cooldown: number, lastSpawnTime: number, bombReady: boolean } } = {}
+local bombCds: { { bombSpawner: Instance, cooldown: number, lastSpawnTime: number, bombReady: boolean, bomb: Tool? } } =
+	{}
 
 for _, bombSpawner in ipairs(bombSpawners) do
 	local entry = {
@@ -11,10 +12,12 @@ for _, bombSpawner in ipairs(bombSpawners) do
 		cooldown = bombSpawner:GetAttribute("cooldown"),
 		lastSpawnTime = os.time(),
 		bombReady = true,
+		bomb = nil,
 	}
 	bombSpawner.ChildRemoved:Connect(function(child)
 		if child.Name == bombPrefab.Name then
 			entry.lastSpawnTime = os.time()
+			entry.bomb = nil
 		end
 	end)
 	table.insert(bombCds, entry)
@@ -75,7 +78,7 @@ function spawnBomb(bomb: {
 	cooldown: number,
 	lastSpawnTime: number,
 	bombReady: boolean,
-	touched_key: boolean,
+	bomb: Tool?,
 })
 	local existingGui = bomb.bombSpawner:FindFirstChild("BombCountdownGui")
 	if existingGui then
@@ -103,7 +106,14 @@ function spawnBomb(bomb: {
 			warn("Can't find bomb logic script")
 			return
 		end
-
+		bomb.bomb = bombTool
+		bombTool.Destroying:Connect(function()
+			print("hallo")
+			if bombTool == bomb.bomb then
+				bomb.bomb = nil
+				bomb.lastSpawnTime = os.time()
+			end
+		end)
 		bombLogic.Enabled = true
 	else
 		warn("rarrrr can set bomb")

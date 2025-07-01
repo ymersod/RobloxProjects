@@ -99,7 +99,7 @@ function explode()
 		end
 	end
 
-	bomb:Destroy()
+	bomb.Parent:Destroy()
 end
 
 function ChangeToToolSetting()
