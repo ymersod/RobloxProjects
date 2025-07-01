@@ -3,8 +3,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
 local BOMB_SPAWNER_TAG = "BombSpawner"
 local bombSpawners = CollectionService:GetTagged(BOMB_SPAWNER_TAG)
-local bombCds: { { bombSpawner: Instance, cooldown: number, lastSpawnTime: number, bombReady: boolean, touched_key: boolean } } =
-	{}
+local bombCds: { { bombSpawner: Instance, cooldown: number, lastSpawnTime: number, bombReady: boolean } } = {}
 
 for _, bombSpawner in ipairs(bombSpawners) do
 	local entry = {
@@ -12,8 +11,12 @@ for _, bombSpawner in ipairs(bombSpawners) do
 		cooldown = bombSpawner:GetAttribute("cooldown"),
 		lastSpawnTime = os.time(),
 		bombReady = true,
-		touched_key = false,
 	}
+	bombSpawner.ChildRemoved:Connect(function(child)
+		if child.Name == bombPrefab.Name then
+			entry.lastSpawnTime = os.time()
+		end
+	end)
 	table.insert(bombCds, entry)
 end
 
@@ -113,10 +116,10 @@ task.spawn(function()
 
 		for _, bomb in ipairs(bombCds) do
 			local remainingTime = bomb.cooldown - (curTime - bomb.lastSpawnTime)
-			if remainingTime <= 0 and bomb.bombReady then
-				bomb.bombReady = false
+			local isBombActive = bomb.bombSpawner:FindFirstChildOfClass(bombPrefab.ClassName)
+			if remainingTime <= 0 and not isBombActive then
 				spawnBomb(bomb)
-			elseif remainingTime >= 0 and bomb.bombReady then
+			elseif remainingTime >= 0 and not isBombActive then
 				-- Billboard GUI
 				local gui = bomb.bombSpawner:FindFirstChild("BombCountdownGui")
 
