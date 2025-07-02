@@ -5,6 +5,10 @@ local inventoryFuncs = require(ServerScriptService.Server.ServerModuleScripts.in
 local CollectionService = game:GetService("CollectionService")
 local ServerStorage = game:GetService("ServerStorage")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
+--These are for scaling
+local prefabHandle = bombPrefab:FindFirstChild("Handle")
+local prefabMesh = prefabHandle and prefabHandle:FindFirstChildOfClass("SpecialMesh")
+--These are for scaling
 local BOMB_SPAWNER_TAG = "BombSpawner"
 local bombSpawners = CollectionService:GetTagged(BOMB_SPAWNER_TAG)
 local bombCds: { { bombSpawner: Instance, cooldown: number, lastSpawnTime: number, bombReady: boolean, bomb: Tool? } } =
@@ -103,6 +107,23 @@ function createBombItem(bomb: Tool, startingPostition: Vector3, parent)
 	primary.CanTouch = false
 	bomb.Parent = item
 
+	-- Making the mesh of the item fit within the itemSphere
+	local mesh = primary:FindFirstChildOfClass("SpecialMesh")
+	local worldSize
+	if mesh then -- Right now its a cube, but someday we might need to calculate on the mesh... hope this is how one would do it
+		worldSize =
+			Vector3.new(primary.Size.X * mesh.Scale.X, primary.Size.Y * mesh.Scale.Y, primary.Size.Z * mesh.Scale.Z)
+	else
+		worldSize = primary.Size
+	end
+	local boundingRadius = (worldSize / 2).Magnitude
+	local scaleFactor = (itemSphere.Size.y / 2) / boundingRadius
+	if mesh then
+		mesh.Scale = mesh.Scale * scaleFactor
+	else
+		primary.Size = primary.Size * scaleFactor
+	end
+
 	item.Touched:Connect(
 		function(hit) --TODO: Might need to introduce the keys back so a weird bug doesn't happen in multiplayer
 			--if bomb.touched_key then
@@ -123,6 +144,18 @@ function createBombItem(bomb: Tool, startingPostition: Vector3, parent)
 			--bomb.touched_key = false
 		end
 	)
+
+	item.Destroying:Connect(function()
+		if not bomb then
+			return
+		end
+		if prefabMesh then
+			primary:FindFirstChildOfClass("SpecialMesh").Scale = prefabMesh.Scale
+		else
+			primary.Size = prefabHandle.Size
+		end
+	end)
+
 	return item
 end
 
