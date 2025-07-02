@@ -52,7 +52,7 @@ function spawnKingCoin(value, player)
 	local coinLogic: Script? = coinClone:FindFirstChildOfClass("Script")
 	local coinScore: IntValue? = coinClone:FindFirstChild("Coin score")
 	if not coinLogic then
-		warn("Cant find coinlogic")
+		warn("Cant find coin logic")
 		return
 	end
 	if not coinScore then
@@ -102,14 +102,6 @@ function explode()
 	bomb.Parent:Destroy()
 end
 
-function ChangeToToolSetting()
-	--We don't want it anchored, right now set in bombSpawn
-	local handle = bomb.Parent.PrimaryPart or bomb:FindFirstChild("Handle")
-	if handle then
-		handle.Anchored = false
-	end
-end
-
 function BombTouched(hit: BasePart)
 	local now = tick()
 
@@ -126,11 +118,6 @@ function BombTouched(hit: BasePart)
 	local playerHit = Players:GetPlayerFromCharacter(hitPlayerChar)
 	if not playerHit then
 		return
-	end
-
-	-- Change state form pickup and/or other things we will do with it to tool in hand
-	if not curOwnerPlayer then
-		ChangeToToolSetting()
 	end
 
 	-- Prevent re-passing during grace period

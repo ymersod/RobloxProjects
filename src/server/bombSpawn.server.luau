@@ -1,3 +1,7 @@
+local itemSphere = workspace:FindFirstChild("ItemSphere")
+local Players = game:GetService("Players")
+local ServerScriptService = game:GetService("ServerScriptService")
+local inventoryFuncs = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 local CollectionService = game:GetService("CollectionService")
 local ServerStorage = game:GetService("ServerStorage")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
@@ -14,12 +18,6 @@ for _, bombSpawner in ipairs(bombSpawners) do
 		bombReady = true,
 		bomb = nil,
 	}
-	bombSpawner.ChildRemoved:Connect(function(child)
-		if child.Name == bombPrefab.Name then
-			entry.lastSpawnTime = os.time()
-			entry.bomb = nil
-		end
-	end)
 	table.insert(bombCds, entry)
 end
 
@@ -73,6 +71,61 @@ end
 	end
 end)--]]
 
+function giveBombToPlayer(player: Player, bomb: Tool)
+	if player and player.Character then
+		inventoryFuncs.EquipBomb(player, bomb, 0.1)
+	end
+end
+
+function createBombItem(bomb: Tool, startingPostition: Vector3, parent)
+	local item = itemSphere:Clone()
+	if not item then
+		warn("can't clone itemSphere")
+	end
+	item.Position = startingPostition
+	item.Parent = parent
+
+	local primary = bomb.PrimaryPart or bomb:FindFirstChild("Handle") --TODO: find out which one it is
+	if not primary then
+		warn("Bomb tool has no PrimaryPart or Handle to position")
+		return
+	end
+
+	local bombLogic: Script? = primary:FindFirstChildOfClass("Script")
+	if not bombLogic then
+		warn("Can't find bomb logic script")
+		return
+	end
+
+	bombLogic.Enabled = true
+	primary.Anchored = true
+	primary.Position = startingPostition
+	primary.CanTouch = false
+	bomb.Parent = item
+
+	item.Touched:Connect(
+		function(hit) --TODO: Might need to introduce the keys back so a weird bug doesn't happen in multiplayer
+			--if bomb.touched_key then
+			--	return
+			--end
+			--bomb.touched_key = true
+			local playerChar = hit:FindFirstAncestorOfClass("Model")
+			local player = playerChar and Players:GetPlayerFromCharacter(playerChar)
+
+			local hasBomb = playerChar:FindFirstChild("Bomb")
+			if player and not hasBomb then
+				-- Setting bomb setting back to normal
+				primary.Anchored = false
+				primary.CanTouch = true
+				giveBombToPlayer(player, bomb)
+				item:Destroy()
+			end
+			--bomb.touched_key = false
+		end
+	)
+	return item
+end
+
 function spawnBomb(bomb: {
 	bombSpawner: Instance,
 	cooldown: number,
@@ -85,36 +138,23 @@ function spawnBomb(bomb: {
 		existingGui:Destroy()
 	end
 
-	local bombTool = bombPrefab:Clone()
-
 	if bomb.bombSpawner:IsA("Model") and bomb.bombSpawner.PrimaryPart then
 		local basePos = bomb.bombSpawner.PrimaryPart.Position
-
-		local primary = bombTool.PrimaryPart or bombTool:FindFirstChild("Handle") --TODO: find out which one it is
-		if not primary then
-			warn("Bomb tool has no PrimaryPart or Handle to position")
-			return
-		end
-
-		-- Anchor the part and set its position, should be turned off when the bomb is taken by a player
-		primary.Anchored = true
-		primary.Position = basePos
+		local bombTool = bombPrefab:Clone()
 		bombTool.Parent = bomb.bombSpawner
 
-		local bombLogic: Script? = primary:FindFirstChildOfClass("Script")
-		if not bombLogic then
-			warn("Can't find bomb logic script")
-			return
-		end
+		local bombItem = createBombItem(bombTool, basePos, bomb.bombSpawner)
 		bomb.bomb = bombTool
+
 		bombTool.Destroying:Connect(function()
-			print("hallo")
-			if bombTool == bomb.bomb then
-				bomb.bomb = nil
-				bomb.lastSpawnTime = os.time()
+			if bomb.bomb == bombTool then
+				bombItem:Destroy()
 			end
 		end)
-		bombLogic.Enabled = true
+		bombItem.Destroying:Connect(function()
+			bomb.bomb = nil
+			bomb.lastSpawnTime = os.time()
+		end)
 	else
 		warn("rarrrr can set bomb")
 	end
@@ -126,7 +166,7 @@ task.spawn(function()
 
 		for _, bomb in ipairs(bombCds) do
 			local remainingTime = bomb.cooldown - (curTime - bomb.lastSpawnTime)
-			local isBombActive = bomb.bombSpawner:FindFirstChildOfClass(bombPrefab.ClassName)
+			local isBombActive = bomb.bombSpawner:FindFirstChild(itemSphere.Name)
 			if remainingTime <= 0 and not isBombActive then
 				spawnBomb(bomb)
 			elseif remainingTime >= 0 and not isBombActive then
