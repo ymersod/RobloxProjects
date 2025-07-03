@@ -36,8 +36,10 @@ local bombFallData: {
 		radius: number,
 		height: number,
 		floorWorldHeight: number,
-		cooldown: number,
-		maxNumberOfBombsInZone: number,
+		capacityDependedCooldown: number,
+		bombCapacity: number,
+		fallTime: number,
+		itemHoverHeight: number,
 		lastCallTime: number,
 	}
 } =
@@ -49,10 +51,13 @@ for _, bombFallZone in ipairs(bombFallZones) do
 		radius = bombFallZone.Size.y / 2,
 		height = bombFallZone.Size.x,
 		floorWorldHeight = bombFallZone.position.y - (bombFallZone.Size.x / 2),
-		cooldown = 10, --TODO: this should be a attribute on the object
-		maxNumberOfBombsInZone = 1, --TODO: this should be a attribute on the object
+		capacityDependedCooldown = bombFallZone:GetAttribute("CapacityDependedCooldown"),
+		bombCapacity = bombFallZone:GetAttribute("BombCapacity"),
+		fallTime = bombFallZone:GetAttribute("FallTime"),
+		itemHoverHeight = bombFallZone:GetAttribute("ItemHoverHeight"),
 		lastCallTime = os.time(),
 	}
+	print(entry)
 	table.insert(bombFallData, entry)
 end
 
@@ -292,13 +297,13 @@ task.spawn(function()
 		end
 
 		for _, data in pairs(bombFallData) do
-			local remainingTime = data.cooldown - (curTime - data.lastCallTime)
+			local remainingTime = data.capacityDependedCooldown - (curTime - data.lastCallTime)
 			if remainingTime > 0 then
 				continue
 			end
 			local activeBombs = data.zone:GetChildren() -- Needs filtering if we add more things to the zones
 			data.lastCallTime = os.time() -- Don't just want a bomb to spawn directly after something has been taken, which is why its before the next if statement
-			if #activeBombs >= data.maxNumberOfBombsInZone then
+			if #activeBombs >= data.bombCapacity then
 				continue
 			end
 
@@ -308,8 +313,12 @@ task.spawn(function()
 				randomPosOnCylinderTop(data.zone.Position, data.radius, data.height),
 				data.zone
 			)
-			local animation =
-				animateToPosition(bombItem, bombItem.position - Vector3.new(0, data.height - 1, 0), 2, bombTool) --TODO: Time and so on should also be attributes on the fall zone
+			local animation = animateToPosition(
+				bombItem,
+				bombItem.position - Vector3.new(0, data.height - data.itemHoverHeight, 0),
+				data.fallTime,
+				bombTool
+			)
 			bombTool.Destroying:Connect(function() --TODO: Should be generalized in the createBombItem
 				if bombItem then
 					bombItem:Destroy()
