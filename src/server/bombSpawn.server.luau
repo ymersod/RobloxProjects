@@ -14,6 +14,11 @@ local bombSpawners = CollectionService:GetTagged(BOMB_SPAWNER_TAG)
 local bombCds: { { bombSpawner: Instance, cooldown: number, lastSpawnTime: number, bombReady: boolean, bomb: Tool? } } =
 	{}
 
+local BOMB_FALL_ZONE_TAG = "BombFallZone"
+local bombFallZones = CollectionService:GetTagged(BOMB_FALL_ZONE_TAG)
+local rng = Random.new()
+local TweenService = game:GetService("TweenService")
+
 for _, bombSpawner in ipairs(bombSpawners) do
 	local entry = {
 		bombSpawner = bombSpawner,
@@ -23,6 +28,32 @@ for _, bombSpawner in ipairs(bombSpawners) do
 		bomb = nil,
 	}
 	table.insert(bombCds, entry)
+end
+
+local bombFallData: {
+	{
+		zone: Instance,
+		radius: number,
+		height: number,
+		floorWorldHeight: number,
+		cooldown: number,
+		maxNumberOfBombsInZone: number,
+		lastCallTime: number,
+	}
+} =
+	{}
+
+for _, bombFallZone in ipairs(bombFallZones) do
+	local entry = {
+		zone = bombFallZone,
+		radius = bombFallZone.Size.y / 2,
+		height = bombFallZone.Size.x,
+		floorWorldHeight = bombFallZone.position.y - (bombFallZone.Size.x / 2),
+		cooldown = 10, --TODO: this should be a attribute on the object
+		maxNumberOfBombsInZone = 1, --TODO: this should be a attribute on the object
+		lastCallTime = os.time(),
+	}
+	table.insert(bombFallData, entry)
 end
 
 -- //////////////////////////////////////////////////////////////
@@ -155,8 +186,19 @@ function createBombItem(bomb: Tool, startingPostition: Vector3, parent)
 			primary.Size = prefabHandle.Size
 		end
 	end)
-
+	print("I got made")
 	return item
+end
+
+local function randomPosOnCylinderTop(origin: Vector3, radius: number, height: number): Vector3
+	local topCenter = origin + Vector3.new(0, height / 2, 0) --This could be done in the setup phase now that i think about it
+
+	local r = radius * math.sqrt(rng:NextNumber())
+	local theta = rng:NextNumber() * 2 * math.pi
+
+	local offset = Vector3.new(r * math.cos(theta), 0, r * math.sin(theta))
+
+	return topCenter + offset
 end
 
 function spawnBomb(bomb: {
@@ -191,6 +233,21 @@ function spawnBomb(bomb: {
 	else
 		warn("rarrrr can set bomb")
 	end
+end
+
+local function animateToPosition(part: BasePart, targetPos: Vector3, duration: number, followingTool: Tool): Tween
+	local tweenInfo = TweenInfo.new(duration)
+	local goal = { Position = targetPos }
+	local tween = TweenService:Create(part, tweenInfo, goal)
+	part:GetPropertyChangedSignal("CFrame"):Connect(function()
+		local primary = followingTool.PrimaryPart or followingTool:FindFirstChild("Handle") --TODO: find out which one it is
+		if not primary then
+			warn("Bomb tool has no PrimaryPart or Handle to position")
+			return
+		end
+		primary.Position = part.Position
+	end)
+	return tween
 end
 
 task.spawn(function()
@@ -232,6 +289,36 @@ task.spawn(function()
 					label.Text = tostring(remainingTime)
 				end
 			end
+		end
+
+		for _, data in pairs(bombFallData) do
+			local remainingTime = data.cooldown - (curTime - data.lastCallTime)
+			if remainingTime > 0 then
+				continue
+			end
+			local activeBombs = data.zone:GetChildren() -- Needs filtering if we add more things to the zones
+			data.lastCallTime = os.time() -- Don't just want a bomb to spawn directly after something has been taken, which is why its before the next if statement
+			if #activeBombs >= data.maxNumberOfBombsInZone then
+				continue
+			end
+
+			local bombTool = bombPrefab:Clone()
+			local bombItem = createBombItem(
+				bombTool,
+				randomPosOnCylinderTop(data.zone.Position, data.radius, data.height),
+				data.zone
+			)
+			local animation =
+				animateToPosition(bombItem, bombItem.position - Vector3.new(0, data.height - 1, 0), 2, bombTool) --TODO: Time and so on should also be attributes on the fall zone
+			bombTool.Destroying:Connect(function() --TODO: Should be generalized in the createBombItem
+				if bombItem then
+					bombItem:Destroy()
+				end
+			end)
+			bombItem.Destroying:Connect(function()
+				animation:Destroy()
+			end)
+			animation:Play()
 		end
 
 		task.wait(1)
