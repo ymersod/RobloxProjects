@@ -2,8 +2,13 @@ local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 local bomb = script.Parent :: Part
 local FUSE_TIME = 30
-local Explosion_Radius = 20
+local Explosion_Radius = 10
 local touched_key: boolean = false
+local explosionSphere = game:GetService("Workspace"):WaitForChild("ExplosionSphere")
+
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local explosionSphereAnimationScript: Script =
+	replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("bombSphereExplosion")
 
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -71,6 +76,15 @@ function spawnKingCoin(value, player)
 	coinLogic.Enabled = true
 end
 
+local function playExplosion(position: Vector3)
+	local explosion = Instance.new("Explosion")
+	explosion.Position = position
+	explosion.BlastRadius = 0
+	explosion.BlastPressure = 0
+	explosion.DestroyJointRadiusPercent = 0
+	explosion.Parent = workspace
+end
+
 function explode()
 	--TODO: Generalize this to a func, similar to the func in SafeZone server. Make a func that return players who is within a sphere
 	for _, player in pairs(Players:GetPlayers()) do
@@ -98,7 +112,14 @@ function explode()
 			end
 		end
 	end
+	local sphere = explosionSphere:Clone()
+	sphere.Position = bomb.Position
+	sphere.Parent = workspace
+	sphere.Size = Vector3.new(Explosion_Radius * 2, Explosion_Radius * 2, Explosion_Radius * 2)
+	local expScript = explosionSphereAnimationScript:Clone()
+	expScript.Parent = sphere
 
+	playExplosion(bomb.Position)
 	bomb.Parent:Destroy()
 end
 
