@@ -16,7 +16,6 @@ local shrinkFade = TweenService:Create(sphere, TweenInfo.new(0.3, Enum.EasingSty
 })
 
 grow.Completed:Connect(function()
-	print("hallo")
 	shrinkFade:Play()
 end)
 

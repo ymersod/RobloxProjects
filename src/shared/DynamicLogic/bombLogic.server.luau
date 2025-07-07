@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 local bomb = script.Parent :: Part
+local hitBox = bomb:FindFirstChild("HitBox")
 local FUSE_TIME = 30
 local Explosion_Radius = 10
 local touched_key: boolean = false
@@ -167,7 +168,7 @@ function BombTouched(hit: BasePart)
 	inventoryFunctions.EquipBomb(playerHit, bombTool, 0)
 end
 
-bomb.Touched:Connect(function(hit: BasePart)
+hitBox.Touched:Connect(function(hit: BasePart)
 	if touched_key then
 		return
 	end

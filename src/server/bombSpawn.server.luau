@@ -7,6 +7,8 @@ local ServerStorage = game:GetService("ServerStorage")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
 --These are for scaling
 local prefabHandle = bombPrefab:FindFirstChild("Handle")
+local prefabHitbox = prefabHandle:FindFirstChild("HitBox")
+local offSet = prefabHitbox.Position - prefabHandle.Position
 local prefabMesh = prefabHandle and prefabHandle:FindFirstChildOfClass("SpecialMesh")
 --These are for scaling
 local BOMB_SPAWNER_TAG = "BombSpawner"
@@ -117,12 +119,12 @@ function giveBombToPlayer(player: Player, bomb: Tool)
 	end
 end
 
-function createBombItem(bomb: Tool, startingPostition: Vector3, parent)
+function createBombItem(bomb: Tool, startingPosition: Vector3, parent)
 	local item = itemSphere:Clone()
 	if not item then
 		warn("can't clone itemSphere")
 	end
-	item.Position = startingPostition
+	item.Position = startingPosition
 	item.Parent = parent
 
 	local primary = bomb.PrimaryPart or bomb:FindFirstChild("Handle") --TODO: find out which one it is
@@ -139,9 +141,12 @@ function createBombItem(bomb: Tool, startingPostition: Vector3, parent)
 
 	bombLogic.Enabled = true
 	primary.Anchored = true
-	primary.Position = startingPostition
+	primary.Position = startingPosition
 	primary.CanTouch = false
 	bomb.Parent = item
+
+	local hitArea = primary:FindFirstChild("HitBox")
+	hitArea.CanTouch = false
 
 	-- Making the mesh of the item fit within the itemSphere
 	local mesh = primary:FindFirstChildOfClass("SpecialMesh")
@@ -174,6 +179,12 @@ function createBombItem(bomb: Tool, startingPostition: Vector3, parent)
 				-- Setting bomb setting back to normal
 				primary.Anchored = false
 				primary.CanTouch = true
+				hitArea.CanTouch = true
+
+				--TODO: I hope there is a better way of doing this hitbox thing, this is the best i can come up with right now
+				--Placing the hitbox with its parent
+				hitArea.Position = primary.Position + offSet
+
 				giveBombToPlayer(player, bomb)
 				item:Destroy()
 			end
@@ -191,7 +202,6 @@ function createBombItem(bomb: Tool, startingPostition: Vector3, parent)
 			primary.Size = prefabHandle.Size
 		end
 	end)
-	print("I got made")
 	return item
 end
 
