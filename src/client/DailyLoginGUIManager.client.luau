@@ -61,6 +61,10 @@ function updateGUI()
 
 	for i = 1, response.payload.count do
 		days[i].BackgroundColor3 = colors.Yellow
+		local button = days[i]:FindFirstChildOfClass("ImageButton")
+		if button then
+			button:Destroy()
+		end
 	end
 
 	local now = os.time()
@@ -68,14 +72,17 @@ function updateGUI()
 	local lastClaimedDate = tonumber(response.payload.lastClaimedDate)
 
 	if days_since_epoch > lastClaimedDate then
-		local buttonClone = buttonPrefab:Clone()
-		local today = days[response.payload.count + 1]
-		buttonClone.Parent = today
-		days[response.payload.count + 1].BackgroundColor3 = colors.Green
+		local curBut = days[response.payload.count + 1]:FindFirstChild("Button")
+		if not curBut then
+			local buttonClone = buttonPrefab:Clone()
+			local today = days[response.payload.count + 1]
+			buttonClone.Parent = today
+			days[response.payload.count + 1].BackgroundColor3 = colors.Green
 
-		buttonClone.MouseButton1Click:Connect(function()
-			claimReward(buttonClone)
-		end)
+			buttonClone.MouseButton1Click:Connect(function()
+				claimReward(buttonClone)
+			end)
+		end
 	end
 
 	nextAvailableReward = lastClaimedDate + 1

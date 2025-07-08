@@ -1,4 +1,5 @@
 local DataStoreService = game:GetService("DataStoreService")
+local rollTickets = require(script.Parent.rollTickets)
 local rewardsStore = DataStoreService:GetDataStore("DailyRewards")
 
 dailyRewardFunctions = {}
@@ -41,10 +42,10 @@ function dailyRewardFunctions.progressRewards(playerId)
 	local unixDateToday = math.floor(os.time() / 86400)
 
 	if not rewardprogress.success then
-		return { success = false, "Something went wrong" }
+		return { success = false, payload = "Something went wrong" }
 	else
 		if tonumber(rewardprogress.payload.lastClaimedDate) >= unixDateToday then
-			return { success = false, "Already claimed" }
+			return { success = false, payload = "Already claimed" }
 		end
 	end
 
@@ -55,7 +56,10 @@ function dailyRewardFunctions.progressRewards(playerId)
 		)
 	end)
 	if success then
-		return { success = true, payload = "something" }
+		--TODO: needs a some form of data to read rewards from
+		--TODO: can only get tickets with this apporach
+		rollTickets.AddTickets(playerId, 1)
+		return { success = true, payload = "Success" }
 	end
 	return { success = false, payload = err }
 end

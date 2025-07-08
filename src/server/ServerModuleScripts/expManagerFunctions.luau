@@ -28,6 +28,11 @@ local function calcLevelAndExpWindow(exp: number): { lvl: number, lvlProgress: {
 	return { lvl = lvl, lvlProgress = { progress = exp - oldGoal, goal = goal - oldGoal } }
 end
 
+function OpenFunctions.GetLevel(playerId)
+	local exp = OpenFunctions.getExp(playerId)
+	return calcLevelAndExpWindow(exp)
+end
+
 function OpenFunctions.incrementExp(playerId, amount)
 	print("incrementing score for player with id: " .. playerId)
 	if playerExp[playerId] then
@@ -37,12 +42,12 @@ function OpenFunctions.incrementExp(playerId, amount)
 			return Players:GetPlayerByUserId(playerId)
 		end)
 		if success then
-			local bindableLvl:IntValue = player:WaitForChild("LocalStats"):WaitForChild("Level")
+			local bindableLvl: IntValue = player:WaitForChild("LocalStats"):WaitForChild("Level")
 			local level = calcLevelAndExpWindow(playerExp[playerId])
 			if bindableLvl.Value ~= level.lvl then
 				bindableLvl.Value = level.lvl
 			end
-			
+
 			expLevelClient:FireClient(player, level)
 		end
 	end
@@ -55,7 +60,7 @@ function OpenFunctions.setExp(playerId, amount)
 			return Players:GetPlayerByUserId(playerId)
 		end)
 		if success then
-			local bindableLvl:IntValue = player:WaitForChild("LocalStats"):WaitForChild("Level")
+			local bindableLvl: IntValue = player:WaitForChild("LocalStats"):WaitForChild("Level")
 			local level = calcLevelAndExpWindow(playerExp[playerId])
 			if bindableLvl.Value ~= level.lvl then
 				bindableLvl.Value = level.lvl
@@ -70,7 +75,7 @@ function OpenFunctions.getExp(playerId)
 	return playerExp[playerId]
 end
 
-function OpenFunctions.onPlayerAdded(player : Player)
+function OpenFunctions.onPlayerAdded(player: Player)
 	print("player added exp function")
 	-- Read data store key
 	local success, storedExp = pcall(function()
@@ -96,7 +101,7 @@ function OpenFunctions.onPlayerAdded(player : Player)
 		end
 
 		local levelTest = player:WaitForChild("LocalStats"):WaitForChild("Level")
-		
+
 		if levelTest then
 			levelTest.Value = level.lvl
 			levelTest.Changed:Connect(function(level)

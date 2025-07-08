@@ -21,6 +21,8 @@ local inventoryFunctionsScript =
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("inventoryFunctions")
 local inventoryFunctions = require(inventoryFunctionsScript)
 
+local levelupRewards = require(ServerScriptService.Server.ServerModuleScripts.levelupRewards)
+
 local dataStoreDevManagementFunctionsScript = ServerScriptService:WaitForChild("Server")
 	:WaitForChild("ServerModuleScripts")
 	:WaitForChild("dataStoreDevManagement")
@@ -135,7 +137,7 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 				end
 				bombLogic.Enabled = true
 				inventoryFuncs.EquipBomb(player, bombClone, 0.1)
-			end				
+			end
 		elseif command.command == "/spawnkingcoin" then
 			if player and player.Character then
 				local coinClone = kingCoin:Clone()
@@ -161,6 +163,9 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 					print(compositeIntValueMultiton.getCompositeIntValue(key).Value)
 				end
 			end
+		elseif command.command == "/clearlevels" then
+			expFuncs.setExp(player.UserId, tonumber(0))
+			levelupRewards.resetPlayer(player.UserId)
 		end
 	end)
 end)

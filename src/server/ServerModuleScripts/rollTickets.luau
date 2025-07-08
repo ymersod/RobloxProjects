@@ -1,14 +1,25 @@
 local DataStoreService = game:GetService("DataStoreService")
+local Players = game:GetService("Players")
 local ticketStore = DataStoreService:GetDataStore("PlayerTickets")
-
 local TicketFuncs = {}
 
 local playerTickets = {}
+
+local function updateTickets(playerId)
+	local player = Players:GetPlayerByUserId(playerId)
+	local tickets: IntValue = player and player:FindFirstChild("LocalStats"):FindFirstChild("Tickets")
+	if tickets then
+		tickets.Value = playerTickets[playerId]
+	else
+		warn("Couldnt update player tickets in localstats - VERY BAD")
+	end
+end
 
 function TicketFuncs.AddTickets(playerId, amount)
 	print("incrementing Tickets for player with id: " .. playerId)
 	if playerTickets[playerId] then
 		playerTickets[playerId] += amount
+		updateTickets(playerId)
 	end
 	print("Tickets : " .. playerTickets[playerId])
 end
@@ -17,6 +28,7 @@ function TicketFuncs.SpendTickets(playerId, amount)
 	print("incrementing Tickets for player with id: " .. playerId)
 	if playerTickets[playerId] and playerTickets[playerId] > amount then
 		playerTickets[playerId] -= amount
+		updateTickets(playerId)
 		return true
 	end
 	return false
@@ -35,13 +47,16 @@ function TicketFuncs.onPlayerAdded(player: Player)
 			currentTickets = 0
 		end
 		playerTickets[player.UserId] = currentTickets
+		updateTickets(player.UserId)
 		print(currentTickets)
 	end
 
-	local bindablePlayerLevel: IntValue = player:WaitForChild("LocalStats"):WaitForChild("Level") :: IntValue
-	bindablePlayerLevel.Changed:Connect(function(newLevel)
-		TicketFuncs.AddTickets(player.UserId, 1)
-	end)
+	-- local bindablePlayerLevel: IntValue = player:WaitForChild("LocalStats"):WaitForChild("Level") :: IntValue
+	-- bindablePlayerLevel.Changed:Connect(function(newLevel)
+	-- 	-- TODO: Leveluprewards instead
+	-- 	warn("errr")
+	-- 	TicketFuncs.AddTickets(player.UserId, 1)
+	-- end)
 end
 
 function TicketFuncs.onPlayerRemoving(player: Player)

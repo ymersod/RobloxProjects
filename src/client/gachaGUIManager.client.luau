@@ -1,9 +1,16 @@
 local player = game:GetService("Players").LocalPlayer
+local localStats = player:WaitForChild("LocalStats")
+local tickets: IntValue = localStats:WaitForChild("Tickets")
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local rollEvent = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("RollFunctions")
 	:WaitForChild("RollServer")
+local spendTicketsEvent = ReplicatedStorage:WaitForChild("Shared")
+	:WaitForChild("Events")
+	:WaitForChild("TicketFunctions")
+	:WaitForChild("SpendTickets")
 local addToInventoryServer = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("InventoryFunctions")
@@ -19,6 +26,7 @@ local buttonPrefab: ImageButton =
 
 local screenGui = player.PlayerGui:WaitForChild("ScreenGui")
 local gachaGUIParent = screenGui:WaitForChild("Gacha") :: Frame
+local ticketsText: TextLabel = gachaGUIParent:WaitForChild("Roll"):WaitForChild("Tickets")
 local closeButton: ImageButton = gachaGUIParent:WaitForChild("OpenContainer"):WaitForChild("CloseButton")
 local rollButton: ImageButton = gachaGUIParent:WaitForChild("Roll"):WaitForChild("RollButton")
 local backpackGUI: Frame = gachaGUIParent:WaitForChild("InventoryReplica")
@@ -251,12 +259,27 @@ closeButton.MouseButton1Click:Connect(function()
 end)
 
 rollButton.MouseButton1Click:Connect(function()
-	local recieved: Tool? = rollEvent:InvokeServer(activeRollSlot)
+	local ticketsRemaining = tickets.Value
+	if ticketsRemaining > 0 then
+		local recieved: Tool? = rollEvent:InvokeServer(activeRollSlot)
 
-	if recieved and recieved:IsA("Tool") then
-		addToInventoryServer:InvokeServer(recieved, activeRollSlot)
-		recieved:Destroy()
+		if recieved and recieved:IsA("Tool") then
+			addToInventoryServer:InvokeServer(recieved, activeRollSlot)
+			spendTicketsEvent:FireServer(1)
+			recieved:Destroy()
+		else
+			warn("Didnt recieve a new slapstyle ")
+		end
 	else
-		warn("Didnt recieve a new slapstyle ")
+		warn("No more tickets")
 	end
 end)
+
+function ticketsSetup()
+	ticketsText.Text = "Tickets: " .. tickets.Value
+
+	tickets.Changed:Connect(function(value)
+		ticketsText.Text = "Tickets: " .. value
+	end)
+end
+ticketsSetup()
