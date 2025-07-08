@@ -1,0 +1,12 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
+local rollTickets = require(ServerScriptService.Server.ServerModuleScripts.rollTickets)
+local spendTicketEvent = ReplicatedStorage:WaitForChild("Shared")
+	:WaitForChild("Events")
+	:WaitForChild("TicketFunctions")
+	:WaitForChild("SpendTickets")
+
+spendTicketEvent.OnServerEvent:Connect(function(player: Player, amount: number)
+	print(player.UserId .. " AAA " .. amount)
+	rollTickets.SpendTickets(player.UserId, amount)
+end)
