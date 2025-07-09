@@ -1,4 +1,7 @@
 local DataStoreService = game:GetService("DataStoreService")
+local HttpService = game:GetService("HttpService")
+local ServerScriptService = game:GetService("ServerScriptService")
+local DailyRewardsData = require(ServerScriptService.Server.DataModules.DailyRewardsData)
 local rollTickets = require(script.Parent.rollTickets)
 local rewardsStore = DataStoreService:GetDataStore("DailyRewards")
 
