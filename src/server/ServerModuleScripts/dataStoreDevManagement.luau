@@ -4,7 +4,7 @@ local orderedExpStore = DataStoreService:GetOrderedDataStore("OrderedPlayerExp")
 local inventoryStore = DataStoreService:GetDataStore("PlayerInventory")
 local ticketStore = DataStoreService:GetDataStore("PlayerTickets")
 local dailyRewardStore = DataStoreService:GetDataStore("DailyRewards")
-
+local levelUpRewardStore = DataStoreService:GetDataStore("LevelupRewards")
 
 dataStoreManagementFunctions = {}
 
@@ -15,7 +15,7 @@ function dataStoreManagementFunctions.removePlayerExpStore(playerId)
 	if success then
 		return { success = true, payload = "player " .. playerId .. " removed from expStore" }
 	end
-	return { success = false, payload = err }		
+	return { success = false, payload = err }
 end
 
 function dataStoreManagementFunctions.removePlayerOrderedExpStore(playerId)
@@ -54,6 +54,16 @@ function dataStoreManagementFunctions.removePlayerDailyRewardStore(playerId)
 	end)
 	if success then
 		return { success = true, payload = "player " .. playerId .. " removed from dailyRewardStore" }
+	end
+	return { success = false, payload = err }
+end
+
+function dataStoreManagementFunctions.removePlayerLevelupRewardStore(playerId)
+	local success, err = pcall(function()
+		return levelUpRewardStore:RemoveAsync(playerId)
+	end)
+	if success then
+		return { success = true, payload = "player " .. playerId .. " removed from levelUpRewardStore" }
 	end
 	return { success = false, payload = err }
 end

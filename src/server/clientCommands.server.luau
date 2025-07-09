@@ -31,6 +31,7 @@ local dataStoreDevManagementFunctions = require(dataStoreDevManagementFunctionsS
 local inventoryFuncs = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 
 local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
+local rollTickets = require(ServerScriptService.Server.ServerModuleScripts.rollTickets)
 
 local slapStyleFolder: Folder = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles")
 
@@ -104,6 +105,10 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 					local response = dataStoreDevManagementFunctions.removePlayerDailyRewardStore(command.args[1])
 					print(response)
 				end
+				if #command.args == 1 or #command.args == 2 and command.args[2] == "levelup" then
+					local response = dataStoreDevManagementFunctions.removePlayerLevelupRewardStore(command.args[1])
+					print(response)
+				end
 				if #command.args == 1 or #command.args == 2 and command.args[2] == "xp" then
 					local response = dataStoreDevManagementFunctions.removePlayerExpStore(command.args[1])
 					print(response)
@@ -120,6 +125,10 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 					local response = dataStoreDevManagementFunctions.removePlayerTicketStore(command.args[1])
 					print(response)
 				end
+			end
+		elseif command.command == "/settickets" then
+			if #command.args >= 0 then
+				rollTickets.SetTickets(player.UserId, command.args[1])
 			end
 		elseif command.command == "/getuserid" then
 			print(player.UserId)

@@ -15,6 +15,14 @@ local function updateTickets(playerId)
 	end
 end
 
+function TicketFuncs.SetTickets(playerId, amount)
+	print("setting Tickets for player with id: " .. playerId)
+	if playerTickets[playerId] then
+		playerTickets[playerId] = amount
+		updateTickets(playerId)
+	end
+end
+
 function TicketFuncs.AddTickets(playerId, amount)
 	print("incrementing Tickets for player with id: " .. playerId)
 	if playerTickets[playerId] then
