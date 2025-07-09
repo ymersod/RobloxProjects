@@ -2,12 +2,13 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local replicatedStorage = game:GetService("ReplicatedStorage")
 
-local kingZoneScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("kingzone")
+local kingZoneManagerScript =
+	replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("kingZoneManager")
 local kingCoinScript =
 	replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("kingCoinLogic")
 local bombScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("bombLogic")
 local slapScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("slaplogic")
-local safezoneScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("Safezone")
+local safeZoneScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("Safezone")
 local abilityScripts: { Script } =
 	ServerScriptService:WaitForChild("Server"):WaitForChild("Abilities"):WaitForChild("AbilityEvents"):GetChildren()
 for _, abilityScript in ipairs(abilityScripts) do
@@ -17,20 +18,25 @@ local kingCoinPrefab: Part = ServerStorage:WaitForChild("Pickups"):WaitForChild(
 local bombPrefab: Tool = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb")
 local slapPrefabs: Folder = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles")
 
-local slapStyleShapes : Folder = ServerStorage:WaitForChild("Tools"):WaitForChild("SlapStyleShapes")
+local slapStyleShapes: Folder = ServerStorage:WaitForChild("Tools"):WaitForChild("SlapStyleShapes")
 
 local toolToolingFunctions =
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("toolToolingFunctions")
 local toolToolingFuncs = require(toolToolingFunctions)
-
-kingZoneScript.Parent = workspace:FindFirstChild("Kingzone")
-safezoneScript.Parent = workspace:FindFirstChild("Safezone")
 
 local kingCoinScriptClone = kingCoinScript:Clone()
 kingCoinScriptClone.Parent = kingCoinPrefab
 
 local bombScriptClone = bombScript:Clone()
 bombScriptClone.Parent = bombPrefab.PrimaryPart
+
+for _, safeZone in ipairs(game:GetService("CollectionService"):GetTagged("SafeZone")) do
+	safeZoneScript:Clone().Parent = safeZone
+end
+
+for _, kingZoneManager in ipairs(game:GetService("CollectionService"):GetTagged("KingZoneManager")) do
+	kingZoneManagerScript:Clone().Parent = kingZoneManager
+end
 
 for _, slapPrefab in ipairs(slapPrefabs:GetChildren()) do
 	-- setup shape
@@ -47,7 +53,7 @@ for _, slapPrefab in ipairs(slapPrefabs:GetChildren()) do
 			end
 		end
 	end
-	
+
 	local slapScriptClone = slapScript:Clone()
 	local primaryPart: Part? = slapPrefab.PrimaryPart
 
@@ -74,7 +80,7 @@ for _, slapPrefab in ipairs(slapPrefabs:GetChildren()) do
 	-- Setup handle length
 	local statVal = slapPrefab:FindFirstChild("StatVals")
 	if statVal then
-		local function mapStatToLength(num:number)
+		local function mapStatToLength(num: number)
 			return num
 		end
 		if statVal:GetAttribute("Range") then

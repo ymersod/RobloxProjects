@@ -22,7 +22,6 @@ task.spawn(function()
 				player.States.Safe.Value = false
 				continue
 			end
-
 			player.States.Safe.Value = isPlayerPositionInsideZone(root.Position)
 		end
 		task.wait(0.5) -- Determines how often it runs, better than every frame

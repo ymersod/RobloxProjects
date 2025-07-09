@@ -4,6 +4,7 @@ local players = game:GetService("Players")
 local expManagerFunctions = require(ServerScriptService.Server.ServerModuleScripts.expManagerFunctions)
 
 local part = script.Parent
+local normalTransparency = part.Transparency
 
 local kingCandidates = {}
 
@@ -41,9 +42,9 @@ function scoreKing()
 	local kingScore: IntValue = leaderstats and leaderstats:FindFirstChild("King Score")
 
 	local xpBoost = 1
-	local xpBoostIntValue : IntValue = king and king:WaitForChild("LocalStats"):WaitForChild("ExpBoost")
+	local xpBoostIntValue: IntValue = king and king:WaitForChild("LocalStats"):WaitForChild("ExpBoost")
 	if xpBoostIntValue then
-		xpBoost = xpBoostIntValue.Value/100
+		xpBoost = xpBoostIntValue.Value / 100
 	end
 
 	if kingScore then
@@ -52,19 +53,31 @@ function scoreKing()
 	end
 end
 
+local function handleKingZone()
+	local partsInZone = workspace:GetPartsInPart(part)
+	updateKingZone(partsInZone)
+	if #kingCandidates > 0 then
+		if #kingCandidates == 1 then
+			part.Color = Color3.fromRGB(9, 255, 0)
+			scoreKing()
+		else
+			part.Color = Color3.fromRGB(255, 0, 0)
+		end
+	else
+		part.Color = Color3.fromRGB(163, 162, 165)
+	end
+end
+
 local function kingZoneMainLoop()
 	while true do
-		local partsInZone = workspace:GetPartsInPart(part)
-		updateKingZone(partsInZone)
-		if #kingCandidates > 0 then
-			if #kingCandidates == 1 then
-				part.Color = Color3.fromRGB(9, 255, 0)
-				scoreKing()
-			else
-				part.Color = Color3.fromRGB(255, 0, 0)
+		local isActive = part:GetAttribute("isActive")
+		if isActive then
+			handleKingZone()
+			if part.Transparency ~= normalTransparency then
+				part.Transparency = normalTransparency
 			end
-		else
-			part.Color = Color3.fromRGB(163, 162, 165)
+		elseif part.Transparency == normalTransparency then
+			part.Transparency = 1
 		end
 		task.wait(1)
 	end
