@@ -4,9 +4,9 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local ServerScriptService = game:GetService("ServerScriptService")
 local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
+local inventoryFunctions = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 
 local tool1 = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle0")
-local tool2 = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle1")
 
 -- function ignorePhysicsOnOwner(char: Model, hitBox: Part)
 -- 	for _, charPart in char:GetDescendants() do
@@ -34,12 +34,30 @@ local tool2 = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):Wai
 -- end
 
 -- TODO: This should only be done if player is a first time login (has no saved slapstyles)
-function SetupStarterTools(player)
-	if not tool1 and tool2 then
+
+function GiveStarterSlapStyle(player: Player)
+	inventoryFunctions.AddToInventory(player, tool1, 1)
+end
+
+function SetupStarterTools(player: Player)
+	if not tool1 then
 		print("Tool or slaplogic is not in storage")
 		return
 	end
+	local inventory = player:WaitForChild("Inventory")
+	if inventory then
+		local inventoryList = inventory:GetChildren()
 
+		if #inventoryList == 1 then
+			GiveStarterSlapStyle(player)
+			print("First time player, initializing starter slap-style")
+		else
+			print("Player already has inventory, brrrr")
+		end
+	else
+		GiveStarterSlapStyle(player)
+		warn("Inventory not found, initializing starter slap-style")
+	end
 	--inventoryFunctions.EquipTool(player, tool1)
 	--inventoryFunctions.AddToInventory(player, tool1)
 

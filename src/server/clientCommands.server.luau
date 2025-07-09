@@ -99,7 +99,7 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 		elseif command.command == "/resetdaily" then
 			local resetResponse = dailyRewardFunctions.resetPlayer(player.UserId)
 			print(resetResponse)
-		elseif command.command == "/removeplayerfromstore" then
+		elseif command.command == "/removeplayerfromstore" then -- If u want to delete urself you have to open a localplayer and delete ur id from there (caches arent deleted with this approach atm)
 			if #command.args >= 0 then
 				if #command.args == 1 or #command.args == 2 and command.args[2] == "daily" then
 					local response = dataStoreDevManagementFunctions.removePlayerDailyRewardStore(command.args[1])
