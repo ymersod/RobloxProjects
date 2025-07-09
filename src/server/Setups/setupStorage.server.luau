@@ -2,6 +2,8 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local replicatedStorage = game:GetService("ReplicatedStorage")
 
+local CollectionService = game:GetService("CollectionService")
+
 local kingZoneManagerScript =
 	replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("kingZoneManager")
 local kingCoinScript =
@@ -26,6 +28,9 @@ local toolToolingFuncs = require(toolToolingFunctions)
 
 local kingCoinScriptClone = kingCoinScript:Clone()
 kingCoinScriptClone.Parent = kingCoinPrefab
+
+local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
+local delayUtil = require(ServerScriptService.Server.ServerModuleScripts.delayUtil)
 
 local bombScriptClone = bombScript:Clone()
 bombScriptClone.Parent = bombPrefab.PrimaryPart
@@ -91,4 +96,59 @@ for _, slapPrefab in ipairs(slapPrefabs:GetChildren()) do
 	if not matchedAbility then
 		warn("No ability found for slapstyle: ", slapPrefab)
 	end
+end
+
+for _, slipPart in ipairs(game:GetService("CollectionService"):GetTagged("Slippery")) do
+	slipPart.CustomPhysicalProperties = PhysicalProperties.new(
+		0, -- Density (can be 0 or keep original)
+		0, -- Friction set to 0 for slippery
+		0, -- Elasticity set to 0
+		0, -- FrictionWeight
+		0 -- ElasticityWeight
+	)
+	slipPart.Touched:Connect(function(hit)
+		local character = hit:FindFirstAncestorOfClass("Model")
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		local rootPart = character:FindFirstChild("HumanoidRootPart")
+
+		local rayParams = RaycastParams.new()
+		rayParams.FilterDescendantsInstances = { character }
+
+		local raycastResult = workspace:Raycast(rootPart.Position, Vector3.new(0, -5, 0), rayParams)
+
+		if
+			raycastResult
+			and raycastResult.Instance
+			and not CollectionService:HasTag(raycastResult.Instance, "Slippery")
+		then
+			return
+		end
+
+		local player = game.Players:GetPlayerFromCharacter(character)
+
+		if not player or not player.States.CanJump.Value then
+			return
+		end
+
+		player.States.CanJump.Value = false
+		humanoid.JumpHeight = 0
+
+		delayUtil.Delay(0.5, function()
+			player.States.CanJump.Value = true
+			local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "JumpValue")
+			local newCharacter = player.Character
+			local newHumanoid = newCharacter and newCharacter:WaitForChild("Humanoid")
+
+			if newHumanoid:IsDescendantOf(game) then
+				newHumanoid.JumpHeight = compIntVal.Value
+				print("Jump reset")
+			else
+				player.CharacterAdded:Once(function()
+					local newCharacter = player.Character
+					local newHumanoid = newCharacter and newCharacter:WaitForChild("Humanoid")
+					newHumanoid.JumpHeight = compIntVal.Value
+				end)
+			end
+		end)
+	end)
 end

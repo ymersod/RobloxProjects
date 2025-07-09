@@ -25,7 +25,7 @@ speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 		return
 	end
 
-	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId.."SpeedValue")
+	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "SpeedValue")
 	compIntVal += { Name = "SpeedAmp", Value = speedAmp }
 	humanoid.WalkSpeed = compIntVal.Value
 
@@ -33,17 +33,24 @@ speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 		local newPlayer = players:GetPlayerByUserId(playerUserId)
 		local newCharacter = newPlayer.Character
 		local newHumanoid = newCharacter and newCharacter:WaitForChild("Humanoid")
-	
+
 		if newHumanoid:IsDescendantOf(game) then
 			compIntVal -= { Name = "SpeedAmp", Value = speedAmp }
 			newHumanoid.WalkSpeed = compIntVal.Value
-		else newPlayer.CharacterAdded:Once(function()
+		else
+			newPlayer.CharacterAdded:Once(function()
 				compIntVal -= { Name = "SpeedAmp", Value = speedAmp }
 				newHumanoid.WalkSpeed = compIntVal.Value
-			end
-		)end
+			end)
+		end
 	end)
 end)
+
+local function setJumpHeight(val, player, humanoid)
+	if player.States.CanJump.Value then
+		humanoid.JumpHeight = val
+	end
+end
 
 jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 	print("Yump vals: ", abilityVals)
@@ -62,9 +69,9 @@ jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 		return
 	end
 
-	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId.."JumpValue")
+	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "JumpValue")
 	compIntVal += { Name = "JumpAmp", Value = jumpAmp }
-	humanoid.JumpHeight = compIntVal.Value
+	setJumpHeight(compIntVal.Value, player, humanoid)
 
 	delayUtil.Delay(boostTime, function()
 		local newPlayer = players:GetPlayerByUserId(playerUserId)
@@ -73,14 +80,15 @@ jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 
 		if newHumanoid:IsDescendantOf(game) then
 			compIntVal -= { Name = "JumpAmp", Value = jumpAmp }
-			newHumanoid.JumpHeight = compIntVal.Value
+			setJumpHeight(compIntVal.Value, player, newHumanoid)
 			print("Jump reset")
-		else newPlayer.CharacterAdded:Once(function()
+		else
+			newPlayer.CharacterAdded:Once(function()
 				local newCharacter = player.Character
 				local newHumanoid = newCharacter and newCharacter:WaitForChild("Humanoid")
 				compIntVal -= { Name = "JumpAmp", Value = jumpAmp }
-				newHumanoid.WalkSpeed = compIntVal.Value
-			end
-		)end
+				setJumpHeight(compIntVal.Value, player, newHumanoid)
+			end)
+		end
 	end)
 end)
