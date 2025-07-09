@@ -9,4 +9,8 @@ enums.Platforms = {
 	Unknown = "Unknown",
 }
 
+enums.RewardTypes = {
+	Ticket = "Ticket",
+}
+
 return enums

@@ -1,3 +1,11 @@
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Types = require(ReplicatedStorage.Shared.ClientServerModuleScripts.Types)
+-- DATA IS PASTED FROM THE DATA FOLDER
+
+local rewards = {}
+
+local rewardsData = [[
 {
   "daily": {
     "1":  { "day": 1,  "rewardType": "Ticket", "Amount": 1 },
@@ -62,3 +70,34 @@
   "30": { "level": 300, "rewardType": "Ticket", "Amount": 5 }
 }
 }
+]]
+
+local allRewards: Types.RewardsData = HttpService:JSONDecode(rewardsData)
+
+local function convertDictToArray(dict)
+	local array = {}
+	local keys = {}
+
+	for key in pairs(dict) do
+		table.insert(keys, tonumber(key))
+	end
+	table.sort(keys)
+
+	for _, index in ipairs(keys) do
+		array[#array + 1] = dict[tostring(index)]
+	end
+
+	return array
+end
+
+function rewards.GetDailyRewardsData(): { Types.DailyReward }
+	local dailyRewards = convertDictToArray(allRewards.daily)
+	return dailyRewards
+end
+
+function rewards.GetLevelupRewardsData(): { Types.LevelUpReward }
+	local levelupRewards = convertDictToArray(allRewards.levelUp)
+	return levelupRewards
+end
+
+return rewards

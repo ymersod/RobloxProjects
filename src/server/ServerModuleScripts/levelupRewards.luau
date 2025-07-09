@@ -1,7 +1,13 @@
 local DataStoreService = game:GetService("DataStoreService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
+local RewardsData = require(ServerScriptService.Server.DataModules.RewardsData)
+local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local expManagerFunctions = require(script.Parent.expManagerFunctions)
 local rollTickets = require(script.Parent.rollTickets)
 local rewardsStore = DataStoreService:GetDataStore("LevelupRewards")
+
+local levelUpRewardsData = RewardsData.GetLevelupRewardsData()
 
 local levelupRewardsFunctions = {}
 
@@ -45,19 +51,20 @@ function levelupRewardsFunctions.progressRewards(playerId)
 		return { success = false, payload = "No new claims" }
 	end
 
+	local newCount = tonumber(rewardprogress.payload.count :: number + 1)
 	local success, err = pcall(function()
 		return rewardsStore:SetAsync(
 			playerId,
-			(tonumber(rewardprogress.payload.lastClaimedLevel) :: number + 10)
-				.. ";"
-				.. (tonumber(rewardprogress.payload.count) :: number + 1)
+			(tonumber(rewardprogress.payload.lastClaimedLevel) :: number + 10) .. ";" .. newCount
 		)
 	end)
 	if success then
-		--TODO: needs a some form of data to read rewards from
-		--TODO: can only get tickets with this apporach
-		rollTickets.AddTickets(playerId, 1)
-		return { success = true, payload = "Success" }
+		if levelUpRewardsData[newCount].rewardType == enums.RewardTypes.Ticket then
+			rollTickets.AddTickets(playerId, levelUpRewardsData[newCount].Amount)
+			return { success = true, payload = "Success" }
+		else
+			return { success = false, payload = "No corresponding rewardstype" }
+		end
 	end
 	return { success = false, payload = err }
 end
@@ -71,6 +78,5 @@ function levelupRewardsFunctions.resetPlayer(playerId)
 	end
 	return { success = false, payload = err }
 end
--- TODO: resetplayerlevel should also reset leveluprewards
 
 return levelupRewardsFunctions

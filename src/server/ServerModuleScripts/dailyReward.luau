@@ -1,9 +1,12 @@
 local DataStoreService = game:GetService("DataStoreService")
-local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local DailyRewardsData = require(ServerScriptService.Server.DataModules.DailyRewardsData)
+local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
+local RewardsData = require(ServerScriptService.Server.DataModules.RewardsData)
 local rollTickets = require(script.Parent.rollTickets)
 local rewardsStore = DataStoreService:GetDataStore("DailyRewards")
+
+local dailyRewardData = RewardsData.GetDailyRewardsData()
 
 dailyRewardFunctions = {}
 
@@ -52,17 +55,17 @@ function dailyRewardFunctions.progressRewards(playerId)
 		end
 	end
 
+	local newCount = tonumber(rewardprogress.payload.count :: number + 1)
 	local success, err = pcall(function()
-		return rewardsStore:SetAsync(
-			playerId,
-			unixDateToday .. ";" .. (tonumber(rewardprogress.payload.count) :: number + 1)
-		)
+		return rewardsStore:SetAsync(playerId, unixDateToday .. ";" .. newCount)
 	end)
-	if success then
-		--TODO: needs a some form of data to read rewards from
-		--TODO: can only get tickets with this apporach
-		rollTickets.AddTickets(playerId, 1)
-		return { success = true, payload = "Success" }
+	if success and newCount then
+		if dailyRewardData[newCount].rewardType == enums.RewardTypes.Ticket then
+			rollTickets.AddTickets(playerId, dailyRewardData[newCount].Amount)
+			return { success = true, payload = "Success" }
+		else
+			return { success = false, payload = "No corresponding rewardstype" }
+		end
 	end
 	return { success = false, payload = err }
 end

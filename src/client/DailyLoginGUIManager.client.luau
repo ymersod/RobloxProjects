@@ -1,4 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = game:GetService("Players").LocalPlayer
+local Types = require(ReplicatedStorage.Shared.ClientServerModuleScripts.Types)
 local getProgress = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("DailyRewardsFunctions")
@@ -7,7 +9,11 @@ local progressRewards = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("DailyRewardsFunctions")
 	:WaitForChild("progressRewards")
-local player = game:GetService("Players").LocalPlayer
+local getDailyRewards = ReplicatedStorage:WaitForChild("Shared")
+	:WaitForChild("Events")
+	:WaitForChild("DataFunctions")
+	:WaitForChild("getDailyRewards")
+local dailyRewards: { Types.DailyReward } = getDailyRewards:InvokeServer()
 
 -- GUI elements
 local screenGui = player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
@@ -15,13 +21,27 @@ local dailyLoginRewards = screenGui:WaitForChild("DailyLoginRewards") :: Frame
 local closeButton: ImageButton = dailyLoginRewards:WaitForChild("OpenContainer"):WaitForChild("CloseButton")
 local buttonPrefab: ImageButton =
 	ReplicatedStorage:WaitForChild("UI"):WaitForChild("DynamicGUI"):WaitForChild("DailyRewards"):WaitForChild("Button")
+local rewardPrefab: ImageButton =
+	ReplicatedStorage:WaitForChild("UI"):WaitForChild("DynamicGUI"):WaitForChild("RewardFrame")
 local daysLeft: TextLabel = dailyLoginRewards:WaitForChild("Info"):WaitForChild("DaysLeft")
 local timeLeft: TextLabel = dailyLoginRewards:WaitForChild("Info"):WaitForChild("TimeLeft")
 
 local days: { ImageLabel } = {}
+local count = 1
 for _, item in ipairs(dailyLoginRewards:WaitForChild("Info"):WaitForChild("GridParent"):GetChildren()) do
 	if item:IsA("ImageLabel") then
+		local rewardFrame = rewardPrefab:Clone()
+		rewardFrame.Parent = item
+
+		local typeText: TextLabel = rewardFrame:FindFirstChild("RewardType")
+		local amountText: TextLabel = rewardFrame:FindFirstChild("RewardAmount")
+
+		local rewardTable = dailyRewards[count]
+		typeText.Text = rewardTable.rewardType
+		amountText.Text = rewardTable.Amount
+
 		table.insert(days, item)
+		count += 1
 	end
 end
 local colors = {

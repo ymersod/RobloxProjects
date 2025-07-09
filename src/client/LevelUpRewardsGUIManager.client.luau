@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Types = require(ReplicatedStorage.Shared.ClientServerModuleScripts.Types)
 local player = game:GetService("Players").LocalPlayer
 local level: IntValue = player:WaitForChild("LocalStats"):WaitForChild("Level")
 local progressRewards = ReplicatedStorage:WaitForChild("Shared")
@@ -9,6 +10,12 @@ local getProgress = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("LevelupRewardsFunctions")
 	:WaitForChild("getRewardProgress")
+local getLevelUpRewards = ReplicatedStorage:WaitForChild("Shared")
+	:WaitForChild("Events")
+	:WaitForChild("DataFunctions")
+	:WaitForChild("getLevelUpRewards")
+
+local levelUpRewards: { Types.LevelUpReward } = getLevelUpRewards:InvokeServer()
 
 -- GUI elements
 local screenGui = player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
@@ -16,10 +23,24 @@ local levelUpRewardsGui = screenGui:WaitForChild("LevelUpRewards") :: Frame
 local closeButton: ImageButton = levelUpRewardsGui:WaitForChild("OpenContainer"):WaitForChild("CloseButton")
 local buttonPrefab: ImageButton =
 	ReplicatedStorage:WaitForChild("UI"):WaitForChild("DynamicGUI"):WaitForChild("DailyRewards"):WaitForChild("Button")
+local rewardPrefab: ImageButton =
+	ReplicatedStorage:WaitForChild("UI"):WaitForChild("DynamicGUI"):WaitForChild("RewardFrame")
 local levels: { ImageLabel } = {}
+local count = 1
 for _, item in ipairs(levelUpRewardsGui:WaitForChild("Info"):WaitForChild("GridParent"):GetChildren()) do
 	if item:IsA("ImageLabel") then
+		local rewardFrame = rewardPrefab:Clone()
+		rewardFrame.Parent = item
+
+		local typeText: TextLabel = rewardFrame:FindFirstChild("RewardType")
+		local amountText: TextLabel = rewardFrame:FindFirstChild("RewardAmount")
+
+		local rewardTable = levelUpRewards[count]
+		typeText.Text = rewardTable.rewardType
+		amountText.Text = rewardTable.Amount
+
 		table.insert(levels, item)
+		count += 1
 	end
 end
 local colors = {
