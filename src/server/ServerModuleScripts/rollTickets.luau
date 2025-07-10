@@ -33,8 +33,9 @@ function TicketFuncs.AddTickets(playerId, amount)
 end
 
 function TicketFuncs.SpendTickets(playerId, amount)
-	print("incrementing Tickets for player with id: " .. playerId)
-	if playerTickets[playerId] and playerTickets[playerId] > amount then
+	print("spending Tickets for player with id: " .. playerId)
+	local f = playerTickets[playerId]
+	if playerTickets[playerId] and playerTickets[playerId] >= amount then
 		playerTickets[playerId] -= amount
 		updateTickets(playerId)
 		return true
