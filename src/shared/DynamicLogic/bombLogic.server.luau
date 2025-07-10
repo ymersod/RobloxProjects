@@ -121,13 +121,15 @@ function explode()
 	expScript.Parent = sphere
 
 	playExplosion(bomb.Position)
-	local sound = bomb:FindFirstAncestorOfClass("Sound")
+	local sound = bomb:FindFirstChildOfClass("Sound")
 	if sound then
 		sound:Play()
 		bomb.Transparency = 1
 		sound.Ended:Once(function()
 			bomb.Parent:Destroy()
 		end)
+	else
+		bomb.Parent:Destroy()
 	end
 end
 
