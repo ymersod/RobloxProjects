@@ -1,14 +1,16 @@
 --TODO: Script might be needed down the line
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
-
+local CollectionService = game:GetService("CollectionService")
+local DataStoreService = game:GetService("DataStoreService")
+local firstTimePlayerStore = DataStoreService:GetDataStore("FirstTimeLogin")
 local ServerScriptService = game:GetService("ServerScriptService")
+local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
 local inventoryFunctions = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
+local rollTickets = require(ServerScriptService.Server.ServerModuleScripts.rollTickets)
 
 local tool1 = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle0")
-
-local CollectionService = game:GetService("CollectionService")
 
 -- function ignorePhysicsOnOwner(char: Model, hitBox: Part)
 -- 	for _, charPart in char:GetDescendants() do
@@ -47,35 +49,47 @@ function SetupStarterTools(player: Player)
 		return
 	end
 	local inventory = player:WaitForChild("Inventory")
-	if inventory then
-		local inventoryList = inventory:GetChildren()
+	local login = player:WaitForChild("LocalStats"):WaitForChild("FirstTimeLogin") :: StringValue
 
-		if #inventoryList == 1 then
-			GiveStarterSlapStyle(player)
-			print("First time player, initializing starter slap-style")
+	local success, loginData = pcall(function()
+		return firstTimePlayerStore:GetAsync(player.UserId)
+	end)
+
+	local function SetDataStore(enum: string)
+		local successI, err = pcall(function()
+			return firstTimePlayerStore:SetAsync(player.UserId, enum)
+		end)
+
+		if successI then
+			if enum == enums.Login.FirstTimeLogin then
+				GiveStarterSlapStyle(player)
+				rollTickets.AddTickets(player.UserId, 1)
+				print("First time player, initializing starter slap-style")
+			end
+			login.Value = enum
 		else
-			print("Player already has inventory, brrrr")
+			warn("Error in setting FirstTimeLogin: ", err)
+		end
+	end
+
+	if inventory and success then
+		print("Logindata is: ", loginData)
+		if loginData == nil then
+			SetDataStore(enums.Login.FirstTimeLogin)
+		elseif loginData == enums.Login.FirstTimeLogin then
+			-- TEST
+			-- SetDataStore(enums.Login.FirstTimeLogin)
+			-- print()
+			SetDataStore(enums.Login.ConcurrentLogin)
 		end
 	else
-		GiveStarterSlapStyle(player)
-		warn("Inventory not found, initializing starter slap-style")
+		warn("Inventory or getting data went wrong in init")
 	end
 	--inventoryFunctions.EquipTool(player, tool1)
 	--inventoryFunctions.AddToInventory(player, tool1)
 
 	--inventoryFunctions.AddToInventory(player, tool2)
 end
-
-game:GetService("Players").PlayerAdded:Connect(function(player)
-	local character = player.Character or player.CharacterAdded:Wait()
-	SetupStarterTools(player)
-
-	-- if not character:FindFirstChildOfClass("Humanoid") then
-	-- 	return
-	-- end
-	-- local humanoidLoaded = character:WaitForChild("Humanoid")
-	-- humanoidLoaded.MaxSlopeAngle = 45
-end)
 
 --TODO: This should be in a setup file for players together with other set ups... well at least the folders i think
 game.Players.PlayerAdded:Connect(function(player)
@@ -123,10 +137,18 @@ game.Players.PlayerAdded:Connect(function(player)
 	tickets.Value = 0
 	tickets.Parent = localStats
 
+	local login = Instance.new("StringValue")
+	login.Name = "FirstTimeLogin"
+	login.Value = enums.Login.NotInitYet
+	login.Parent = localStats
+
 	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "ExpBoost", "sum", 100)
 	compIntVal.setBoundTarget(expBoost)
 	compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "SpeedValue", "mul", 16)
 	compIntVal.setBoundTarget(speedBoost)
 	compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "JumpValue", "mul", 7.2)
 	compIntVal.setBoundTarget(jumpBoost)
+
+	local character = player.Character or player.CharacterAdded:Wait()
+	SetupStarterTools(player)
 end)

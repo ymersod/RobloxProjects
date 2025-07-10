@@ -13,6 +13,7 @@ local activeSlapSlotUIPrefab =
 	ReplicatedStorage:WaitForChild("UI"):WaitForChild("DynamicGUI"):WaitForChild("Inventory"):WaitForChild("SlapStyle")
 local slotUIPrefab =
 	ReplicatedStorage:WaitForChild("UI"):WaitForChild("DynamicGUI"):WaitForChild("Inventory"):WaitForChild("SlotUI")
+
 -- PLAYER GUI
 local inventoryGUI = player.PlayerGui:WaitForChild("ScreenGui"):WaitForChild("Inventory")
 local slapGUI = inventoryGUI:WaitForChild("ActiveSlapStyle"):WaitForChild("Active")

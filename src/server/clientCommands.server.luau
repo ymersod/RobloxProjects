@@ -125,6 +125,10 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 					local response = dataStoreDevManagementFunctions.removePlayerTicketStore(command.args[1])
 					print(response)
 				end
+				if #command.args == 1 or #command.args == 2 and command.args[2] == "login" then
+					local response = dataStoreDevManagementFunctions.removePlayerFirstTimeLoginStore(command.args[1])
+					print(response)
+				end
 			end
 		elseif command.command == "/settickets" then
 			if #command.args >= 0 then

@@ -13,4 +13,10 @@ enums.RewardTypes = {
 	Ticket = "Ticket",
 }
 
+enums.Login = {
+	NotInitYet = "NotInitYet",
+	FirstTimeLogin = "FirstTimeLogin",
+	ConcurrentLogin = "ConcurrentLogin",
+}
+
 return enums

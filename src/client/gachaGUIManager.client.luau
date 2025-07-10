@@ -46,6 +46,7 @@ local statBarColors = {
 	Blue = Color3.fromRGB(0, 0, 255),
 	Purple = Color3.fromRGB(128, 0, 128),
 }
+local grey = Color3.fromRGB(147, 155, 163)
 local equippedSlapStyleTransparency = {
 	Equipped = 0.15,
 	Backpack = 0.75,
@@ -135,11 +136,9 @@ function updateActiveRollSlot()
 			continue
 		end
 
-		local buttonToUpdate = slot and slot:FindFirstChild("EquipButton", true)
-
-		if buttonToUpdate and curSlot and activeRollSlot and tostring(curSlot) == tostring(activeRollSlot) then
-			buttonToUpdate.Transparency = equippedSlapStyleTransparency.Equipped
-
+		local buttonToUpdateSlapStyle = slot and slot:FindFirstChild("EquipButton", true)
+		if buttonToUpdateSlapStyle and curSlot and activeRollSlot and tostring(curSlot) == tostring(activeRollSlot) then
+			buttonToUpdateSlapStyle.Transparency = equippedSlapStyleTransparency.Equipped
 			local curActiveChoiceUI = activeChoice:FindFirstChildOfClass("Frame")
 
 			if curActiveChoiceUI then
@@ -150,10 +149,31 @@ function updateActiveRollSlot()
 			else
 				warn("Cant find data on GUI elements")
 			end
-		elseif not buttonToUpdate then
-			continue
-		else
-			buttonToUpdate.Transparency = equippedSlapStyleTransparency.Backpack
+		elseif buttonToUpdateSlapStyle then
+			buttonToUpdateSlapStyle.Transparency = equippedSlapStyleTransparency.Backpack
+		end
+
+		local buttonToUpodateNoSlapStyle = slot and slot:FindFirstChild("Button", true)
+		if
+			buttonToUpodateNoSlapStyle
+			and curSlot
+			and activeRollSlot
+			and tostring(curSlot) == tostring(activeRollSlot)
+		then
+			local background: ImageLabel = slot:FindFirstChild("UnlockedBG", true)
+			background.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+			local curActiveChoiceUI = activeChoice:FindFirstChildOfClass("Frame")
+			if curActiveChoiceUI then
+				curActiveChoiceUI:Destroy()
+
+				local chosenGUIClone = slot:Clone()
+				chosenGUIClone.Parent = activeChoice
+			else
+				warn("Cant find data on GUI elements")
+			end
+		elseif buttonToUpodateNoSlapStyle then
+			local background: ImageLabel = slot:FindFirstChild("UnlockedBG", true)
+			background.BackgroundColor3 = grey
 		end
 	end
 end

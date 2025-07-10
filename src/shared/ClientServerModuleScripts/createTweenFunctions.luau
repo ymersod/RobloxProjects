@@ -76,4 +76,26 @@ function tweenCreate.Shrink(gui: Frame, duration: number, startSize: UDim2?, end
 	return tween
 end
 
+function tweenCreate.PulseTransparency(gui: Frame, transparencyMax: number, transparencyStart: number, duration: number)
+	local pulseTweenIn = TweenService:Create(gui, TweenInfo.new(duration, Enum.EasingStyle.Sine), {
+		Transparency = transparencyMax,
+	})
+	local pulseTweenOut = TweenService:Create(gui, TweenInfo.new(duration, Enum.EasingStyle.Sine), {
+		Transparency = transparencyStart,
+	})
+
+	return pulseTweenIn, pulseTweenOut
+end
+
+function tweenCreate.Zoom(gui, originalSize: UDim2, duration: number, zoomAmount: UDim2)
+	local zoomIn = TweenService:Create(gui, TweenInfo.new(duration, Enum.EasingStyle.Sine), {
+		Size = originalSize + zoomAmount,
+	})
+	local zoomOut = TweenService:Create(gui, TweenInfo.new(duration, Enum.EasingStyle.Sine), {
+		Size = originalSize,
+	})
+
+	return zoomIn, zoomOut
+end
+
 return tweenCreate
