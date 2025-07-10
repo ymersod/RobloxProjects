@@ -6,6 +6,7 @@ local expLevelClient = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Ev
 
 local soundService = game:GetService("SoundService")
 local levelUpSound = workspace:FindFirstChild("NonSpacialSounds"):FindFirstChild("Level_up")
+local xpGainSound = workspace:FindFirstChild("NonSpacialSounds"):FindFirstChild("Magic_Sprinkle")
 
 local levelTexts = player
 	:WaitForChild("PlayerGui")
@@ -24,6 +25,7 @@ local expFrame: Frame = player
 
 local oldLvl = 0
 expLevelClient.OnClientEvent:Connect(function(level: { lvl: number, lvlProgress: { progress: number, goal: number } })
+	soundService:PlayLocalSound(xpGainSound)
 	if oldLvl == level.lvl then
 		local tween = TweenService:Create(
 			expFrame,
