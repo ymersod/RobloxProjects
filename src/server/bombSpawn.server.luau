@@ -21,6 +21,48 @@ local bombFallZones = CollectionService:GetTagged(BOMB_FALL_ZONE_TAG)
 local rng = Random.new()
 local TweenService = game:GetService("TweenService")
 
+local function applyAntiGravity(tool) --Thank you gpt
+	local handle = tool:FindFirstChild("Handle")
+	if not handle then
+		warn("Tool missing Handle")
+		return function() end
+	end
+
+	-- Create anti-gravity VectorForce
+	local attachment = Instance.new("Attachment")
+	attachment.Name = "AntiGravityAttachment"
+	attachment.Parent = handle
+
+	local vectorForce = Instance.new("VectorForce")
+	vectorForce.Name = "AntiGravityForce"
+	vectorForce.Force = Vector3.new(0, handle.AssemblyMass * workspace.Gravity, 0)
+	vectorForce.ApplyAtCenterOfMass = true
+	vectorForce.Attachment0 = attachment
+	vectorForce.RelativeTo = Enum.ActuatorRelativeTo.World
+	vectorForce.Parent = handle
+
+	-- Optional: Zero out velocity each frame
+	--[[local heartbeatConn = RunService.Heartbeat:Connect(function()
+		if tool.Parent == workspace then
+			handle.AssemblyLinearVelocity = Vector3.zero
+			handle.AssemblyAngularVelocity = Vector3.zero
+		end
+	end)]]
+
+	-- Return a cleanup function to disable/remove the effect
+	return function()
+		--[[if heartbeatConn then
+			heartbeatConn:Disconnect()
+		end]]
+		if vectorForce and vectorForce.Parent then
+			vectorForce:Destroy()
+		end
+		if attachment and attachment.Parent then
+			attachment:Destroy()
+		end
+	end
+end
+
 for _, bombSpawner in ipairs(bombSpawners) do
 	local entry = {
 		bombSpawner = bombSpawner,
@@ -140,10 +182,11 @@ function createBombItem(bomb: Tool, startingPosition: Vector3, parent)
 	end
 
 	bombLogic.Enabled = true
-	primary.Anchored = true
-	primary.Position = startingPosition
+	bomb:PivotTo(CFrame.new(startingPosition))
 	primary.CanTouch = false
 	bomb.Parent = item
+
+	local removeAntiGravity = applyAntiGravity(bomb)
 
 	local hitArea = primary:FindFirstChild("HitBox")
 	hitArea.CanTouch = false
@@ -177,13 +220,9 @@ function createBombItem(bomb: Tool, startingPosition: Vector3, parent)
 			local hasBomb = playerChar:FindFirstChild("Bomb")
 			if player and not hasBomb then
 				-- Setting bomb setting back to normal
-				primary.Anchored = false
+				--primary.Anchored = false
 				primary.CanTouch = true
 				hitArea.CanTouch = true
-
-				--TODO: I hope there is a better way of doing this hitbox thing, this is the best i can come up with right now
-				--Placing the hitbox with its parent
-				hitArea.Position = primary.Position + offSet
 
 				giveBombToPlayer(player, bomb)
 				item:Destroy()
@@ -193,6 +232,7 @@ function createBombItem(bomb: Tool, startingPosition: Vector3, parent)
 	)
 
 	item.Destroying:Connect(function()
+		removeAntiGravity()
 		if not bomb then
 			return
 		end
@@ -255,12 +295,7 @@ local function animateToPosition(part: BasePart, targetPos: Vector3, duration: n
 	local goal = { Position = targetPos }
 	local tween = TweenService:Create(part, tweenInfo, goal)
 	part:GetPropertyChangedSignal("CFrame"):Connect(function()
-		local primary = followingTool.PrimaryPart or followingTool:FindFirstChild("Handle") --TODO: find out which one it is
-		if not primary then
-			warn("Bomb tool has no PrimaryPart or Handle to position")
-			return
-		end
-		primary.Position = part.Position
+		followingTool:PivotTo(CFrame.new(part.Position))
 	end)
 	return tween
 end
