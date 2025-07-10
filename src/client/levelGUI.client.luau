@@ -4,6 +4,9 @@ local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local expLevelClient = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("ExpLevelClient")
 
+local soundService = game:GetService("SoundService")
+local levelUpSound = workspace:FindFirstChild("NonSpacialSounds"):FindFirstChild("Level_up")
+
 local levelTexts = player
 	:WaitForChild("PlayerGui")
 	:WaitForChild("ScreenGui")
@@ -41,6 +44,7 @@ expLevelClient.OnClientEvent:Connect(function(level: { lvl: number, lvlProgress:
 		)
 		subtween:Play()
 		oldLvl = level.lvl
+		soundService:PlayLocalSound(levelUpSound)
 	end
 	--expFrame.Size = UDim2.new(level.lvlProgress.progress/level.lvlProgress.goal,0,1,0)
 

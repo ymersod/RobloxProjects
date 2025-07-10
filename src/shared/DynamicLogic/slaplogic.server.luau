@@ -64,6 +64,11 @@ tool.Activated:Connect(function()
 		return
 	end
 
+	if tool.PrimaryPart then
+		local sound = tool.PrimaryPart:FindFirstChildOfClass("Sound")
+		if sound then sound:Play() end
+	end
+
 	canActivate = false -- Begin cooldown
 	loadedAnim:Play()
 
