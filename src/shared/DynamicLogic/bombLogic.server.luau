@@ -122,15 +122,25 @@ function explode()
 
 	playExplosion(bomb.Position)
 	local sound = bomb:FindFirstChildOfClass("Sound")
+
+	--TODO: Might want the part on the bomb, and then decouple it when the sound should play instead of copy and instance
 	if sound then
-		sound:Play()
-		bomb.Transparency = 1
-		sound.Ended:Once(function()
-			bomb.Parent:Destroy()
+		local tempPart = Instance.new("Part")
+		tempPart.Size = Vector3.new(1, 1, 1)
+		tempPart.Transparency = 1
+		tempPart.Anchored = true
+		tempPart.CanCollide = false
+		tempPart.CFrame = bomb.CFrame
+		tempPart.Parent = workspace
+
+		local clone = sound:Clone()
+		clone.Parent = tempPart
+		clone:Play()
+		clone.Ended:Once(function()
+			tempPart:Destroy()
 		end)
-	else
-		bomb.Parent:Destroy()
 	end
+	bomb.Parent:Destroy()
 end
 
 function BombTouched(hit: BasePart)
