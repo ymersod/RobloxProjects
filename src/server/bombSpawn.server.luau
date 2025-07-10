@@ -5,12 +5,6 @@ local inventoryFuncs = require(ServerScriptService.Server.ServerModuleScripts.in
 local CollectionService = game:GetService("CollectionService")
 local ServerStorage = game:GetService("ServerStorage")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
---These are for scaling
-local prefabHandle = bombPrefab:FindFirstChild("Handle")
-local prefabHitbox = prefabHandle:FindFirstChild("HitBox")
-local offSet = prefabHitbox.Position - prefabHandle.Position
-local prefabMesh = prefabHandle and prefabHandle:FindFirstChildOfClass("SpecialMesh")
---These are for scaling
 local BOMB_SPAWNER_TAG = "BombSpawner"
 local bombSpawners = CollectionService:GetTagged(BOMB_SPAWNER_TAG)
 local bombCds: { { bombSpawner: Instance, cooldown: number, lastSpawnTime: number, bombReady: boolean, bomb: Tool? } } =
@@ -192,18 +186,25 @@ function createBombItem(bomb: Tool, startingPosition: Vector3, parent)
 	hitArea.CanTouch = false
 
 	-- Making the mesh of the item fit within the itemSphere
-	local mesh = primary:FindFirstChildOfClass("SpecialMesh")
+	local mesh = primary:FindFirstChildOfClass("MeshPart")
 	local worldSize
-	if mesh then -- Right now its a cube, but someday we might need to calculate on the mesh... hope this is how one would do it
-		worldSize =
-			Vector3.new(primary.Size.X * mesh.Scale.X, primary.Size.Y * mesh.Scale.Y, primary.Size.Z * mesh.Scale.Z)
+	local normalSize
+	if mesh then -- now assuming mesh is a MeshPart child
+		worldSize = Vector3.new(
+			primary.Size.X * mesh.Size.X / primary.Size.X, -- mesh.Size.X scaled relative to primary
+			primary.Size.Y * mesh.Size.Y / primary.Size.Y,
+			primary.Size.Z * mesh.Size.Z / primary.Size.Z
+		)
+		normalSize = mesh.Size
 	else
 		worldSize = primary.Size
 	end
+
 	local boundingRadius = (worldSize / 2).Magnitude
-	local scaleFactor = (itemSphere.Size.y / 2) / boundingRadius
+	local scaleFactor = (itemSphere.Size.Y / 2) / boundingRadius
+
 	if mesh then
-		mesh.Scale = mesh.Scale * scaleFactor
+		mesh.Size = mesh.Size * scaleFactor
 	else
 		primary.Size = primary.Size * scaleFactor
 	end
@@ -236,10 +237,10 @@ function createBombItem(bomb: Tool, startingPosition: Vector3, parent)
 		if not bomb then
 			return
 		end
-		if prefabMesh then
-			primary:FindFirstChildOfClass("SpecialMesh").Scale = prefabMesh.Scale
+		if mesh then
+			mesh.Size = normalSize
 		else
-			primary.Size = prefabHandle.Size
+			primary.Size = normalSize
 		end
 	end)
 	return item
