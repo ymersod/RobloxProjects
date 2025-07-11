@@ -133,10 +133,9 @@ function explode()
 		tempPart.CFrame = bomb.CFrame
 		tempPart.Parent = workspace
 
-		local clone = sound:Clone()
-		clone.Parent = tempPart
-		clone:Play()
-		clone.Ended:Once(function()
+		sound.Parent = tempPart
+		sound:Play()
+		sound.Ended:Once(function()
 			tempPart:Destroy()
 		end)
 	end
