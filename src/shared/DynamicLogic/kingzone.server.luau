@@ -64,7 +64,7 @@ local function handleKingZone()
 			part.Color = Color3.fromRGB(255, 0, 0)
 		end
 	else
-		part.Color = Color3.fromRGB(163, 162, 165)
+		part.Color = Color3.fromRGB(156, 34, 165)
 	end
 end
 
