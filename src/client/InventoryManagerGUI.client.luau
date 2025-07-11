@@ -178,9 +178,11 @@ function updateEquippedInInventoryGUI()
 			return
 		end
 		slayStyleParentFrame.BackgroundTransparency = 1
+		activeTitleText.Visible = true
 		updateActiveGUI(data, { damageImgRef = damageImg, rangeImgRef = rangeImg, speedImgRef = speedImg }, icon)
 	else
 		slayStyleParentFrame.BackgroundTransparency = 0
+		activeTitleText.Visible = false
 	end
 end
 
