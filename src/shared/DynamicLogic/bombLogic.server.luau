@@ -1,3 +1,5 @@
+local ServerScriptService = game:GetService("ServerScriptService")
+local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
 local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 local bomb = script.Parent :: Part
@@ -49,6 +51,67 @@ local previousOwnerUserId = nil
 local COIN_VALUE = 10
 local DROP_VARIANTS = 3
 
+local currentPlayerMod = nil
+
+local jumpBoost = { Name = "BombJumpBoost", Value = 2 }
+local speedBoost = { Name = "BombSpeedBoost", Value = 1.3 }
+
+--TODO: feel like these functions should be given from the comp values or come from another place.
+local function applyBoostsToPlayer(jumpValue, speedValue, humanoid)
+	humanoid.JumpHeight = jumpValue
+	humanoid.WalkSpeed = speedValue
+end
+
+local function hasModifierControl(compVal, modding, numberNeeded)
+	local ans = false
+	local originTable = compVal._originTable
+	local count = 0
+	for i, mod in ipairs(originTable) do
+		if mod.Name == modding.Name then
+			ans = true
+			if count >= numberNeeded then
+				table.remove(originTable, i)
+			end
+		end
+	end
+	if count < numberNeeded then
+		for i = count + 1, numberNeeded do
+			print("Whyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy")
+			table.insert(originTable, modding)
+		end
+	end
+	return ans
+end
+
+local function applyJumpAndSpeedAmp(player)
+	local compSpeed = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "SpeedValue")
+	local compJump = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "JumpValue")
+
+	if currentPlayerMod and curOwnerModel.UserId == player.UserId then
+		return
+	end
+
+	currentPlayerMod = player
+
+	if hasModifierControl(compSpeed, speedBoost, 1) or hasModifierControl(compJump, jumpBoost, 1) then
+		return
+	end
+
+	currentPlayerMod = nil
+
+	local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+	applyBoostsToPlayer(compJump.Value, compSpeed.Value, humanoid)
+end
+
+local function removeJumpAndSpeedAmp(player)
+	local compSpeed = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "SpeedValue")
+	local compJump = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "JumpValue")
+	hasModifierControl(compSpeed, speedBoost, 0)
+	hasModifierControl(compJump, jumpBoost, 0)
+	local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+	applyBoostsToPlayer(compJump.Value, compSpeed.Value, humanoid)
+end
+
 function spawnKingCoin(value, player)
 	local SPAWN_RADIUS = 10
 	local coinClone = kingCoin:Clone()
@@ -87,6 +150,9 @@ local function playExplosion(position: Vector3)
 end
 
 function explode()
+	if curOwnerPlayer then
+		removeJumpAndSpeedAmp(curOwnerPlayer)
+	end
 	--TODO: Generalize this to a func, similar to the func in SafeZone server. Make a func that return players who is within a sphere
 	for _, player in pairs(Players:GetPlayers()) do
 		local char = player.Character
@@ -178,9 +244,13 @@ function BombTouched(hit: BasePart)
 
 	lastTransferTime = now
 	previousOwnerUserId = curOwnerPlayer and curOwnerPlayer.UserId or nil
-
+	if curOwnerPlayer then
+		removeJumpAndSpeedAmp(curOwnerPlayer)
+	end
 	curOwnerModel = hitPlayerChar
 	curOwnerPlayer = playerHit
+	print("MEOOWWWWWWW")
+	applyJumpAndSpeedAmp(playerHit)
 
 	local bombTool = bomb.Parent
 	inventoryFunctions.EquipBomb(playerHit, bombTool, 0)
@@ -196,8 +266,24 @@ hitBox.Touched:Connect(function(hit: BasePart)
 	touched_key = false
 end)
 
+local function checkForOwner()
+	if curOwnerPlayer or touched_key then
+		return
+	end
+
+	local parent = bomb.Parent.Parent
+	if parent:IsA("Backpack") or parent:IsA("Model") then
+		touched_key = true
+		curOwnerModel = parent:IsA("Model") and parent or parent.Parent
+		curOwnerPlayer = Players:GetPlayerFromCharacter(curOwnerModel)
+		applyJumpAndSpeedAmp(curOwnerPlayer)
+		touched_key = false
+	end
+end
+
 for timeLeft = FUSE_TIME, 0, -1 do
 	countdownText.Text = timeLeft
+	checkForOwner()
 	task.wait(1)
 
 	if timeLeft <= 2 then
