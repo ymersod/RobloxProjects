@@ -26,6 +26,7 @@ local icon: ImageLabel = activeSlapInfoGUI:WaitForChild("SlapstyleIcon")
 local damageImg: ImageLabel = activeSlapInfoGUI:WaitForChild("Stats"):WaitForChild("Damage"):WaitForChild("Fill")
 local rangeImg: ImageLabel = activeSlapInfoGUI:WaitForChild("Stats"):WaitForChild("Range"):WaitForChild("Fill")
 local speedImg: ImageLabel = activeSlapInfoGUI:WaitForChild("Stats"):WaitForChild("Speed"):WaitForChild("Fill")
+local activeTitleText: TextLabel = activeSlapInfoGUI:WaitForChild("Title")
 local slayStyleParentFrame: Frame = slapGUI:WaitForChild("SlapStyle")
 local slotArr: { Frame } = {}
 for _, child in ipairs(backpackGUI:WaitForChild("InventoryOpen"):GetChildren()) do
@@ -90,6 +91,7 @@ function extractDataFromTool(tool: Tool)
 		Speed = statVals:GetAttribute("Speed") :: number?,
 		Icon = tool:GetAttribute("InventoryImageID") :: string?,
 		ToolId = tool:GetAttribute("ToolId") :: string?,
+		Name = tool:GetAttribute("name") :: string?,
 	}
 end
 
@@ -123,11 +125,12 @@ function updateStatBar(bar: ImageLabel, val: number)
 end
 
 function updateActiveGUI(
-	data: { Damage: number, Range: number, Speed: number, Icon: string, id: string },
+	data: { Damage: number, Range: number, Speed: number, Icon: string, id: string, Name: string },
 	imgArr: { damageImgRef: ImageLabel, rangeImgRef: ImageLabel, speedImgRef: ImageLabel },
 	iconRef: ImageLabel
 )
 	iconRef.Image = data.Icon
+	activeTitleText.Text = data.Name
 	updateStatBar(imgArr.damageImgRef, data.Damage)
 	updateStatBar(imgArr.rangeImgRef, data.Range)
 	updateStatBar(imgArr.speedImgRef, data.Speed)
@@ -170,7 +173,7 @@ function updateEquippedInInventoryGUI()
 
 	if equippedToolNew then
 		local data = extractDataFromTool(equippedToolNew)
-		if data.Icon == nil or data.Damage == nil or data.Range == nil or data.Speed == nil then
+		if data.Icon == nil or data.Damage == nil or data.Range == nil or data.Speed == nil or data.Name == nil then
 			warn("Some attributtes were nil")
 			return
 		end
