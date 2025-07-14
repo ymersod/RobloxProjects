@@ -22,7 +22,7 @@ runner.Heartbeat:Connect(function()
 		if child:IsA("Player") and (not oldLeader or child.UserId ~= oldLeader.UserId) then
 			local compIntValue = compositeIntValueMultiton.getCompositeIntValue(child.UserId.."ExpBoost")
 			if compIntValue.containsMod("KingExpBoost") then
-				compIntValue -= { Name = "KingExpBoost", Value = 100 }
+				compIntValue.removeModifier("KingExpBoost")
 			end
 			local speedCompIntValue = compositeIntValueMultiton.getCompositeIntValue(child.UserId.."SpeedValue")
 			if speedCompIntValue.containsMod("KingSpeedBoost") then
