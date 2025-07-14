@@ -4,6 +4,7 @@ local players = game:GetService("Players")
 local expManagerFunctions = require(ServerScriptService.Server.ServerModuleScripts.expManagerFunctions)
 
 local part = script.Parent
+local partModel = part:FindFirstChild("KingZoneModel")
 local normalTransparency = part.Transparency
 
 local kingCandidates = {}
@@ -58,26 +59,29 @@ local function handleKingZone()
 	updateKingZone(partsInZone)
 	if #kingCandidates > 0 then
 		if #kingCandidates == 1 then
-			part.Color = Color3.fromRGB(9, 255, 0)
+			partModel.Color = Color3.fromRGB(9, 255, 0)
 			scoreKing()
 		else
-			part.Color = Color3.fromRGB(255, 0, 0)
+			partModel.Color = Color3.fromRGB(255, 0, 0)
 		end
 	else
-		part.Color = Color3.fromRGB(156, 34, 165)
+		partModel.Color = Color3.fromRGB(156, 34, 165)
 	end
 end
 
 local function kingZoneMainLoop()
+	if part.Transparency then
+		part.Transparency = 1
+	end
 	while true do
 		local isActive = part:GetAttribute("isActive")
 		if isActive then
 			handleKingZone()
-			if part.Transparency ~= normalTransparency then
-				part.Transparency = normalTransparency
+			if partModel.Transparency ~= normalTransparency then
+				partModel.Transparency = normalTransparency
 			end
-		elseif part.Transparency == normalTransparency then
-			part.Transparency = 1
+		elseif partModel.Transparency == normalTransparency then
+			partModel.Transparency = 1
 		end
 		task.wait(1)
 	end
