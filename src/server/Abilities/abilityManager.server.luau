@@ -8,7 +8,7 @@ local jumpBoostBind = bindableEvents:WaitForChild("jumpBoostBind")
 
 local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
 
-speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
+speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slotToolId:string)
 	print("SpeedVals: ", abilityVals)
 	local playerUserId = player.UserId
 
@@ -26,7 +26,7 @@ speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 	end
 
 	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "SpeedValue")
-	compIntVal += { Name = "SpeedAmp", Value = speedAmp }
+	compIntVal += { Name = slotToolId .. "SpeedAmp", Value = speedAmp }
 	humanoid.WalkSpeed = compIntVal.Value
 
 	delayUtil.Delay(boostTime, function()
@@ -35,11 +35,11 @@ speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 		local newHumanoid = newCharacter and newCharacter:WaitForChild("Humanoid")
 
 		if newHumanoid:IsDescendantOf(game) then
-			compIntVal -= { Name = "SpeedAmp", Value = speedAmp }
+			compIntVal.removeModifier(slotToolId .. "SpeedAmp")
 			newHumanoid.WalkSpeed = compIntVal.Value
 		else
 			newPlayer.CharacterAdded:Once(function()
-				compIntVal -= { Name = "SpeedAmp", Value = speedAmp }
+				compIntVal.removeModifier(slotToolId .. "SpeedAmp")
 				newHumanoid.WalkSpeed = compIntVal.Value
 			end)
 		end
@@ -52,7 +52,7 @@ local function setJumpHeight(val, player, humanoid)
 	end
 end
 
-jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
+jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slotToolId:string)
 	print("Yump vals: ", abilityVals)
 	local playerUserId = player.UserId
 
@@ -70,7 +70,7 @@ jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 	end
 
 	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "JumpValue")
-	compIntVal += { Name = "JumpAmp", Value = jumpAmp }
+	compIntVal += { Name = slotToolId .. "JumpAmp", Value = jumpAmp }
 	setJumpHeight(compIntVal.Value, player, humanoid)
 
 	delayUtil.Delay(boostTime, function()
@@ -79,14 +79,14 @@ jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance)
 		local newHumanoid = newCharacter and newCharacter:WaitForChild("Humanoid")
 
 		if newHumanoid:IsDescendantOf(game) then
-			compIntVal -= { Name = "JumpAmp", Value = jumpAmp }
+			compIntVal.removeModifier(slotToolId .. "JumpAmp")
 			setJumpHeight(compIntVal.Value, player, newHumanoid)
 			print("Jump reset")
 		else
 			newPlayer.CharacterAdded:Once(function()
 				local newCharacter = player.Character
 				local newHumanoid = newCharacter and newCharacter:WaitForChild("Humanoid")
-				compIntVal -= { Name = "JumpAmp", Value = jumpAmp }
+				compIntVal.removeModifier(slotToolId .. "JumpAmp")
 				setJumpHeight(compIntVal.Value, player, newHumanoid)
 			end)
 		end

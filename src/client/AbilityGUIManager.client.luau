@@ -133,8 +133,9 @@ local function activateAbility(actionName, inputState, inputObject)
 			end)
 			tweenGrowCD:Play()
 
+			local toolId = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("ToolId")
 			-- Add your ability logic here (e.g., effects, damage, etc.)
-			abilityEvent:FireServer(abilityValsT)
+			abilityEvent:FireServer(abilityValsT,curSaveSlot .. "" .. toolId)
 		end
 	end
 end
