@@ -122,6 +122,13 @@ function CompositeIntValue.new(mode:"sum"|"mul",value:number?,boundTarget:IntVal
 
 	end
 
+	function obj.resetModifiers()
+		obj._boundTarget = {}
+		if value and (value > 0 or value < 0) then
+			obj._originTable[1] = { Name = "init", Value = value }
+		end
+	end
+
 	return obj :: any
 end
 
