@@ -37,8 +37,6 @@ local tool1 = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):Wai
 -- 	end
 -- end
 
--- TODO: This should only be done if player is a first time login (has no saved slapstyles)
-
 function GiveStarterSlapStyle(player: Player)
 	inventoryFunctions.AddToInventory(player, tool1, 1)
 end
