@@ -9,4 +9,5 @@ remote.OnServerEvent:Connect(function(player)
 	-- 🔐 Add validation if needed
 	print(player.Name .. " activated the aoebonk using E")
 	-- Your server-side logic goes here
+	-- test complete
 end)
