@@ -8,20 +8,27 @@ local soundService = game:GetService("SoundService")
 local levelUpSound = workspace:FindFirstChild("NonSpacialSounds"):FindFirstChild("Level_up")
 local xpGainSound = workspace:FindFirstChild("NonSpacialSounds"):FindFirstChild("Magic_Sprinkle")
 
-local levelTexts = player
+local levelText: TextLabel = player
 	:WaitForChild("PlayerGui")
 	:WaitForChild("ScreenGui")
 	:WaitForChild("LevelBar")
-	:WaitForChild("TextParent")
-	:GetChildren()
-local progressText: TextLabel =
-	player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui"):WaitForChild("LevelBar"):WaitForChild("Progress")
+	:WaitForChild("TopBarInside")
+	:WaitForChild("leveltext")
+local progressText: TextLabel = player
+	:WaitForChild("PlayerGui")
+	:WaitForChild("ScreenGui")
+	:WaitForChild("LevelBar")
+	:WaitForChild("Bar")
+	:WaitForChild("MiddleBar")
+	:WaitForChild("exptext")
+
 local expFrame: Frame = player
 	:WaitForChild("PlayerGui")
 	:WaitForChild("ScreenGui")
 	:WaitForChild("LevelBar")
-	:WaitForChild("Frame")
-	:WaitForChild("Exp")
+	:WaitForChild("Bar")
+	:WaitForChild("MiddleBar")
+	:WaitForChild("Xp")
 
 local oldLvl = 0
 expLevelClient.OnClientEvent:Connect(function(level: { lvl: number, lvlProgress: { progress: number, goal: number } })
@@ -50,15 +57,7 @@ expLevelClient.OnClientEvent:Connect(function(level: { lvl: number, lvlProgress:
 	end
 	--expFrame.Size = UDim2.new(level.lvlProgress.progress/level.lvlProgress.goal,0,1,0)
 
-	for _, text in ipairs(levelTexts) do
-		-- if text.Name == "LevelText" then
-		-- 	text.Text = 'Slap LV: <font color="rgb(255, 221, 0)">' .. level.lvl .. "</font>"
-		-- else
-		-- 	text.Text = "Slap LV:" .. level.lvl
-		-- end
-
-		text.Text = "Slap LV:" .. level.lvl
-	end
+	levelText.Text = "LVL : " .. level.lvl
 
 	progressText.Text = level.lvlProgress.progress .. " / " .. level.lvlProgress.goal
 end)

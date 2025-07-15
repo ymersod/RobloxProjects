@@ -19,7 +19,6 @@ local accessParentGui: Frame = accessBarGui:WaitForChild("AccessParent")
 
 local openCloseGui = accessBarGui:WaitForChild("OpenClose")
 local openCloseButton: ImageButton = accessBarGui:WaitForChild("OpenClose"):WaitForChild("OpenCloseButton")
-local openCloseBg: ImageLabel = accessBarGui:WaitForChild("OpenClose"):WaitForChild("OpenCloseIcon")
 
 local openCloseGachaGUI = accessParentGui:WaitForChild("Roll") :: Frame
 local openCloseGachaButton = openCloseGachaGUI:WaitForChild("OpenCloseButton") :: ImageButton
@@ -67,7 +66,6 @@ openCloseButton.MouseButton1Click:Connect(function()
 	end)
 	if accessParentGui.Visible then
 		-- print("Closing...")
-		openCloseBg.Image = openImageId
 		closeTween:Play()
 		closeTween.Completed:Once(function()
 			accessParentGui.Visible = false
@@ -75,7 +73,6 @@ openCloseButton.MouseButton1Click:Connect(function()
 	elseif not accessParentGui.Visible then
 		-- print("Opening...")
 		accessParentGui.Visible = true
-		openCloseBg.Image = closeImageId
 		openTween:Play()
 	end
 end)

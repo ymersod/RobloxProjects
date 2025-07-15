@@ -11,17 +11,17 @@ local abilityEvent: RemoteEvent? = nil
 -- GUI
 local abilityGUI =
 	game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("ScreenGui"):WaitForChild("Ability")
-local pressE: Frame = abilityGUI:WaitForChild("Press_E")
-local uiButton: ImageButton = abilityGUI:WaitForChild("ActivateAbility")
+local pressE: Frame = abilityGUI:WaitForChild("PressIndicator")
+local uiButton: ImageButton = abilityGUI:WaitForChild("Center"):WaitForChild("ActivateAbility")
 local cooldownGUI: Frame = abilityGUI:WaitForChild("Cooldown")
-local titleText: { TextLabel } = abilityGUI:WaitForChild("TitleText"):GetChildren()
+local titleText: TextLabel = abilityGUI:WaitForChild("Center"):WaitForChild("AbilityName")
 
 -- Tweens
 local scaleFactor = 0.05 -- 5% increase
 local duration = 0.1
 
 local pulseGrowTween, pulseShrinkTween =
-	createTweenFunctions.Pulse(abilityGUI:WaitForChild("MainColor") :: Frame, scaleFactor, duration)
+	createTweenFunctions.Pulse(abilityGUI:WaitForChild("Center") :: Frame, scaleFactor, duration)
 
 function setAbility(equippedTool: Tool?)
 	if equippedTool then
@@ -47,10 +47,7 @@ function updateGui()
 	if not abilityValsT then
 		curText = "???"
 	end
-
-	for _, text in ipairs(titleText) do
-		text.Text = curText
-	end
+	titleText.Text = curText
 end
 
 function onCharChanges()
@@ -135,7 +132,7 @@ local function activateAbility(actionName, inputState, inputObject)
 
 			local toolId = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("ToolId")
 			-- Add your ability logic here (e.g., effects, damage, etc.)
-			abilityEvent:FireServer(abilityValsT,curSaveSlot .. "" .. toolId)
+			abilityEvent:FireServer(abilityValsT, curSaveSlot .. "" .. toolId)
 		end
 	end
 end
