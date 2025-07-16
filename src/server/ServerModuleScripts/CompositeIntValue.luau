@@ -127,6 +127,9 @@ function CompositeIntValue.new(mode:"sum"|"mul",value:number?,boundTarget:IntVal
 		if value and (value > 0 or value < 0) then
 			obj._originTable[1] = { Name = "init", Value = value }
 		end
+		if obj._boundTarget then
+			(obj._boundTarget :: IntValue).Value = obj.Value
+		end
 	end
 
 	return obj :: any
