@@ -3,37 +3,17 @@ local ragdollModule = {}
 function AddForce(char: Model, hrp: BasePart, hitPosition: Vector3, direction: Vector3)
 	if char and hrp then
 		local list = char:GetDescendants()
-		local itemPairs : {[string]:{item1:Instance,item2: Instance}} = {}
-		for i, p in ipairs(list) do
-			if p.Name:match("RigAttachment") == nil then
-				continue
-			end
-			if not itemPairs[p.Name] then
-				itemPairs[p.Name] = {item1=p,item2=nil}
-			else
-				itemPairs[p.Name].item2 = p
-			end
-		end
-		print(itemPairs)
 		local humanoid = char:FindFirstChildOfClass("Humanoid")
 
 		if humanoid then
 			humanoid.PlatformStand = true
 		end
-		local moters = {}
-		for i, p in pairs(itemPairs) do
-			local socket = Instance.new("BallSocketConstraint")
-			socket.Attachment0 = p.item1
-			socket.Attachment1 = p.item2
-			socket.Parent = p.item1
-			socket.TwistLimitsEnabled = true
-			socket.LimitsEnabled = true
+		local moters : { Motor6D } = {}
+		for i, p in pairs(list) do
 
-			local moter = p.item1.Parent:FindFirstChildOfClass("Motor6D")
-
-			if moter then
-				table.insert(moters,moter)
-				moter.Enabled = false
+			if p:IsA("Motor6D") then
+				table.insert(moters,p)
+				p.Enabled = false
 			end
 		end
 
