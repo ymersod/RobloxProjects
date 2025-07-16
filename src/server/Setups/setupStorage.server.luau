@@ -10,7 +10,6 @@ local kingCoinScript =
 	replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("kingCoinLogic")
 local bombScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("bombLogic")
 local slapScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("slaplogic")
-local safeZoneScript = replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("Safezone")
 local abilityScripts: { Script } =
 	ServerScriptService:WaitForChild("Server"):WaitForChild("Abilities"):WaitForChild("AbilityEvents"):GetChildren()
 for _, abilityScript in ipairs(abilityScripts) do
@@ -33,10 +32,6 @@ local delayUtil = require(ServerScriptService.Server.ServerModuleScripts.delayUt
 
 local bombScriptClone = bombScript:Clone()
 bombScriptClone.Parent = bombPrefab.PrimaryPart
-
-for _, safeZone in ipairs(game:GetService("CollectionService"):GetTagged("SafeZone")) do
-	safeZoneScript:Clone().Parent = safeZone
-end
 
 for _, kingZoneManager in ipairs(game:GetService("CollectionService"):GetTagged("KingZoneManager")) do
 	kingZoneManagerScript:Clone().Parent = kingZoneManager
