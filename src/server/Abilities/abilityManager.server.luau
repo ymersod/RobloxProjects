@@ -27,7 +27,6 @@ speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slo
 
 	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "SpeedValue")
 	compIntVal += { Name = slotToolId .. "SpeedAmp", Value = speedAmp }
-	humanoid.WalkSpeed = compIntVal.Value
 
 	delayUtil.Delay(boostTime, function()
 		local newPlayer = players:GetPlayerByUserId(playerUserId)
@@ -36,21 +35,13 @@ speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slo
 
 		if newHumanoid:IsDescendantOf(game) then
 			compIntVal.removeModifier(slotToolId .. "SpeedAmp")
-			newHumanoid.WalkSpeed = compIntVal.Value
 		else
 			newPlayer.CharacterAdded:Once(function()
 				compIntVal.removeModifier(slotToolId .. "SpeedAmp")
-				newHumanoid.WalkSpeed = compIntVal.Value
 			end)
 		end
 	end)
 end)
-
-local function setJumpHeight(val, player, humanoid)
-	if player.States.CanJump.Value then
-		humanoid.JumpHeight = val
-	end
-end
 
 jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slotToolId:string)
 	print("Yump vals: ", abilityVals)
@@ -71,7 +62,6 @@ jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slot
 
 	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "JumpValue")
 	compIntVal += { Name = slotToolId .. "JumpAmp", Value = jumpAmp }
-	setJumpHeight(compIntVal.Value, player, humanoid)
 
 	delayUtil.Delay(boostTime, function()
 		local newPlayer = players:GetPlayerByUserId(playerUserId)
@@ -80,14 +70,9 @@ jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slot
 
 		if newHumanoid:IsDescendantOf(game) then
 			compIntVal.removeModifier(slotToolId .. "JumpAmp")
-			setJumpHeight(compIntVal.Value, player, newHumanoid)
-			print("Jump reset")
 		else
 			newPlayer.CharacterAdded:Once(function()
-				local newCharacter = player.Character
-				local newHumanoid = newCharacter and newCharacter:WaitForChild("Humanoid")
 				compIntVal.removeModifier(slotToolId .. "JumpAmp")
-				setJumpHeight(compIntVal.Value, player, newHumanoid)
 			end)
 		end
 	end)

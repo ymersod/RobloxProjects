@@ -27,10 +27,6 @@ runner.Heartbeat:Connect(function()
 			local speedCompIntValue = compositeIntValueMultiton.getCompositeIntValue(child.UserId.."SpeedValue")
 			if speedCompIntValue.containsMod("KingSpeedBoost") then
 				speedCompIntValue.removeModifier("KingSpeedBoost")
-				local childHumanoid = child.Character:FindFirstChildOfClass("Humanoid")
-				if childHumanoid then
-					childHumanoid.WalkSpeed = speedCompIntValue.Value
-				end
 			end
 		end
 	end
@@ -50,16 +46,12 @@ runner.Heartbeat:Connect(function()
 			end
 			if not speedCompIntValue.containsMod("KingSpeedBoost") then
 				speedCompIntValue += { Name = "KingSpeedBoost", Value = 1.5 }
-				leaderHumanoid.WalkSpeed = speedCompIntValue.Value
 			end
 		end
 
 		
 		if leader.Character:FindFirstChild("Crown") or (leaderHumanoid and leaderHumanoid.Health <= 0) then
 			return
-		end
-		if leaderHumanoid.WalkSpeed ~= speedCompIntValue.Value then
-			leaderHumanoid.WalkSpeed = speedCompIntValue.Value
 		end
 		if curCrown then
 			curCrown:Destroy()

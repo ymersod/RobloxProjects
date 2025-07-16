@@ -29,7 +29,6 @@ local toolToolingFuncs = require(toolToolingFunctions)
 local kingCoinScriptClone = kingCoinScript:Clone()
 kingCoinScriptClone.Parent = kingCoinPrefab
 
-local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
 local delayUtil = require(ServerScriptService.Server.ServerModuleScripts.delayUtil)
 
 local bombScriptClone = bombScript:Clone()
@@ -108,7 +107,6 @@ for _, slipPart in ipairs(game:GetService("CollectionService"):GetTagged("Slippe
 	)
 	slipPart.Touched:Connect(function(hit)
 		local character = hit:FindFirstAncestorOfClass("Model")
-		local humanoid = character:FindFirstChildOfClass("Humanoid")
 		local rootPart = character:FindFirstChild("HumanoidRootPart")
 
 		local rayParams = RaycastParams.new()
@@ -131,24 +129,9 @@ for _, slipPart in ipairs(game:GetService("CollectionService"):GetTagged("Slippe
 		end
 
 		player.States.CanJump.Value = false
-		humanoid.JumpHeight = 0
 
 		delayUtil.Delay(0.5, function()
 			player.States.CanJump.Value = true
-			local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "JumpValue")
-			local newCharacter = player.Character
-			local newHumanoid = newCharacter and newCharacter:WaitForChild("Humanoid")
-
-			if newHumanoid:IsDescendantOf(game) then
-				newHumanoid.JumpHeight = compIntVal.Value
-				print("Jump reset")
-			else
-				player.CharacterAdded:Once(function()
-					local newCharacter = player.Character
-					local newHumanoid = newCharacter and newCharacter:WaitForChild("Humanoid")
-					newHumanoid.JumpHeight = compIntVal.Value
-				end)
-			end
 		end)
 	end)
 end
