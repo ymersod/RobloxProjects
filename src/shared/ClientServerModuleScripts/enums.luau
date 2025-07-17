@@ -27,6 +27,12 @@ enums.Colors = {
 	NotUnlockedBpSpace = {
 		Color = Color3.fromRGB(155, 34, 38),
 	},
+	ActiveMenuOption = {
+		Color = Color3.fromRGB(10, 147, 150),
+	},
+	InactiveMenuOption = {
+		Color = Color3.fromRGB(238, 155, 0),
+	},
 }
 
 return enums

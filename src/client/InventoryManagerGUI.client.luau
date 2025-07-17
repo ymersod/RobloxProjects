@@ -156,8 +156,6 @@ local statBarColors = {
 	Purple = Color3.fromRGB(128, 0, 128),
 }
 
-local equippedSlotUIRef: Frame? = nil
-
 function onEquip(curSlot: Frame)
 	local id = curSlot and curSlot:GetAttribute("ToolIdRef") :: string?
 	local inventorySaveSlot = curSlot and curSlot:GetAttribute("SlotNumber") :: number?
@@ -195,13 +193,6 @@ function onEquip(curSlot: Frame)
 
 	local result = equipServerEvent:InvokeServer(toolToEquip) -- equip tool
 	print("Returned slapStyle: ", result)
-	equippedSlotUIRef = curSlot:FindFirstChildOfClass("Frame") :: Frame
-
-	if result and result.name ~= "Bomb" then
-		equippedSlotUIRef = curSlot:FindFirstChildOfClass("Frame") :: Frame
-	else
-		equippedSlotUIRef = nil
-	end
 end
 function extractDataFromTool(tool: Tool)
 	local statVals = tool:FindFirstChild("StatVals")
@@ -303,10 +294,6 @@ function setStateOfSlotUI(state, slotUI: Frame)
 		localTweens.img.MoveOut:Play()
 
 		parent:SetAttribute("SlotState", slotStateEnums.UnlockedWithEquippedTool)
-
-		if equippedSlotUIRef then
-			setStateOfSlotUI(slotStateEnums.UnlockedWithTool, equippedSlotUIRef)
-		end
 	elseif state == slotStateEnums.UnlockedWithTool then
 		bg.Visible = true
 		-- TODO: Should match rarity at some point
@@ -387,7 +374,6 @@ function updateBackpackGUI()
 			end
 
 			equipButton.MouseButton1Click:Connect(function()
-				setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedTool, slotUI)
 				onEquip(slotUI.Parent)
 			end)
 		else
@@ -422,6 +408,35 @@ function trackBackpack()
 
 	availableSlot.Changed:Connect(function()
 		updateBackpackGUI()
+	end)
+
+	local function updateEquippedGUI()
+		local tool = player.Character:FindFirstChildOfClass("Tool")
+		local toolSlot = tool and tool:GetAttribute("SaveSlot")
+
+		if not toolSlot then
+			warn("Tool not found")
+		end
+
+		for _, slot in ipairs(slotArr) do
+			local slotNumber = slot:GetAttribute("SlotNumber")
+			local slotGUI = slot:FindFirstChildOfClass("Frame")
+			local state = slot:GetAttribute("SlotState")
+			print("state: ", state)
+			if tostring(slotNumber) == tostring(toolSlot) then
+				setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedTool, slotGUI)
+			elseif state == slotStateEnums.UnlockedWithEquippedTool then
+				setStateOfSlotUI(slotStateEnums.UnlockedWithTool, slotGUI)
+			end
+		end
+	end
+
+	player.Character.ChildAdded:Connect(updateEquippedGUI)
+	player.Character.ChildRemoved:Connect(updateEquippedGUI)
+
+	player.CharacterAdded:Connect(function()
+		player.Character.ChildAdded:Connect(updateEquippedGUI)
+		player.Character.ChildRemoved:Connect(updateEquippedGUI)
 	end)
 end
 trackBackpack()
@@ -460,14 +475,16 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 				slotUIFound = slotSpace
 			end
 		end
+
+		local character = player.Character
+		local bomb = character:FindFirstChild("Bomb")
 		local slotState = slotUIFound and slotUIFound:GetAttribute("SlotState")
 		if
 			slotUIFound
 			and slotState
 			and (slotState == slotStateEnums.UnlockedWithEquippedTool or slotState == slotStateEnums.UnlockedWithTool)
+			and not bomb
 		then
-			local slotUI = slotUIFound:FindFirstChildOfClass("Frame")
-			setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedTool, slotUI)
 			onEquip(slotUIFound)
 		else
 			warn("Didnt find ui matching slot: ", slotIndex)
