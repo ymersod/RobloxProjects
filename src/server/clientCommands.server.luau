@@ -6,7 +6,8 @@ local killModule = require(
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("killPlayerServer")
 )
 local ragdollEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("RagdollClient")
-
+local pushBackClientEvent =
+	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("PushBackClient")
 local ServerScriptService = game:GetService("ServerScriptService")
 local dailyRewardScript =
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("dailyReward")
@@ -86,6 +87,25 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 			end
 		elseif command.command == "/clearinventory" then
 			inventoryFunctions.RemoveAllFromInventory(player)
+		elseif command.command == "/push" then
+			local character = player.Character
+			if not character then
+				return nil
+			end
+
+			local rootPart = character:FindFirstChild("HumanoidRootPart")
+			if not rootPart then
+				return nil
+			end
+
+			local forward = rootPart.CFrame.LookVector
+			if #command.args > 0 then
+				print(command.args)
+				local number = tonumber(command.args[1])
+				pushBackClientEvent:FireClient(player, rootPart.Position + (forward * 5), number)
+			else
+				pushBackClientEvent:FireClient(player, rootPart.Position + (forward * 5), 2000)
+			end
 		elseif command.command == "/clearslot" then
 			if #command.args > 0 then
 				inventoryFunctions.RemoveFromInventory(player, command.args[1])

@@ -3,6 +3,8 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local replicatedStorage = game:GetService("ReplicatedStorage")
 
+local pushBackClient = replicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("PushBackClient")
+
 local explosionSphere = game:GetService("Workspace"):WaitForChild("ExplosionSphere")
 if not explosionSphere then
 	error("Missing ExplosionSphere in Workspace")
@@ -170,6 +172,24 @@ function explode()
 	bomb.Parent:Destroy()
 end
 
+local function pushPlayerFromCurPlayer(player)
+	if not curOwnerPlayer then
+		return
+	end
+
+	local character = curOwnerPlayer.Character
+	if not character then
+		return
+	end
+
+	local root = character:FindFirstChild("HumanoidRootPart")
+	if not root then
+		return
+	end
+
+	pushBackClient:FireClient(player, root.Position, 1000)
+end
+
 function EquipBomb(player)
 	local bombTool = bomb.Parent
 	if bombTool and bombTool:IsA("Tool") then
@@ -222,6 +242,7 @@ function BombTouched(hit: BasePart)
 		return
 	end
 	lastTransferTime = now
+	pushPlayerFromCurPlayer(playerHit)
 	EquipBomb(playerHit)
 end
 
