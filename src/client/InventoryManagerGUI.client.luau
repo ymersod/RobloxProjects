@@ -15,6 +15,11 @@ local equippedSlapstylePrefab = ReplicatedStorage:WaitForChild("UI")
 	:WaitForChild("Inventory")
 	:WaitForChild("SlotUITweenReference")
 local bgTargetPrefab = equippedSlapstylePrefab:WaitForChild("Bg")
+local statsTargetPrefab = equippedSlapstylePrefab:WaitForChild("Stats")
+local nameTargetPrefab = statsTargetPrefab:WaitForChild("Name")
+local powerTargetPrefab = statsTargetPrefab:WaitForChild("Power")
+local rangeTargetPrefab = statsTargetPrefab:WaitForChild("Range")
+local speedTargetPrefab = statsTargetPrefab:WaitForChild("Speed")
 
 local slotStateEnums = {
 	Locked = 0,
@@ -28,9 +33,18 @@ local inventoryGUI = player.PlayerGui:WaitForChild("ScreenGui"):WaitForChild("In
 local inventorySlotsParent = inventoryGUI:WaitForChild("CanvasGroup")
 
 local slotArr: { Frame } = {}
+local tweens: { [number]: { GrowBg: Tween, ShrinkBg: Tween } } = {}
 for _, child in ipairs(inventorySlotsParent:GetChildren()) do
 	if child:HasTag("InventorySlot") then
 		table.insert(slotArr, child)
+
+		local slotUI = child:FindFirstChildOfClass("Frame")
+		local bg: Frame = slotUI:FindFirstChild("Bg")
+
+		local growBgTween = createTweenFunctions.Grow(bg, 0.1, bg.Size, bgTargetPrefab.Size)
+		local shrinkBgTween = createTweenFunctions.Shrink(bg, 0.1, bgTargetPrefab.Size, bg.Size)
+
+		-- tweens[child:GetAttribute("SlotNumber")] = { GrowBg = growBgTween, ShrinkBg = shrinkBgTween }
 	end
 end
 
@@ -128,6 +142,9 @@ function setStateOfSlotUI(state, slotUI: Frame)
 	local stats = slotUI:FindFirstChild("Stats") :: Frame
 	local button = slotUI:FindFirstChild("EquipButton") :: ImageButton
 	local gradient = bg:FindFirstChildOfClass("UIGradient")
+	local parent = slotUI.Parent
+	local slotNumber = parent and parent:GetAttribute("SlotNumber")
+	local equipped = parent and parent:GetAttribute("Equipped")
 
 	if state == slotStateEnums.Locked then
 		bg.Visible = true
@@ -155,8 +172,7 @@ function setStateOfSlotUI(state, slotUI: Frame)
 		stats.Visible = true
 		button.Visible = true
 
-		local growBgTween = createTweenFunctions.Grow(bg, 0.2, bg.Size, bgTargetPrefab.Size)
-		growBgTween:Play()
+		-- tweens[slotNumber].GrowBg:Play()
 	elseif state == slotStateEnums.UnlockedWithTool then
 		bg.Visible = true
 		-- TODO: Should match rarity at some point
@@ -167,6 +183,8 @@ function setStateOfSlotUI(state, slotUI: Frame)
 
 		stats.Visible = true
 		button.Visible = true
+		print()
+		-- tweens[slotNumber].ShrinkBg:Play()
 	end
 end
 
@@ -287,11 +305,10 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 			end
 		end
 		if slotUIFound then
-			setStateOfSlotUI(
-				slotStateEnums.UnlockedWithEquippedTool,
-				slotUIFound:FindFirstChildOfClass("Frame") :: Frame
-			)
 			onEquip(slotUIFound)
+
+			local slotUI = slotUIFound:FindFirstChildOfClass("Frame")
+			setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedTool, slotUI)
 		else
 			warn("Didnt find ui matching slot: ", slotIndex)
 		end
