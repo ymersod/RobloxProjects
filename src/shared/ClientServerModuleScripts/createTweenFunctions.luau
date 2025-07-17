@@ -63,12 +63,28 @@ function tweenCreate.Grow(gui: Frame, duration: number, startSize: UDim2?, endSi
 
 	return tween
 end
+function tweenCreate.Grow2(gui: Frame, duration: number, endSize: UDim2?)
+	local finalSize = endSize or UDim2.new(1, 0, 1, 0)
+
+	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+	local tween = TweenService:Create(gui, tweenInfo, { Size = finalSize })
+
+	return tween
+end
 
 function tweenCreate.Shrink(gui: Frame, duration: number, startSize: UDim2?, endSize: UDim2?)
 	local initialSize = startSize or UDim2.new(1, 0, 1, 0)
 	local finalSize = endSize or UDim2.new(0, 0, 0, 0)
 
 	gui.Size = initialSize
+
+	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
+	local tween = TweenService:Create(gui, tweenInfo, { Size = finalSize })
+
+	return tween
+end
+function tweenCreate.Shrink2(gui: Frame, duration: number, endSize: UDim2?)
+	local finalSize = endSize or UDim2.new(0, 0, 0, 0)
 
 	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
 	local tween = TweenService:Create(gui, tweenInfo, { Size = finalSize })

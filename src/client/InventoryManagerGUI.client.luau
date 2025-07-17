@@ -41,10 +41,10 @@ for _, child in ipairs(inventorySlotsParent:GetChildren()) do
 		local slotUI = child:FindFirstChildOfClass("Frame")
 		local bg: Frame = slotUI:FindFirstChild("Bg")
 
-		local growBgTween = createTweenFunctions.Grow(bg, 0.1, bg.Size, bgTargetPrefab.Size)
-		local shrinkBgTween = createTweenFunctions.Shrink(bg, 0.1, bgTargetPrefab.Size, bg.Size)
+		local growBgTween = createTweenFunctions.Grow2(bg, 0.1, bgTargetPrefab.Size)
+		local shrinkBgTween = createTweenFunctions.Shrink2(bg, 0.1, bg.Size)
 
-		-- tweens[child:GetAttribute("SlotNumber")] = { GrowBg = growBgTween, ShrinkBg = shrinkBgTween }
+		tweens[child:GetAttribute("SlotNumber")] = { GrowBg = growBgTween, ShrinkBg = shrinkBgTween }
 	end
 end
 
@@ -92,7 +92,8 @@ function onEquip(curSlot: Frame?)
 		return
 	end
 	local result = equipServerEvent:InvokeServer(toolToEquip) -- equip tool
-	if result and result ~= "Bomb" then
+
+	if result and result.name ~= "Bomb" then
 		-- TODO: do something
 	end
 end
@@ -140,7 +141,7 @@ end
 function setStateOfSlotUI(state, slotUI: Frame)
 	local bg = slotUI:FindFirstChild("Bg") :: Frame
 	local stats = slotUI:FindFirstChild("Stats") :: Frame
-	local button = slotUI:FindFirstChild("EquipButton") :: ImageButton
+	local button = bg:FindFirstChild("EquipButton") :: ImageButton
 	local gradient = bg:FindFirstChildOfClass("UIGradient")
 	local parent = slotUI.Parent
 	local slotNumber = parent and parent:GetAttribute("SlotNumber")
@@ -172,7 +173,7 @@ function setStateOfSlotUI(state, slotUI: Frame)
 		stats.Visible = true
 		button.Visible = true
 
-		-- tweens[slotNumber].GrowBg:Play()
+		tweens[slotNumber].GrowBg:Play()
 	elseif state == slotStateEnums.UnlockedWithTool then
 		bg.Visible = true
 		-- TODO: Should match rarity at some point
@@ -183,8 +184,7 @@ function setStateOfSlotUI(state, slotUI: Frame)
 
 		stats.Visible = true
 		button.Visible = true
-		print()
-		-- tweens[slotNumber].ShrinkBg:Play()
+		tweens[slotNumber].ShrinkBg:Play()
 	end
 end
 
@@ -221,7 +221,7 @@ function updateBackpackGUI()
 				return
 			end
 
-			local equipButton = slotUI:FindFirstChildOfClass("ImageButton")
+			local equipButton = slotUI:FindFirstChild("Bg"):FindFirstChildOfClass("ImageButton")
 
 			local data = extractDataFromTool(foundTool)
 			local stats = slotUI:FindFirstChild("Stats") :: Frame
@@ -237,6 +237,7 @@ function updateBackpackGUI()
 			setStateOfSlotUI(slotStateEnums.UnlockedWithTool, slotUI)
 
 			equipButton.MouseButton1Click:Connect(function()
+				onEquip(slotUI.Parent)
 				setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedTool, slotUI)
 			end)
 		else

@@ -132,7 +132,7 @@ function inventoryFunctions.EquipTool(player: Player, tool: Tool)
 	elseif equippedTool and equippedSaveSlot and toolSaveSlot then
 		if equippedTool.Name == "Bomb" then
 			print("Cant equip got bomb")
-			return
+			return equippedTool
 		elseif equippedSaveSlot ~= toolSaveSlot then
 			print("Equip new tool tool")
 			equippedTool:Destroy()
@@ -144,9 +144,9 @@ function inventoryFunctions.EquipTool(player: Player, tool: Tool)
 	end
 
 	if equippedTool == nil then
-		return "None"
+		return nil
 	else
-		return equippedTool.Name
+		return equippedTool
 	end
 end
 
