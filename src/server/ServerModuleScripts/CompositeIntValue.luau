@@ -53,6 +53,7 @@ local CompositeIntValueMetaTable = {
 			end
 			if a._originTable[i] == nil then
 				a._originTable[i] = a._originTable[i+1]
+				a._originTable[i+1] = nil
 			end
 		end
 		if not contains then
@@ -114,6 +115,7 @@ function CompositeIntValue.new(mode:"sum"|"mul",value:number?,boundTarget:IntVal
 			end
 			if obj._originTable[i] == nil then
 				obj._originTable[i] = obj._originTable[i+1]
+				obj._originTable[i+1] = nil
 			end
 		end
 		if obj._boundTarget then
