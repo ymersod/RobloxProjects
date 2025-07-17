@@ -16,46 +16,6 @@ local POWER_MULT = 1000 * abilityVals:GetAttribute("Damage")
 local COOLDOWN = 3 / abilityVals:GetAttribute("Speed")
 local canActivate = true
 
-local debounce = {}
-
-part.Touched:Connect(function(hit: BasePart)
-	if not loadedAnim.IsPlaying then
-		return
-	end
-
-	local character = hit:FindFirstAncestorOfClass("Model")
-	if not character then
-		return
-	end
-
-	local targetPlayer = game.Players:GetPlayerFromCharacter(character)
-	if not targetPlayer then
-		return
-	end
-
-	if targetPlayer.States.Safe.Value then
-		print(targetPlayer.Name, " is safe!")
-		return
-	end
-
-	if debounce[targetPlayer] then
-		return
-	end
-	debounce[targetPlayer] = true
-	task.delay(1, function()
-		debounce[targetPlayer] = nil
-	end)
-
-	local rootPart: Part = character:FindFirstChild("HumanoidRootPart")
-	if not rootPart then
-		return
-	end
-
-	local hitDirection = (rootPart.Position - part.Position).Unit * POWER_MULT
-	print("Hitting from direction: ", hitDirection)
-	ragdollClientEvent:FireClient(targetPlayer, hit.Position, hitDirection)
-end)
-
 tool.Activated:Connect(function()
 	if not canActivate then
 		return
@@ -76,4 +36,32 @@ tool.Activated:Connect(function()
 	task.delay(COOLDOWN, function()
 		canActivate = true
 	end)
+
+
+	local statVals = tool:FindFirstChild("StatVals")
+
+	if not statVals or not statVals:GetAttribute("Range") then
+		return
+	end
+
+	if tool.Parent and tool.Parent:IsA("Model") and tool.Parent.PrimaryPart then
+		local directionV3 = tool.Parent.PrimaryPart.CFrame.LookVector
+		
+		if tool.Parent:FindFirstChildOfClass("Humanoid") and tool.Parent:FindFirstChildOfClass("Humanoid").MoveDirection.Magnitude > 0 then
+			directionV3 = tool.Parent:FindFirstChildOfClass("Humanoid").MoveDirection
+		end
+
+		local shapeCastResults = workspace:Blockcast(tool.Parent.PrimaryPart.CFrame, Vector3.new(20,10,10), directionV3*(statVals:GetAttribute("Range")+1))
+
+		if shapeCastResults and shapeCastResults.Instance:FindFirstAncestorOfClass("Model") and game.Players:GetPlayerFromCharacter(shapeCastResults.Instance:FindFirstAncestorOfClass("Model")) then
+			local targetPlayer = game.Players:GetPlayerFromCharacter(shapeCastResults.Instance:FindFirstAncestorOfClass("Model"))
+			if targetPlayer.States.Safe.Value then
+				print(targetPlayer.Name, " is safe!")
+				return
+			end
+
+			local hitDirection = (shapeCastResults.Instance.Position - part.Position).Unit * POWER_MULT
+			ragdollClientEvent:FireClient(targetPlayer, shapeCastResults.Position, hitDirection)
+		end
+	end
 end)
