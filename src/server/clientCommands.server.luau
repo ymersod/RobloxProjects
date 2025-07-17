@@ -179,6 +179,8 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 		elseif command.command == "/clearlevels" then
 			expFuncs.setExp(player.UserId, tonumber(0))
 			levelupRewards.resetPlayer(player.UserId)
+		elseif command.command == "/incrementSlot" then
+			inventoryFuncs.IncrementSlotSpace(player)
 		end
 	end)
 end)

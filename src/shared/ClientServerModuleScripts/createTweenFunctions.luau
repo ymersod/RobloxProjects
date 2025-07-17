@@ -92,6 +92,13 @@ function tweenCreate.Shrink2(gui: Frame, duration: number, endSize: UDim2?)
 	return tween
 end
 
+function tweenCreate.MoveTo(gui, duration: number, endPosition: UDim2)
+	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+	local tween = TweenService:Create(gui, tweenInfo, { Position = endPosition })
+
+	return tween
+end
+
 function tweenCreate.PulseTransparency(gui: Frame, transparencyMax: number, transparencyStart: number, duration: number)
 	local pulseTweenIn = TweenService:Create(gui, TweenInfo.new(duration, Enum.EasingStyle.Sine), {
 		Transparency = transparencyMax,

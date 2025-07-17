@@ -16,10 +16,11 @@ local equippedSlapstylePrefab = ReplicatedStorage:WaitForChild("UI")
 	:WaitForChild("SlotUITweenReference")
 local bgTargetPrefab = equippedSlapstylePrefab:WaitForChild("Bg")
 local statsTargetPrefab = equippedSlapstylePrefab:WaitForChild("Stats")
-local nameTargetPrefab = statsTargetPrefab:WaitForChild("Name")
-local powerTargetPrefab = statsTargetPrefab:WaitForChild("Power")
-local rangeTargetPrefab = statsTargetPrefab:WaitForChild("Range")
-local speedTargetPrefab = statsTargetPrefab:WaitForChild("Speed")
+local nameTargetPrefab: Frame = statsTargetPrefab:WaitForChild("Name")
+local powerTargetPrefab: Frame = statsTargetPrefab:WaitForChild("Power")
+local rangeTargetPrefab: Frame = statsTargetPrefab:WaitForChild("Range")
+local speedTargetPrefab: Frame = statsTargetPrefab:WaitForChild("Speed")
+local iconTargetPrefab: ImageLabel = equippedSlapstylePrefab:WaitForChild("Img")
 
 local slotStateEnums = {
 	Locked = 0,
@@ -33,18 +34,116 @@ local inventoryGUI = player.PlayerGui:WaitForChild("ScreenGui"):WaitForChild("In
 local inventorySlotsParent = inventoryGUI:WaitForChild("CanvasGroup")
 
 local slotArr: { Frame } = {}
-local tweens: { [number]: { GrowBg: Tween, ShrinkBg: Tween } } = {}
+local tweens: {
+	[number]: {
+		bg: {
+			Grow: Tween,
+			Shrink: Tween,
+		},
+		name: {
+			Grow: Tween,
+			Shrink: Tween,
+			MoveOut: Tween,
+			MoveIn: Tween,
+		},
+		power: {
+			Grow: Tween,
+			Shrink: Tween,
+			MoveOut: Tween,
+			MoveIn: Tween,
+		},
+		range: {
+			Grow: Tween,
+			Shrink: Tween,
+			MoveOut: Tween,
+			MoveIn: Tween,
+		},
+		speed: {
+			Grow: Tween,
+			Shrink: Tween,
+			MoveOut: Tween,
+			MoveIn: Tween,
+		},
+		img: {
+			MoveOut: Tween,
+			MoveIn: Tween,
+		},
+	},
+} =
+	{}
 for _, child in ipairs(inventorySlotsParent:GetChildren()) do
 	if child:HasTag("InventorySlot") then
 		table.insert(slotArr, child)
 
 		local slotUI = child:FindFirstChildOfClass("Frame")
 		local bg: Frame = slotUI:FindFirstChild("Bg")
+		local statsFrame = slotUI:FindFirstChild("Stats")
+		local name: Frame = statsFrame:FindFirstChild("Name")
+		local power: Frame = statsFrame:FindFirstChild("Power")
+		local range: Frame = statsFrame:FindFirstChild("Range")
+		local speed: Frame = statsFrame:FindFirstChild("Speed")
+		local icon: ImageLabel = slotUI:FindFirstChild("Img")
 
 		local growBgTween = createTweenFunctions.Grow2(bg, 0.1, bgTargetPrefab.Size)
 		local shrinkBgTween = createTweenFunctions.Shrink2(bg, 0.1, bg.Size)
 
-		tweens[child:GetAttribute("SlotNumber")] = { GrowBg = growBgTween, ShrinkBg = shrinkBgTween }
+		local growNameTween = createTweenFunctions.Grow2(name, 0.1, nameTargetPrefab.Size)
+		local moveNameTweenOut = createTweenFunctions.MoveTo(name, 0.1, nameTargetPrefab.Position)
+		local shrinkNameTween = createTweenFunctions.Shrink2(name, 0.1, name.Size)
+		local moveNameTweenIn = createTweenFunctions.MoveTo(name, 0.1, name.Position)
+
+		local growPowerTween = createTweenFunctions.Grow2(power, 0.1, powerTargetPrefab.Size)
+		local movePowerTweenOut = createTweenFunctions.MoveTo(power, 0.1, powerTargetPrefab.Position)
+		local shrinkPowerTween = createTweenFunctions.Shrink2(power, 0.1, power.Size)
+		local movePowerTweenIn = createTweenFunctions.MoveTo(power, 0.1, power.Position)
+
+		local growRangeTween = createTweenFunctions.Grow2(range, 0.1, rangeTargetPrefab.Size)
+		local moveRangeTweenOut = createTweenFunctions.MoveTo(range, 0.1, rangeTargetPrefab.Position)
+		local shrinkRangeTween = createTweenFunctions.Shrink2(range, 0.1, range.Size)
+		local moveRangeTweenIn = createTweenFunctions.MoveTo(range, 0.1, range.Position)
+
+		local growSpeedTween = createTweenFunctions.Grow2(speed, 0.1, speedTargetPrefab.Size)
+		local moveSpeedTweenOut = createTweenFunctions.MoveTo(speed, 0.1, speedTargetPrefab.Position)
+		local shrinkSpeedTween = createTweenFunctions.Shrink2(speed, 0.1, speed.Size)
+		local moveSpeedTweenIn = createTweenFunctions.MoveTo(speed, 0.1, speed.Position)
+
+		local moveImgOut = createTweenFunctions.MoveTo(icon, 0.1, iconTargetPrefab.Position)
+		local moveImgIn = createTweenFunctions.MoveTo(icon, 0.1, icon.Position)
+
+		tweens[child:GetAttribute("SlotNumber")] = {
+			bg = {
+				Grow = growBgTween,
+				Shrink = shrinkBgTween,
+			},
+			name = {
+				Grow = growNameTween,
+				Shrink = shrinkNameTween,
+				MoveOut = moveNameTweenOut,
+				MoveIn = moveNameTweenIn,
+			},
+			power = {
+				Grow = growPowerTween,
+				Shrink = shrinkPowerTween,
+				MoveOut = movePowerTweenOut,
+				MoveIn = movePowerTweenIn,
+			},
+			range = {
+				Grow = growRangeTween,
+				Shrink = shrinkRangeTween,
+				MoveOut = moveRangeTweenOut,
+				MoveIn = moveRangeTweenIn,
+			},
+			speed = {
+				Grow = growSpeedTween,
+				Shrink = shrinkSpeedTween,
+				MoveOut = moveSpeedTweenOut,
+				MoveIn = moveSpeedTweenIn,
+			},
+			img = {
+				MoveOut = moveImgOut,
+				MoveIn = moveImgIn,
+			},
+		}
 	end
 end
 
@@ -57,7 +156,9 @@ local statBarColors = {
 	Purple = Color3.fromRGB(128, 0, 128),
 }
 
-function onEquip(curSlot: Frame?)
+local equippedSlotUIRef: Frame? = nil
+
+function onEquip(curSlot: Frame)
 	local id = curSlot and curSlot:GetAttribute("ToolIdRef") :: string?
 	local inventorySaveSlot = curSlot and curSlot:GetAttribute("SlotNumber") :: number?
 	if not id then
@@ -91,10 +192,15 @@ function onEquip(curSlot: Frame?)
 		warn("Playerchar not existing")
 		return
 	end
+
 	local result = equipServerEvent:InvokeServer(toolToEquip) -- equip tool
+	print("Returned slapStyle: ", result)
+	equippedSlotUIRef = curSlot:FindFirstChildOfClass("Frame") :: Frame
 
 	if result and result.name ~= "Bomb" then
-		-- TODO: do something
+		equippedSlotUIRef = curSlot:FindFirstChildOfClass("Frame") :: Frame
+	else
+		equippedSlotUIRef = nil
 	end
 end
 function extractDataFromTool(tool: Tool)
@@ -141,11 +247,15 @@ end
 function setStateOfSlotUI(state, slotUI: Frame)
 	local bg = slotUI:FindFirstChild("Bg") :: Frame
 	local stats = slotUI:FindFirstChild("Stats") :: Frame
+	local img = slotUI:FindFirstChild("Img") :: ImageLabel
 	local button = bg:FindFirstChild("EquipButton") :: ImageButton
 	local gradient = bg:FindFirstChildOfClass("UIGradient")
 	local parent = slotUI.Parent
+	if not parent then
+		warn("SlotSpace gone??")
+		return
+	end
 	local slotNumber = parent and parent:GetAttribute("SlotNumber")
-	local equipped = parent and parent:GetAttribute("Equipped")
 
 	if state == slotStateEnums.Locked then
 		bg.Visible = true
@@ -153,6 +263,9 @@ function setStateOfSlotUI(state, slotUI: Frame)
 
 		stats.Visible = false
 		button.Visible = false
+		img.Visible = false
+
+		parent:SetAttribute("SlotState", slotStateEnums.Locked)
 	elseif state == slotStateEnums.UnlockedNoTool then
 		bg.Visible = true
 		gradient.Color = ColorSequence.new({
@@ -162,6 +275,9 @@ function setStateOfSlotUI(state, slotUI: Frame)
 
 		stats.Visible = false
 		button.Visible = false
+		img.Visible = false
+
+		parent:SetAttribute("SlotState", slotStateEnums.UnlockedNoTool)
 	elseif state == slotStateEnums.UnlockedWithEquippedTool then
 		bg.Visible = true
 		-- TODO: Should match rarity at some point
@@ -172,8 +288,25 @@ function setStateOfSlotUI(state, slotUI: Frame)
 
 		stats.Visible = true
 		button.Visible = true
+		img.Visible = true
 
-		tweens[slotNumber].GrowBg:Play()
+		local localTweens = tweens[slotNumber]
+		localTweens.bg.Grow:Play()
+		localTweens.name.Grow:Play()
+		localTweens.name.MoveOut:Play()
+		localTweens.power.Grow:Play()
+		localTweens.power.MoveOut:Play()
+		localTweens.speed.Grow:Play()
+		localTweens.speed.MoveOut:Play()
+		localTweens.range.Grow:Play()
+		localTweens.range.MoveOut:Play()
+		localTweens.img.MoveOut:Play()
+
+		parent:SetAttribute("SlotState", slotStateEnums.UnlockedWithEquippedTool)
+
+		if equippedSlotUIRef then
+			setStateOfSlotUI(slotStateEnums.UnlockedWithTool, equippedSlotUIRef)
+		end
 	elseif state == slotStateEnums.UnlockedWithTool then
 		bg.Visible = true
 		-- TODO: Should match rarity at some point
@@ -184,7 +317,21 @@ function setStateOfSlotUI(state, slotUI: Frame)
 
 		stats.Visible = true
 		button.Visible = true
-		tweens[slotNumber].ShrinkBg:Play()
+		img.Visible = false
+
+		local localTweens = tweens[slotNumber]
+		localTweens.bg.Shrink:Play()
+		localTweens.name.Shrink:Play()
+		localTweens.name.MoveIn:Play()
+		localTweens.power.Shrink:Play()
+		localTweens.power.MoveIn:Play()
+		localTweens.speed.Shrink:Play()
+		localTweens.speed.MoveIn:Play()
+		localTweens.range.Shrink:Play()
+		localTweens.range.MoveIn:Play()
+		localTweens.img.MoveIn:Play()
+
+		parent:SetAttribute("SlotState", slotStateEnums.UnlockedWithTool)
 	end
 end
 
@@ -234,11 +381,14 @@ function updateBackpackGUI()
 			local toolId = foundTool:GetAttribute("ToolId")
 			local _ = parent and toolId and parent:SetAttribute("ToolIdRef", toolId)
 
-			setStateOfSlotUI(slotStateEnums.UnlockedWithTool, slotUI)
+			local slotState = slotUI.Parent:GetAttribute("SlotState")
+			if slotState == "" or slotState == slotStateEnums.Locked or slotState == slotStateEnums.UnlockedNoTool then
+				setStateOfSlotUI(slotStateEnums.UnlockedWithTool, slotUI)
+			end
 
 			equipButton.MouseButton1Click:Connect(function()
-				onEquip(slotUI.Parent)
 				setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedTool, slotUI)
+				onEquip(slotUI.Parent)
 			end)
 		else
 			setStateOfSlotUI(slotStateEnums.UnlockedNoTool, slotUI)
@@ -248,6 +398,7 @@ end
 
 function trackBackpack()
 	local inventory = player:FindFirstChild("Inventory")
+	local availableSlot = inventory:FindFirstChildOfClass("IntValue")
 
 	if not inventory then
 		warn("inventory not initialized")
@@ -266,6 +417,10 @@ function trackBackpack()
 		if child.Name == "Bomb" then
 			return
 		end
+		updateBackpackGUI()
+	end)
+
+	availableSlot.Changed:Connect(function()
 		updateBackpackGUI()
 	end)
 end
@@ -305,11 +460,15 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 				slotUIFound = slotSpace
 			end
 		end
-		if slotUIFound then
-			onEquip(slotUIFound)
-
+		local slotState = slotUIFound and slotUIFound:GetAttribute("SlotState")
+		if
+			slotUIFound
+			and slotState
+			and (slotState == slotStateEnums.UnlockedWithEquippedTool or slotState == slotStateEnums.UnlockedWithTool)
+		then
 			local slotUI = slotUIFound:FindFirstChildOfClass("Frame")
 			setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedTool, slotUI)
+			onEquip(slotUIFound)
 		else
 			warn("Didnt find ui matching slot: ", slotIndex)
 		end

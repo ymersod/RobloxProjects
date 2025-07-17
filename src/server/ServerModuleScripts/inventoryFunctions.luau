@@ -129,6 +129,7 @@ function inventoryFunctions.EquipTool(player: Player, tool: Tool)
 	--Unequip active tool
 	if not equippedTool then
 		equippedTool = Equip(playerChar, tool)
+		return equippedTool
 	elseif equippedTool and equippedSaveSlot and toolSaveSlot then
 		if equippedTool.Name == "Bomb" then
 			print("Cant equip got bomb")
@@ -137,17 +138,15 @@ function inventoryFunctions.EquipTool(player: Player, tool: Tool)
 			print("Equip new tool tool")
 			equippedTool:Destroy()
 			equippedTool = Equip(playerChar, tool)
+			return equippedTool
 		else
 			print("Unequip active tool")
 			equippedTool:Destroy()
+			return nil
 		end
 	end
 
-	if equippedTool == nil then
-		return nil
-	else
-		return equippedTool
-	end
+	return nil
 end
 
 function inventoryFunctions.EquipBomb(player: Player, bomb: Tool, cd: number)
@@ -177,6 +176,12 @@ function inventoryFunctions.EquipBomb(player: Player, bomb: Tool, cd: number)
 	else
 		bomb.Parent = playerChar
 	end
+end
+
+function inventoryFunctions.IncrementSlotSpace(player: Player)
+	local inventory = player:FindFirstChild("Inventory") :: Folder?
+	local value = inventory:FindFirstChildOfClass("IntValue")
+	value.Value = 3
 end
 
 return inventoryFunctions
