@@ -177,7 +177,6 @@ function createBombItem(bomb: Tool, startingPosition: Vector3, parent)
 
 	bombLogic.Enabled = true
 	bomb:PivotTo(CFrame.new(startingPosition))
-	primary.CanTouch = false
 	bomb.Parent = item
 
 	local removeAntiGravity = applyAntiGravity(bomb)
@@ -208,29 +207,27 @@ function createBombItem(bomb: Tool, startingPosition: Vector3, parent)
 	else
 		primary.Size = primary.Size * scaleFactor
 	end
-
-	item.Touched:Connect(
-		function(hit) --TODO: Might need to introduce the keys back so a weird bug doesn't happen in multiplayer
-			--if bomb.touched_key then
-			--	return
-			--end
-			--bomb.touched_key = true
+	local touch_key = nil
+	item.Touched:Connect(function(hit)
+		if touch_key then
+			return
+		end
+		touch_key = hit
+		task.defer(function()
+			if touch_key ~= hit then
+				return
+			end
 			local playerChar = hit:FindFirstAncestorOfClass("Model")
 			local player = playerChar and Players:GetPlayerFromCharacter(playerChar)
 
 			local hasBomb = playerChar:FindFirstChild("Bomb")
 			if player and not hasBomb then
-				-- Setting bomb setting back to normal
-				--primary.Anchored = false
-				primary.CanTouch = true
 				hitArea.CanTouch = true
-
-				giveBombToPlayer(player, bomb)
+				bomb.Parent = playerChar
 				item:Destroy()
 			end
-			--bomb.touched_key = false
-		end
-	)
+		end)
+	end)
 
 	item.Destroying:Connect(function()
 		removeAntiGravity()
