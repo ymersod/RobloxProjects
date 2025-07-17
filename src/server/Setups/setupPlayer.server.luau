@@ -108,7 +108,7 @@ game.Players.PlayerAdded:Connect(function(player)
 	inventory.Parent = player
 	local slotAccess = Instance.new("IntValue")
 	slotAccess.Name = "AvailableSlots"
-	slotAccess.Value = 2
+	slotAccess.Value = 3
 	slotAccess.Parent = inventory
 
 	local localStats = Instance.new("Folder")
