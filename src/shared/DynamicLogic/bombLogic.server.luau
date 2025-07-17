@@ -35,12 +35,13 @@ end
 local curOwnerModel = script:FindFirstAncestorOfClass("Model")
 local curOwnerPlayer = Players:GetPlayerFromCharacter(curOwnerModel)
 
-local FUSE_TIME = 30
-local Explosion_Radius = 10
-local GRACE_PERIOD = 1.5 -- seconds
-local COIN_VALUE = 10
-local DROP_VARIANTS = 3
-local COIN_SPAWN_RADIUS = 10
+local FUSE_TIME_SECOND = bomb:GetAttribute("FUSE_TIME_SECOND")
+local EXPLOSION_RADIUS = bomb:GetAttribute("EXPLOSION_RADIUS")
+local GRACE_PERIOD = bomb:GetAttribute("GRACE_PERIOD")
+local COIN_VALUE_MIN = bomb:GetAttribute("COIN_VALUE_MIN")
+local COIN_VALUE_MAX = bomb:GetAttribute("COIN_VALUE_MAX")
+local COIN_SPAWN_RADIUS = bomb:GetAttribute("COIN_SPAWN_RADIUS")
+local KING_SCORE_DRAIN_PERCENT = bomb:GetAttribute("KING_SCORE_DRAIN_PERCENT")
 
 local touched_key = nil
 local lastTransferTime = 0
@@ -62,7 +63,7 @@ countdownText.BackgroundTransparency = 1
 countdownText.TextColor3 = Color3.new(1, 0, 0) -- Red text
 countdownText.TextScaled = true
 countdownText.Font = Enum.Font.FredokaOne
-countdownText.Text = FUSE_TIME
+countdownText.Text = FUSE_TIME_SECOND
 countdownText.Parent = billboardGui
 
 local function spawnKingCoin(value, player)
@@ -119,15 +120,23 @@ function explode()
 		end
 
 		local origin = bomb.Position
-		if (root.Position - origin).Magnitude <= Explosion_Radius then
+		if (root.Position - origin).Magnitude <= EXPLOSION_RADIUS then
 			killPlayerServer.killPlayer(char, player)
 			local leaderstats = player:FindFirstChild("leaderstats")
 			local kingScore: IntValue = leaderstats and leaderstats:FindFirstChild("King Score")
 			if kingScore then
-				for i = COIN_VALUE, kingScore.Value * 0.3, COIN_VALUE do
-					local randomVariants = math.round(math.random(-DROP_VARIANTS, DROP_VARIANTS))
-					spawnKingCoin(COIN_VALUE + randomVariants, player)
-					i += randomVariants
+				local totalToDrop = math.round(kingScore.Value * KING_SCORE_DRAIN_PERCENT)
+				local dropped = 0
+
+				while dropped < totalToDrop do
+					local randomVariants = math.round(math.random(COIN_VALUE_MIN, COIN_VALUE_MAX))
+
+					if dropped + randomVariants > totalToDrop then
+						randomVariants = totalToDrop - dropped
+					end
+
+					dropped += randomVariants
+					spawnKingCoin(randomVariants, player)
 				end
 			end
 		end
@@ -135,7 +144,7 @@ function explode()
 	local sphere = explosionSphere:Clone()
 	sphere.Position = bomb.Position
 	sphere.Parent = workspace
-	sphere.Size = Vector3.new(Explosion_Radius * 2, Explosion_Radius * 2, Explosion_Radius * 2)
+	sphere.Size = Vector3.new(EXPLOSION_RADIUS * 2, EXPLOSION_RADIUS * 2, EXPLOSION_RADIUS * 2)
 	local expScript = explosionSphereAnimationScript:Clone()
 	expScript.Parent = sphere
 
@@ -159,6 +168,18 @@ function explode()
 		end)
 	end
 	bomb.Parent:Destroy()
+end
+
+function EquipBomb(player)
+	local bombTool = bomb.Parent
+	if bombTool and bombTool:IsA("Tool") then
+		local success, err = pcall(function()
+			inventoryFunctions.EquipBomb(player, bombTool, 0)
+		end)
+		if not success then
+			warn("Error equipping bomb to player:", err)
+		end
+	end
 end
 
 function BombTouched(hit: BasePart)
@@ -200,17 +221,8 @@ function BombTouched(hit: BasePart)
 	if playerHit.States.Safe.Value then
 		return
 	end
-
-	local bombTool = bomb.Parent
-	if bombTool and bombTool:IsA("Tool") then
-		local success, err = pcall(function()
-			lastTransferTime = now
-			inventoryFunctions.EquipBomb(playerHit, bombTool, 0)
-		end)
-		if not success then
-			warn("Error equipping bomb to player:", err)
-		end
-	end
+	lastTransferTime = now
+	EquipBomb(playerHit)
 end
 
 hitBox.Touched:Connect(function(hit)
@@ -233,17 +245,21 @@ hitBox.Touched:Connect(function(hit)
 	end)
 end)
 
-bomb:GetPropertyChangedSignal("Parent"):Connect(function()
+bomb.Parent:GetPropertyChangedSignal("Parent"):Connect(function()
 	local parent = bomb.Parent
 	local grandparent = parent and parent.Parent
 	if grandparent and grandparent:IsA("Model") then
-		curOwnerModel = grandparent
-		curOwnerPlayer = Players:GetPlayerFromCharacter(curOwnerModel)
+		if not curOwnerPlayer then
+			EquipBomb(Players:GetPlayerFromCharacter(grandparent))
+		else
+			curOwnerModel = grandparent
+			curOwnerPlayer = Players:GetPlayerFromCharacter(curOwnerModel)
+		end
 	end
 end)
 
 task.spawn(function()
-	for timeLeft = FUSE_TIME, 0, -1 do
+	for timeLeft = FUSE_TIME_SECOND, 0, -1 do
 		countdownText.Text = timeLeft
 		task.wait(1)
 
