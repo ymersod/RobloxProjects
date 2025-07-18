@@ -21,6 +21,7 @@ end
 
 local inventoryFunctions = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 local killPlayerServer = require(ServerScriptService.Server.ServerModuleScripts.killPlayerServer)
+local kingCoinFuncs = require(ServerScriptService.Server.ServerModuleScripts.KingCoinFunctions)
 
 local bomb = script.Parent :: Part
 if not bomb or not bomb:IsA("BasePart") then
@@ -66,37 +67,6 @@ countdownText.Font = Enum.Font.FredokaOne
 countdownText.Text = FUSE_TIME_SECOND
 countdownText.Parent = billboardGui
 
-local function spawnKingCoin(value, player)
-	local coinClone = kingCoin:Clone()
-	coinClone.Parent = workspace
-	coinClone.Position = player.Character.PrimaryPart.Position
-		+ Vector3.new(
-			math.random(-COIN_SPAWN_RADIUS, COIN_SPAWN_RADIUS),
-			0,
-			math.random(-COIN_SPAWN_RADIUS, COIN_SPAWN_RADIUS)
-		)
-	local coinLogic: Script? = coinClone:FindFirstChildOfClass("Script")
-	local coinScore: IntValue? = coinClone:FindFirstChild("Coin score")
-	if not coinLogic then
-		warn("Cant find coin logic")
-		return
-	end
-	if not coinScore then
-		warn("Cant find coin score")
-		return
-	end
-
-	local leaderstats = player and player:FindFirstChild("leaderstats")
-	local kingScore: IntValue = leaderstats and leaderstats:FindFirstChild("King Score")
-
-	if kingScore and coinScore then
-		coinScore.Value = value
-		kingScore.Value -= coinScore.Value
-	end
-
-	coinLogic.Enabled = true
-end
-
 local function playExplosion(position: Vector3)
 	local explosion = Instance.new("Explosion")
 	explosion.Position = position
@@ -122,23 +92,7 @@ function explode()
 		local origin = bomb.Position
 		if (root.Position - origin).Magnitude <= EXPLOSION_RADIUS then
 			killPlayerServer.killPlayer(char, player)
-			local leaderstats = player:FindFirstChild("leaderstats")
-			local kingScore: IntValue = leaderstats and leaderstats:FindFirstChild("King Score")
-			if kingScore then
-				local totalToDrop = math.round(kingScore.Value * KING_SCORE_DRAIN_PERCENT)
-				local dropped = 0
-
-				while dropped < totalToDrop do
-					local randomVariants = math.round(math.random(COIN_VALUE_MIN, COIN_VALUE_MAX))
-
-					if dropped + randomVariants > totalToDrop then
-						randomVariants = totalToDrop - dropped
-					end
-
-					dropped += randomVariants
-					spawnKingCoin(randomVariants, player)
-				end
-			end
+			kingCoinFuncs.spawnMultipleKingCoinOfSizeRangesFromPlayer(player, COIN_SPAWN_RADIUS, KING_SCORE_DRAIN_PERCENT, COIN_VALUE_MIN, COIN_VALUE_MAX)
 		end
 	end
 	local sphere = explosionSphere:Clone()
