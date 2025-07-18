@@ -235,13 +235,19 @@ function updateStatBar(bar: Frame, val: number)
 	end
 end
 
-function setStateOfSlotUI(state, slotUI: Frame)
+function setStateOfSlotUI(state, slotUI: Frame, tool)
 	local bg = slotUI:FindFirstChild("Bg") :: Frame
 	local stats = slotUI:FindFirstChild("Stats") :: Frame
 	local img = slotUI:FindFirstChild("Img") :: ImageLabel
 	local button = bg:FindFirstChild("EquipButton") :: ImageButton
 	local gradient = bg:FindFirstChildOfClass("UIGradient")
+	local nameFrame = stats:WaitForChild("Name") :: Frame
+
+	local rarity = tool and tool:GetAttribute("Rarity") :: string?
+	local rarityColors = enums.Colors.RarityColor
+
 	local parent = slotUI.Parent
+
 	if not parent then
 		warn("SlotSpace gone??")
 		return
@@ -270,12 +276,19 @@ function setStateOfSlotUI(state, slotUI: Frame)
 
 		parent:SetAttribute("SlotState", slotStateEnums.UnlockedNoTool)
 	elseif state == slotStateEnums.UnlockedWithEquippedTool then
+		local colorScheme = rarityColors and rarityColors[rarity]
+		if colorScheme and typeof(colorScheme) == "table" and colorScheme.Start and colorScheme.End then
+			gradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, colorScheme.Start),
+				ColorSequenceKeypoint.new(1, colorScheme.End),
+			})
+			nameFrame.BackgroundColor3 = colorScheme.End
+		else
+			warn("⚠️ No valid color scheme found for rarity:", rarity)
+		end
+		bg.Transparency = 0
+
 		bg.Visible = true
-		-- TODO: Should match rarity at some point
-		gradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, enums.Colors.ActiveToolBgGradient.Start),
-			ColorSequenceKeypoint.new(1, enums.Colors.ActiveToolBgGradient.End),
-		})
 
 		stats.Visible = true
 		button.Visible = true
@@ -295,12 +308,19 @@ function setStateOfSlotUI(state, slotUI: Frame)
 
 		parent:SetAttribute("SlotState", slotStateEnums.UnlockedWithEquippedTool)
 	elseif state == slotStateEnums.UnlockedWithTool then
+		local colorScheme = rarityColors and rarityColors[rarity]
+		if colorScheme and typeof(colorScheme) == "table" and colorScheme.Start and colorScheme.End then
+			gradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, colorScheme.Start),
+				ColorSequenceKeypoint.new(1, colorScheme.End),
+			})
+			nameFrame.BackgroundColor3 = colorScheme.End
+		else
+			warn("⚠️ No valid color scheme found for rarity:", rarity)
+		end
+		bg.Transparency = 0.4
+
 		bg.Visible = true
-		-- TODO: Should match rarity at some point
-		gradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, enums.Colors.ActiveToolBgGradient.Start),
-			ColorSequenceKeypoint.new(1, enums.Colors.ActiveToolBgGradient.End),
-		})
 
 		stats.Visible = true
 		button.Visible = true
@@ -370,7 +390,7 @@ function updateBackpackGUI()
 
 			local slotState = slotUI.Parent:GetAttribute("SlotState")
 			if slotState == "" or slotState == slotStateEnums.Locked or slotState == slotStateEnums.UnlockedNoTool then
-				setStateOfSlotUI(slotStateEnums.UnlockedWithTool, slotUI)
+				setStateOfSlotUI(slotStateEnums.UnlockedWithTool, slotUI, foundTool)
 			end
 
 			equipButton.MouseButton1Click:Connect(function()
@@ -423,9 +443,9 @@ function trackBackpack()
 			local slotGUI = slot:FindFirstChildOfClass("Frame")
 			local state = slot:GetAttribute("SlotState")
 			print("state: ", state)
-			if tostring(slotNumber) == tostring(toolSlot) then
-				setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedTool, slotGUI)
-			elseif state == slotStateEnums.UnlockedWithEquippedTool then
+			if tostring(slotNumber) == tostring(toolSlot) then -- Equip
+				setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedTool, slotGUI, tool)
+			elseif state == slotStateEnums.UnlockedWithEquippedTool then --Unequip
 				setStateOfSlotUI(slotStateEnums.UnlockedWithTool, slotGUI)
 			end
 		end
