@@ -135,4 +135,15 @@ function tweenCreate.Zoom(gui, originalSize: UDim2, duration: number, zoomAmount
 	return zoomIn, zoomOut
 end
 
+function tweenCreate.FloatTextUp(text:TextLabel, inDuration: number, outDuration: number, blowUpSize:UDim2, floatAmount: UDim2)
+	local blowUp = TweenService:Create(text, TweenInfo.new(inDuration), {
+		Size = blowUpSize
+	})
+	local floatUp = TweenService:Create(text, TweenInfo.new(outDuration), {
+		Position = floatAmount,
+		Size = UDim2.fromScale(0, 0)
+	})
+	return blowUp, floatUp
+end
+
 return tweenCreate
