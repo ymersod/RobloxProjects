@@ -53,21 +53,76 @@ table.insert(accessGuisKvPs, {
 	AccessGuiGlow = openCloseShopGUI:WaitForChild("backglow"),
 })
 
-print(accessGuisKvPs)
-
 -- TWEEN SETUPS
--- Access guis
-
 -- Pulses
 local scaleFactor = 0.05 -- 5% increase
 local duration = 0.1
 
--- openClose GUI
 local growTweenOpenClose, shrinkTweenOpenClose = createTweenFunctions.Pulse(openCloseGui, scaleFactor, duration)
 local growTweenDaily, shrinkTweenDaily = createTweenFunctions.Pulse(openCloseDailyGUI, scaleFactor, duration)
 local growTweenGacha, shrinkTweenGacha = createTweenFunctions.Pulse(openCloseGachaGUI, scaleFactor, duration)
 local growTweenLevelUp, shrinkTweenLevelUp = createTweenFunctions.Pulse(openCloseLevelUpGUI, scaleFactor, duration)
 local growTweenShop, shrinkTweenShop = createTweenFunctions.Pulse(openCloseShopGUI, scaleFactor, duration)
+
+-- Go in out
+local shopIn, shopOut =
+	createTweenFunctions.MoveInOut(openCloseShopGUI, 0.2, openCloseShopGUI.Position, openCloseGui.Position)
+local shrinkShop = createTweenFunctions.Shrink2(openCloseShopGUI, 0.2, UDim2.new(0, 0, 0, 0))
+local growShop = createTweenFunctions.Grow2(openCloseShopGUI, 0.2, openCloseShopGUI.Size)
+
+local dailyIn, dailyOut =
+	createTweenFunctions.MoveInOut(openCloseDailyGUI, 0.2, openCloseDailyGUI.Position, openCloseGui.Position)
+local shrinkDaily = createTweenFunctions.Shrink2(openCloseDailyGUI, 0.2, UDim2.new(0, 0, 0, 0))
+local growDaily = createTweenFunctions.Grow2(openCloseDailyGUI, 0.2, openCloseDailyGUI.Size)
+
+local levelIn, levelOut =
+	createTweenFunctions.MoveInOut(openCloseLevelUpGUI, 0.2, openCloseLevelUpGUI.Position, openCloseGui.Position)
+local shrinkLevel = createTweenFunctions.Shrink2(openCloseLevelUpGUI, 0.2, UDim2.new(0, 0, 0, 0))
+local growLevel = createTweenFunctions.Grow2(openCloseLevelUpGUI, 0.2, openCloseLevelUpGUI.Size)
+
+local rollIn, rollOut =
+	createTweenFunctions.MoveInOut(openCloseGachaGUI, 0.2, openCloseGachaGUI.Position, openCloseGui.Position)
+local shrinkRoll = createTweenFunctions.Shrink2(openCloseGachaGUI, 0.2, UDim2.new(0, 0, 0, 0))
+local growRoll = createTweenFunctions.Grow2(openCloseGachaGUI, 0.2, openCloseGachaGUI.Size)
+
+local tweensOpen = {
+	shopOut,
+	growShop,
+	dailyOut,
+	growDaily,
+	levelOut,
+	growLevel,
+	rollOut,
+	growRoll,
+}
+local tweensClose = {
+	shopIn,
+	shrinkShop,
+	dailyIn,
+	shrinkDaily,
+	levelIn,
+	shrinkLevel,
+	rollIn,
+	shrinkRoll,
+}
+
+local function playTweensAndWait(tweens: { Tween }, onComplete: () -> ())
+	local completed = 0
+	local total = #tweens
+
+	local function onTweenComplete()
+		completed += 1
+		if completed == total then
+			onComplete()
+		end
+	end
+
+	for _, tween in ipairs(tweens) do
+		tween.Completed:Once(onTweenComplete)
+		tween:Play()
+	end
+end
+playTweensAndWait(tweensClose, function() end)
 
 openCloseButton.MouseButton1Click:Connect(function()
 	growTweenOpenClose:Play()
@@ -75,13 +130,19 @@ openCloseButton.MouseButton1Click:Connect(function()
 		shrinkTweenOpenClose:Play()
 	end)
 	if accessParentGui.Visible then
-		accessParentGui.Visible = false
+		playTweensAndWait(tweensClose, function()
+			accessParentGui.Visible = false
+		end)
+
 		openCloseBg.BackgroundColor3 = enums.Colors.InactiveMenuOption.Color
-		openCloseBackGlow.BackgroundColor3 = enums.Colors.InactiveMenuOption.Color
+		openCloseBackGlow.ImageColor3 = enums.Colors.InactiveMenuOption.Color
 	elseif not accessParentGui.Visible then
 		accessParentGui.Visible = true
+
+		playTweensAndWait(tweensOpen, function() end)
+
 		openCloseBg.BackgroundColor3 = enums.Colors.ActiveMenuOption.Color
-		openCloseBackGlow.BackgroundColor3 = enums.Colors.ActiveMenuOption.Color
+		openCloseBackGlow.ImageColor3 = enums.Colors.ActiveMenuOption.Color
 	end
 end)
 
@@ -89,7 +150,7 @@ function closeOtherGuiOnNewOpen()
 	for _, gui in ipairs(accessGuisKvPs) do
 		gui.ToOpenGui.Visible = false
 		gui.AccessGuiBg.BackgroundColor3 = enums.Colors.InactiveMenuOption.Color
-		gui.AccessGuiGlow.BackgroundColor3 = enums.Colors.InactiveMenuOption.Color
+		gui.AccessGuiGlow.ImageColor3 = enums.Colors.InactiveMenuOption.Color
 	end
 end
 
@@ -116,10 +177,10 @@ for _, gui in ipairs(accessGuisKvPs) do
 	gui.ToOpenGui.Changed:Connect(function()
 		if gui.ToOpenGui.Visible == true then
 			gui.AccessGuiBg.BackgroundColor3 = enums.Colors.ActiveMenuOption.Color
-			gui.AccessGuiGlow.BackgroundColor3 = enums.Colors.ActiveMenuOption.Color
+			gui.AccessGuiGlow.ImageColor3 = enums.Colors.ActiveMenuOption.Color
 		else
 			gui.AccessGuiBg.BackgroundColor3 = enums.Colors.InactiveMenuOption.Color
-			gui.AccessGuiGlow.BackgroundColor3 = enums.Colors.InactiveMenuOption.Color
+			gui.AccessGuiGlow.ImageColor3 = enums.Colors.InactiveMenuOption.Color
 		end
 	end)
 end
