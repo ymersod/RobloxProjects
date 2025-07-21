@@ -147,7 +147,7 @@ local function pushPlayerFromCurPlayer(player)
 		return
 	end
 
-	pushBackClient:FireClient(player, root.Position, 1700)
+	pushBackClient:FireClient(player, root.Position, 35) --TODO: should be a attribute
 end
 
 function EquipBomb(player)
