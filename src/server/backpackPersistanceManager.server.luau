@@ -66,7 +66,14 @@ players.PlayerAdded:Connect(function(player)
 		end
 		print(currentInventory)
 		local slapstyles = slapStyleFolder:GetDescendants()
-		for i, itemId in ipairs(currentInventory:split(";")) do
+		local split = currentInventory:split("--")
+		if #split > 1 and split[2] then
+			print("amount of slots")
+			local inventory = player:FindFirstChild("Inventory") :: Folder?
+			local value = inventory:FindFirstChildOfClass("IntValue")
+			value.Value = tonumber(split[2])
+		end
+		for i, itemId in ipairs(split[1]:split(";")) do
 			print("trying to instantiate tool:" .. itemId)
 			local itemValues = itemId:split(",")
 			for j, style in ipairs(slapstyles) do
@@ -86,8 +93,12 @@ players.PlayerRemoving:Connect(function(player)
 
 	local success, err = pcall(function()
 		print("saving: " .. table.concat(backpackPersistenceClone[player.UserId], ";"))
-		-- saving as: {SaveSlot},{ToolId};{SaveSlot},{ToolId}...
-		inventoryStore:SetAsync(player.UserId, table.concat(backpackPersistenceClone[player.UserId], ";"))
+
+		local inventory = player:FindFirstChild("Inventory") :: Folder?
+		local value = inventory:FindFirstChildOfClass("IntValue")
+
+		-- saving as: {SaveSlot},{ToolId};{SaveSlot},{ToolId}...--{inventorySlots}
+		inventoryStore:SetAsync(player.UserId, table.concat(backpackPersistenceClone[player.UserId], ";") .. if value then "--" .. value.Value else "")
 	end)
 	if not success then
 		warn(err)
