@@ -110,7 +110,7 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 				local number = tonumber(command.args[1])
 				pushBackClientEvent:FireClient(player, rootPart.Position + (forward * 5), number)
 			else
-				pushBackClientEvent:FireClient(player, rootPart.Position + (forward * 5), 2000)
+				pushBackClientEvent:FireClient(player, rootPart.Position + (forward * 5), 35)
 			end
 		elseif command.command == "/clearslot" then
 			if #command.args > 0 then

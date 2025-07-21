@@ -8,11 +8,10 @@ function AddForce(char: Model, hrp: BasePart, hitPosition: Vector3, direction: V
 		if humanoid then
 			humanoid.PlatformStand = true
 		end
-		local moters : { Motor6D } = {}
+		local moters: { Motor6D } = {}
 		for i, p in pairs(list) do
-
 			if p:IsA("Motor6D") then
-				table.insert(moters,p)
+				table.insert(moters, p)
 				p.Enabled = false
 			end
 		end

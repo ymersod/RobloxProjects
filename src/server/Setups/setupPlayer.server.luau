@@ -12,6 +12,8 @@ local rollTickets = require(ServerScriptService.Server.ServerModuleScripts.rollT
 
 local tool1 = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle0")
 
+local HUMANOID_ROOT_PART_COLLISION_GROUP = "Players"
+
 -- function ignorePhysicsOnOwner(char: Model, hitBox: Part)
 -- 	for _, charPart in char:GetDescendants() do
 -- 		if charPart:IsA("BasePart") and hitBox:IsA("BasePart") then
@@ -149,4 +151,12 @@ game.Players.PlayerAdded:Connect(function(player)
 
 	local character = player.Character or player.CharacterAdded:Wait()
 	SetupStarterTools(player)
+end)
+
+-- SETUP SERVER SIDE PLAYER CHARACTER
+game.Players.PlayerAdded:Connect(function(player:Player)
+	player.CharacterAdded:Connect(function(character)
+		local humanoidRootPart : Part = character:FindFirstChild("HumanoidRootPart")
+		humanoidRootPart.CollisionGroup = HUMANOID_ROOT_PART_COLLISION_GROUP
+	end)
 end)
