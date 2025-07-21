@@ -94,7 +94,13 @@ function explode()
 		local origin = bomb.Position
 		if (root.Position - origin).Magnitude <= EXPLOSION_RADIUS then
 			killPlayerServer.killPlayer(char, player)
-			kingCoinFuncs.spawnMultipleKingCoinOfSizeRangesFromPlayer(player, COIN_SPAWN_RADIUS, KING_SCORE_DRAIN_PERCENT, COIN_VALUE_MIN, COIN_VALUE_MAX)
+			kingCoinFuncs.spawnMultipleKingCoinOfSizeRangesFromPlayer(
+				player,
+				COIN_SPAWN_RADIUS,
+				KING_SCORE_DRAIN_PERCENT,
+				COIN_VALUE_MIN,
+				COIN_VALUE_MAX
+			)
 		end
 	end
 	local sphere = explosionSphere:Clone()
@@ -141,7 +147,7 @@ local function pushPlayerFromCurPlayer(player)
 		return
 	end
 
-	pushBackClient:FireClient(player, root.Position, 1000)
+	pushBackClient:FireClient(player, root.Position, 1700)
 end
 
 function EquipBomb(player)
@@ -224,11 +230,10 @@ bomb.Parent:GetPropertyChangedSignal("Parent"):Connect(function()
 	local parent = bomb.Parent
 	local grandparent = parent and parent.Parent
 	if grandparent and grandparent:IsA("Model") then
-		if not curOwnerPlayer then
-			EquipBomb(Players:GetPlayerFromCharacter(grandparent))
-		else
+		local newPlayer = Players:GetPlayerFromCharacter(curOwnerModel)
+		if newPlayer then
 			curOwnerModel = grandparent
-			curOwnerPlayer = Players:GetPlayerFromCharacter(curOwnerModel)
+			curOwnerPlayer = newPlayer
 		end
 	end
 end)

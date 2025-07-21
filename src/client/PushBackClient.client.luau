@@ -2,6 +2,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local pushBackClientEvent =
 	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("PushBackClient")
 
+local hitVector = Vector3.new(0, 0.3, 0.7)
+
+local function rotateVectorToDirection(baseVector, direction)
+	local rotation = CFrame.lookAt(Vector3.zero, -direction)
+	return rotation:VectorToWorldSpace(baseVector)
+end
+
 pushBackClientEvent.OnClientEvent:Connect(function(fromPosition: Vector3, impulseMagnitude: number)
 	local player = game.Players.LocalPlayer
 	local character = player.Character
@@ -15,8 +22,6 @@ pushBackClientEvent.OnClientEvent:Connect(function(fromPosition: Vector3, impuls
 	end
 	local direction = (rootPart.Position - fromPosition).Unit
 
-	local upwardBias = 0.2
-
-	local impulse = Vector3.new(direction.X, upwardBias, direction.Y).Unit * impulseMagnitude
+	local impulse = rotateVectorToDirection(hitVector, Vector3.new(direction.X, 0, direction.Z)) * impulseMagnitude
 	rootPart:ApplyImpulseAtPosition(impulse, rootPart.Position)
 end)
