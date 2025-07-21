@@ -151,7 +151,7 @@ end)--]]
 
 function giveBombToPlayer(player: Player, bomb: Tool)
 	if player and player.Character then
-		inventoryFuncs.EquipBomb(player, bomb, 0.1)
+		inventoryFuncs.EquipBomb(player, bomb, 0)
 	end
 end
 
@@ -223,7 +223,7 @@ function createBombItem(bomb: Tool, startingPosition: Vector3, parent)
 			local hasBomb = playerChar:FindFirstChild("Bomb")
 			if player and not hasBomb then
 				hitArea.CanTouch = true
-				bomb.Parent = playerChar
+				giveBombToPlayer(player, bomb)
 				item:Destroy()
 			end
 		end)

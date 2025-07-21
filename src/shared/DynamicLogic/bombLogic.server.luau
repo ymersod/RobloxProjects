@@ -3,6 +3,8 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local replicatedStorage = game:GetService("ReplicatedStorage")
 
+local pushBackClient = replicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("PushBackClient")
+
 local explosionSphere = game:GetService("Workspace"):WaitForChild("ExplosionSphere")
 if not explosionSphere then
 	error("Missing ExplosionSphere in Workspace")
@@ -92,7 +94,13 @@ function explode()
 		local origin = bomb.Position
 		if (root.Position - origin).Magnitude <= EXPLOSION_RADIUS then
 			killPlayerServer.killPlayer(char, player)
-			kingCoinFuncs.spawnMultipleKingCoinOfSizeRangesFromPlayer(player, COIN_SPAWN_RADIUS, KING_SCORE_DRAIN_PERCENT, COIN_VALUE_MIN, COIN_VALUE_MAX)
+			kingCoinFuncs.spawnMultipleKingCoinOfSizeRangesFromPlayer(
+				player,
+				COIN_SPAWN_RADIUS,
+				KING_SCORE_DRAIN_PERCENT,
+				COIN_VALUE_MIN,
+				COIN_VALUE_MAX
+			)
 		end
 	end
 	local sphere = explosionSphere:Clone()
@@ -122,6 +130,24 @@ function explode()
 		end)
 	end
 	bomb.Parent:Destroy()
+end
+
+local function pushPlayerFromCurPlayer(player)
+	if not curOwnerPlayer then
+		return
+	end
+
+	local character = curOwnerPlayer.Character
+	if not character then
+		return
+	end
+
+	local root = character:FindFirstChild("HumanoidRootPart")
+	if not root then
+		return
+	end
+
+	pushBackClient:FireClient(player, root.Position, 1700)
 end
 
 function EquipBomb(player)
@@ -176,6 +202,7 @@ function BombTouched(hit: BasePart)
 		return
 	end
 	lastTransferTime = now
+	pushPlayerFromCurPlayer(playerHit)
 	EquipBomb(playerHit)
 end
 
@@ -203,11 +230,10 @@ bomb.Parent:GetPropertyChangedSignal("Parent"):Connect(function()
 	local parent = bomb.Parent
 	local grandparent = parent and parent.Parent
 	if grandparent and grandparent:IsA("Model") then
-		if not curOwnerPlayer then
-			EquipBomb(Players:GetPlayerFromCharacter(grandparent))
-		else
+		local newPlayer = Players:GetPlayerFromCharacter(curOwnerModel)
+		if newPlayer then
 			curOwnerModel = grandparent
-			curOwnerPlayer = Players:GetPlayerFromCharacter(curOwnerModel)
+			curOwnerPlayer = newPlayer
 		end
 	end
 end)
