@@ -283,8 +283,6 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 				ColorSequenceKeypoint.new(1, colorScheme.End),
 			})
 			nameFrame.BackgroundColor3 = colorScheme.End
-		else
-			warn("⚠️ No valid color scheme found for rarity:", rarity)
 		end
 		bg.Transparency = 0
 
@@ -315,8 +313,6 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 				ColorSequenceKeypoint.new(1, colorScheme.End),
 			})
 			nameFrame.BackgroundColor3 = colorScheme.End
-		else
-			warn("⚠️ No valid color scheme found for rarity:", rarity)
 		end
 		bg.Transparency = 0.4
 
@@ -442,7 +438,7 @@ function trackBackpack()
 			local slotNumber = slot:GetAttribute("SlotNumber")
 			local slotGUI = slot:FindFirstChildOfClass("Frame")
 			local state = slot:GetAttribute("SlotState")
-			print("state: ", state)
+			-- print("state: ", state)
 			if tostring(slotNumber) == tostring(toolSlot) then -- Equip
 				setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedTool, slotGUI, tool)
 			elseif state == slotStateEnums.UnlockedWithEquippedTool then --Unequip

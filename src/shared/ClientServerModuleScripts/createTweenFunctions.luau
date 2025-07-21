@@ -86,6 +86,17 @@ function tweenCreate.Grow2(gui: Frame, duration: number, endSize: UDim2?)
 	return tween
 end
 
+function tweenCreate.GrowElastic(gui: Frame, duration: number, endSize: UDim2?)
+	local finalSize = endSize or UDim2.new(1, 0, 1, 0)
+
+	-- Elastic easing: fast grow + overshoot + settle
+	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+
+	local tween = TweenService:Create(gui, tweenInfo, { Size = finalSize })
+
+	return tween
+end
+
 function tweenCreate.Shrink(gui: Frame, duration: number, startSize: UDim2?, endSize: UDim2?)
 	local initialSize = startSize or UDim2.new(1, 0, 1, 0)
 	local finalSize = endSize or UDim2.new(0, 0, 0, 0)
@@ -135,13 +146,19 @@ function tweenCreate.Zoom(gui, originalSize: UDim2, duration: number, zoomAmount
 	return zoomIn, zoomOut
 end
 
-function tweenCreate.FloatTextUp(text:TextLabel, inDuration: number, outDuration: number, blowUpSize:UDim2, floatAmount: UDim2)
+function tweenCreate.FloatTextUp(
+	text: TextLabel,
+	inDuration: number,
+	outDuration: number,
+	blowUpSize: UDim2,
+	floatAmount: UDim2
+)
 	local blowUp = TweenService:Create(text, TweenInfo.new(inDuration), {
-		Size = blowUpSize
+		Size = blowUpSize,
 	})
 	local floatUp = TweenService:Create(text, TweenInfo.new(outDuration), {
 		Position = floatAmount,
-		Size = UDim2.fromScale(0, 0)
+		Size = UDim2.fromScale(0, 0),
 	})
 	return blowUp, floatUp
 end

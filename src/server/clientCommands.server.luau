@@ -66,7 +66,13 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 		if command.command == "/kill" then
 			killModule.killPlayer(player.Character, player)
 		elseif command.command == "/ragdoll" then
-			ragdollEvent:FireClient(player, player.Character.PrimaryPart.Position, Vector3.new(1000, 1000, 1000))
+			if #command.args > 0 then
+				ragdollEvent:FireClient(
+					player,
+					player.Character.PrimaryPart.Position,
+					Vector3.new(command.args[1], command.args[1], command.args[1])
+				)
+			end
 		elseif command.command == "/selfxp" then
 			if #command.args > 0 then
 				expFuncs.incrementExp(player.UserId, tonumber(command.args[1]))
