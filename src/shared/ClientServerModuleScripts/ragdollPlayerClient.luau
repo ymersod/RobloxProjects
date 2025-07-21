@@ -17,7 +17,14 @@ function AddForce(char: Model, hrp: BasePart, hitPosition: Vector3, direction: V
 		end
 
 		print("Applying impulse at: ", hitPosition)
-		hrp:ApplyImpulseAtPosition(direction, hitPosition)
+
+		local knockBackVelocity = Instance.new("BodyVelocity")
+		knockBackVelocity.Velocity = direction
+		knockBackVelocity.MaxForce = Vector3.new(1, 1, 1) * 1e5
+		knockBackVelocity.P = 1e4
+		knockBackVelocity.Parent = hrp
+		print("called")
+		game:GetService("Debris"):AddItem(knockBackVelocity, 0.01)
 
 		task.wait(2)
 		print("event fired")
