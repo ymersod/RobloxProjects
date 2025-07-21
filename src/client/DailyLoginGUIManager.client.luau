@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = game:GetService("Players").LocalPlayer
 local Types = require(ReplicatedStorage.Shared.ClientServerModuleScripts.Types)
+local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local getProgress = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("DailyRewardsFunctions")
@@ -14,55 +15,100 @@ local getDailyRewards = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("DataFunctions")
 	:WaitForChild("getDailyRewards")
 local dailyRewards: { Types.DailyReward } = getDailyRewards:InvokeServer()
-
 -- GUI elements
 local screenGui = player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
 local dailyLoginRewards = screenGui:WaitForChild("DailyLoginRewards") :: Frame
-local closeButton: ImageButton = dailyLoginRewards:WaitForChild("OpenContainer"):WaitForChild("CloseButton")
-local buttonPrefab: ImageButton =
-	ReplicatedStorage:WaitForChild("UI"):WaitForChild("DynamicGUI"):WaitForChild("DailyRewards"):WaitForChild("Button")
-local rewardPrefab: ImageButton =
-	ReplicatedStorage:WaitForChild("UI"):WaitForChild("DynamicGUI"):WaitForChild("RewardFrame")
-local daysLeft: TextLabel = dailyLoginRewards:WaitForChild("Info"):WaitForChild("DaysLeft")
-local timeLeft: TextLabel = dailyLoginRewards:WaitForChild("Info"):WaitForChild("TimeLeft")
+local closeButton: ImageButton = dailyLoginRewards:WaitForChild("ImageButton")
+local daysLeft: TextLabel = dailyLoginRewards
+	:WaitForChild("ClipAll")
+	:WaitForChild("TopFrameClip")
+	:WaitForChild("TopLeftClip")
+	:WaitForChild("DaysLeftText")
+local timeLeft: TextLabel = dailyLoginRewards
+	:WaitForChild("ClipAll")
+	:WaitForChild("TopFrameClip")
+	:WaitForChild("TopRightClip")
+	:WaitForChild("NextRewardText")
 
-local days: { ImageLabel } = {}
+local days: { Frame } = {}
 local count = 1
-for _, item in ipairs(dailyLoginRewards:WaitForChild("Info"):WaitForChild("GridParent"):GetChildren()) do
-	if item:IsA("ImageLabel") then
-		local rewardFrame = rewardPrefab:Clone()
-		rewardFrame.Parent = item
-
-		local typeText: TextLabel = rewardFrame:FindFirstChild("RewardType")
-		local amountText: TextLabel = rewardFrame:FindFirstChild("RewardAmount")
-
+for _, item in
+	ipairs(
+		dailyLoginRewards
+			:WaitForChild("ClipAll")
+			:WaitForChild("BottomFrameClip")
+			:WaitForChild("GridHolder")
+			:GetChildren()
+	)
+do
+	if item:IsA("Frame") then
 		local rewardTable = dailyRewards[count]
-		typeText.Text = rewardTable.rewardType
-		amountText.Text = rewardTable.Amount
+
+		local rewardTypeText = item:WaitForChild("RewardTypeText")
+		local rewardAmountText = item:WaitForChild("RewardAmountText")
+		rewardTypeText.Text = rewardTable.rewardType
+		rewardAmountText.Text = rewardTable.Amount
 
 		table.insert(days, item)
 		count += 1
 	end
 end
-local colors = {
-	Yellow = Color3.fromRGB(255, 255, 0),
-	Red = Color3.fromRGB(255, 0, 0),
-	Green = Color3.fromRGB(0, 255, 0),
+
+local guiStates = {
+	NotClaimable = 1,
+	Claimable = 2,
+	AlreadyClaimed = 3,
 }
 
 local nextAvailableReward: number = -1
 
-function claimReward(self: ImageButton)
+function claimReward()
 	local response = progressRewards:InvokeServer() :: { sucess: boolean, payload: string }
 
 	if not response.success then
 		warn("Something went wrong with claim reward")
 		return
 	end
-
-	self:Destroy()
-	updateGUI()
 end
+
+function setForState(dayFrame: Frame, state)
+	local claimButton = dayFrame:FindFirstChildOfClass("ImageButton")
+	local colorGradient = dayFrame:FindFirstChildOfClass("UIGradient")
+	local glow = dayFrame:FindFirstChild("glow") :: ImageLabel
+	local backGlow = dayFrame:FindFirstChild("backglow") :: ImageLabel
+
+	if state == guiStates.NotClaimable then
+		claimButton.Visible = false
+		colorGradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, enums.Colors.RewardsColors.NotClaimableGradient.Start),
+			ColorSequenceKeypoint.new(1, enums.Colors.RewardsColors.NotClaimableGradient.End),
+		})
+		glow.Visible = false
+		backGlow.Visible = false
+	elseif state == guiStates.Claimable then
+		claimButton.Visible = true
+		colorGradient.Color = ColorSequence.new(enums.Colors.RewardsColors.Claimable)
+		glow.Visible = true
+		backGlow.Visible = true
+
+		claimButton.MouseButton1Click:Connect(function()
+			claimReward()
+			setForState(dayFrame, guiStates.AlreadyClaimed)
+		end)
+	elseif state == guiStates.AlreadyClaimed then
+		claimButton.Visible = false
+		colorGradient.Color = ColorSequence.new(enums.Colors.RewardsColors.Claimed)
+		glow.Visible = false
+		backGlow.Visible = false
+	end
+end
+
+function initGUI()
+	for _, day in days do
+		setForState(day, guiStates.NotClaimable)
+	end
+end
+initGUI()
 
 function updateGUI()
 	-- call server for progress
@@ -80,11 +126,7 @@ function updateGUI()
 	end
 
 	for i = 1, response.payload.count do
-		days[i].BackgroundColor3 = colors.Yellow
-		local button = days[i]:FindFirstChildOfClass("ImageButton")
-		if button then
-			button:Destroy()
-		end
+		setForState(days[i], guiStates.AlreadyClaimed)
 	end
 
 	local now = os.time()
@@ -92,17 +134,7 @@ function updateGUI()
 	local lastClaimedDate = tonumber(response.payload.lastClaimedDate)
 
 	if days_since_epoch > lastClaimedDate then
-		local curBut = days[response.payload.count + 1]:FindFirstChild("Button")
-		if not curBut then
-			local buttonClone = buttonPrefab:Clone()
-			local today = days[response.payload.count + 1]
-			buttonClone.Parent = today
-			days[response.payload.count + 1].BackgroundColor3 = colors.Green
-
-			buttonClone.MouseButton1Click:Connect(function()
-				claimReward(buttonClone)
-			end)
-		end
+		setForState(days[response.payload.count + 1], guiStates.Claimable)
 	end
 
 	nextAvailableReward = lastClaimedDate + 1
@@ -113,6 +145,7 @@ closeButton.MouseButton1Click:Connect(function()
 	dailyLoginRewards.Visible = false
 end)
 
+timeLeft.TextTransparency = 0
 while true do
 	if not nextAvailableReward then
 		return
@@ -135,10 +168,10 @@ while true do
 		local hours = math.floor(timeLeftSec / 3600)
 		local minutes = math.floor((timeLeftSec % 3600) / 60)
 		local seconds = timeLeftSec % 60
-
 		local formattedTime = string.format("%02d:%02d:%02d", hours, minutes, seconds)
 		timeLeft.Text = "Next reward: " .. formattedTime
 	end
 
+	daysLeft.Size = timeLeft.Size
 	task.wait(1)
 end

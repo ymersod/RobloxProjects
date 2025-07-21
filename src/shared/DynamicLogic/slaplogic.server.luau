@@ -1,5 +1,12 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
+local ServerScripService = game:GetService("ServerScriptService")
+
+local kingCoinFuncsScript = ServerScripService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("KingCoinFunctions")
+local kingCoinFuncs = require(kingCoinFuncsScript)
+local expManagerFuncsScript = ServerScripService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("expManagerFunctions")
+local expManagerFuncs = require(expManagerFuncsScript)
 
 local ragdollClientEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("RagdollClient")
 local slapAnimation = ServerStorage:WaitForChild("Animations"):WaitForChild("SlapAni")
@@ -15,6 +22,11 @@ local loadedAnim = animator:LoadAnimation(slapAnimation)
 local POWER_MULT = 1000 * abilityVals:GetAttribute("Damage")
 local COOLDOWN = 3 / abilityVals:GetAttribute("Speed")
 local canActivate = true
+
+local COIN_VALUE_MIN = 7
+local COIN_VALUE_MAX = 15
+local COIN_SPAWN_RADIUS = 10
+local KING_SCORE_DRAIN_PERCENT = 0.05
 
 tool.Activated:Connect(function()
 	if not canActivate then
@@ -54,10 +66,22 @@ tool.Activated:Connect(function()
 		local shapeCastResults = workspace:Blockcast(tool.Parent.PrimaryPart.CFrame, Vector3.new(20,10,10), directionV3*(statVals:GetAttribute("Range")+1))
 
 		if shapeCastResults and shapeCastResults.Instance:FindFirstAncestorOfClass("Model") and game.Players:GetPlayerFromCharacter(shapeCastResults.Instance:FindFirstAncestorOfClass("Model")) then
-			local targetPlayer = game.Players:GetPlayerFromCharacter(shapeCastResults.Instance:FindFirstAncestorOfClass("Model"))
+			local targetPlayer = Players:GetPlayerFromCharacter(shapeCastResults.Instance:FindFirstAncestorOfClass("Model"))
 			if targetPlayer.States.Safe.Value then
 				print(targetPlayer.Name, " is safe!")
 				return
+			end
+
+			kingCoinFuncs.spawnMultipleKingCoinOfSizeRangesFromPlayer(targetPlayer, COIN_SPAWN_RADIUS, KING_SCORE_DRAIN_PERCENT, COIN_VALUE_MIN, COIN_VALUE_MAX)
+
+			local xpBoost = 1
+			local xpBoostIntValue: IntValue = targetPlayer and targetPlayer:WaitForChild("LocalStats"):WaitForChild("ExpBoost")
+			if xpBoostIntValue then
+				xpBoost = xpBoostIntValue.Value / 100
+			end
+
+			if Players:GetPlayerFromCharacter(tool.Parent) then
+				expManagerFuncs.incrementExp(Players:GetPlayerFromCharacter(tool.Parent).UserId, 2 * xpBoost)
 			end
 
 			local hitDirection = (shapeCastResults.Instance.Position - part.Position).Unit * POWER_MULT

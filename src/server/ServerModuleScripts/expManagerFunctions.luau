@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local expLevelClient = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("ExpLevelClient")
+local expGainClient = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("ExpGainClient")
 
 local expStore = DataStoreService:GetDataStore("PlayerExp")
 local orderedExpStore = DataStoreService:GetOrderedDataStore("OrderedPlayerExp")
@@ -49,6 +50,7 @@ function OpenFunctions.incrementExp(playerId, amount)
 			end
 
 			expLevelClient:FireClient(player, level)
+			expGainClient:FireClient(player, amount)
 		end
 	end
 end
