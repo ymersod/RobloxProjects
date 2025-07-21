@@ -96,10 +96,12 @@ game.Players.PlayerAdded:Connect(function(player)
 	local playerState = Instance.new("Folder")
 	playerState.Name = "States"
 	playerState.Parent = player
+
 	local safeState = Instance.new("BoolValue")
 	safeState.Name = "Safe"
 	safeState.Value = false
 	safeState.Parent = playerState
+
 	local jumpState = Instance.new("BoolValue")
 	jumpState.Name = "CanJump"
 	jumpState.Value = true
@@ -108,9 +110,10 @@ game.Players.PlayerAdded:Connect(function(player)
 	local inventory = Instance.new("Folder")
 	inventory.Name = "Inventory"
 	inventory.Parent = player
+
 	local slotAccess = Instance.new("IntValue")
 	slotAccess.Name = "AvailableSlots"
-	slotAccess.Value = 3
+	slotAccess.Value = 1
 	slotAccess.Parent = inventory
 
 	local localStats = Instance.new("Folder")
@@ -154,9 +157,9 @@ game.Players.PlayerAdded:Connect(function(player)
 end)
 
 -- SETUP SERVER SIDE PLAYER CHARACTER
-game.Players.PlayerAdded:Connect(function(player:Player)
+game.Players.PlayerAdded:Connect(function(player: Player)
 	player.CharacterAdded:Connect(function(character)
-		local humanoidRootPart : Part = character:FindFirstChild("HumanoidRootPart")
+		local humanoidRootPart: Part = character:FindFirstChild("HumanoidRootPart")
 		humanoidRootPart.CollisionGroup = HUMANOID_ROOT_PART_COLLISION_GROUP
 	end)
 end)

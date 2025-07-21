@@ -181,7 +181,7 @@ end
 function inventoryFunctions.IncrementSlotSpace(player: Player)
 	local inventory = player:FindFirstChild("Inventory") :: Folder?
 	local value = inventory:FindFirstChildOfClass("IntValue")
-	value.Value = 3
+	value.Value = value.Value + 1
 end
 
 return inventoryFunctions
