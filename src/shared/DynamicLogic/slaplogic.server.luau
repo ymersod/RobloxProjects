@@ -105,8 +105,8 @@ tool.Activated:Connect(function()
 			if Players:GetPlayerFromCharacter(tool.Parent) then
 				expManagerFuncs.incrementExp(Players:GetPlayerFromCharacter(tool.Parent).UserId, 2 * xpBoost)
 			end
-
-			local hitDirection = (shapeCastResults.Instance.Position - part.Position).Unit * POWER_MULT
+			local attackerHRP = tool.Parent:FindFirstChild("HumanoidRootPart")
+			local hitDirection = (shapeCastResults.Instance.Position - attackerHRP.Position).Unit * POWER_MULT
 			ragdollClientEvent:FireClient(targetPlayer, shapeCastResults.Position, hitDirection)
 		end
 	end

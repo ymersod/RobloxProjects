@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local pushBackClientEvent =
 	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("PushBackClient")
-
+local velocityUtils = require(ReplicatedStorage.Shared.ClientServerModuleScripts.velocityUtils)
 local hitVector = Vector3.new(0, 0.3, 0.7)
 
 local function rotateVectorToDirection(baseVector, direction)
@@ -30,12 +30,5 @@ pushBackClientEvent.OnClientEvent:Connect(function(fromPosition: Vector3, impuls
 	local finalDirection = rotateVectorToDirection(hitVector, flatDirection.Unit)
 
 	local velocity = finalDirection * impulseMagnitude
-
-	local knockBackVelocity = Instance.new("BodyVelocity")
-	knockBackVelocity.Velocity = velocity
-	knockBackVelocity.MaxForce = Vector3.new(1, 1, 1) * 1e5
-	knockBackVelocity.P = 1e4
-	knockBackVelocity.Parent = rootPart
-
-	game:GetService("Debris"):AddItem(knockBackVelocity, 0.1)
+	velocityUtils.applyKnockback(rootPart, velocity)
 end)

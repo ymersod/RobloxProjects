@@ -1,3 +1,5 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local velocityUtils = require(ReplicatedStorage.Shared.ClientServerModuleScripts.velocityUtils)
 local ragdollModule = {}
 
 function AddForce(char: Model, hrp: BasePart, hitPosition: Vector3, direction: Vector3)
@@ -16,15 +18,10 @@ function AddForce(char: Model, hrp: BasePart, hitPosition: Vector3, direction: V
 			end
 		end
 
-		print("Applying impulse at: ", hitPosition)
+		print("Applying velocity at: ", hrp)
 
-		local knockBackVelocity = Instance.new("BodyVelocity")
-		knockBackVelocity.Velocity = direction
-		knockBackVelocity.MaxForce = Vector3.new(1, 1, 1) * 1e5
-		knockBackVelocity.P = 1e4
-		knockBackVelocity.Parent = hrp
+		velocityUtils.applyKnockback(hrp, direction)
 		print("called")
-		game:GetService("Debris"):AddItem(knockBackVelocity, 0.01)
 
 		task.wait(2)
 		print("event fired")

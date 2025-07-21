@@ -10,3 +10,5 @@ function velocityUtils.applyKnockback(parent, knockVelocity: Vector3, duration: 
 	knockBackVelocity.Parent = parent
 	game:GetService("Debris"):AddItem(knockBackVelocity, duration)
 end
+
+return velocityUtils
