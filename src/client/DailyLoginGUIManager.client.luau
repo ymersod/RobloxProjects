@@ -32,6 +32,7 @@ local timeLeft: TextLabel = dailyLoginRewards
 
 local days: { Frame } = {}
 local count = 1
+
 for _, item in
 	ipairs(
 		dailyLoginRewards
@@ -76,6 +77,7 @@ function setForState(dayFrame: Frame, state)
 	local colorGradient = dayFrame:FindFirstChildOfClass("UIGradient")
 	local glow = dayFrame:FindFirstChild("glow") :: ImageLabel
 	local backGlow = dayFrame:FindFirstChild("backglow") :: ImageLabel
+	local dayState = dayFrame:GetAttribute("State")
 
 	if state == guiStates.NotClaimable then
 		claimButton.Visible = false
@@ -85,21 +87,25 @@ function setForState(dayFrame: Frame, state)
 		})
 		glow.Visible = false
 		backGlow.Visible = false
-	elseif state == guiStates.Claimable then
+		dayFrame:SetAttribute("State", guiStates.NotClaimable)
+	elseif state == guiStates.Claimable and dayState ~= guiStates.Claimable then
 		claimButton.Visible = true
 		colorGradient.Color = ColorSequence.new(enums.Colors.RewardsColors.Claimable)
 		glow.Visible = true
 		backGlow.Visible = true
 
-		claimButton.MouseButton1Click:Connect(function()
+		claimButton.MouseButton1Click:Once(function()
+			print("claim")
 			claimReward()
 			setForState(dayFrame, guiStates.AlreadyClaimed)
 		end)
+		dayFrame:SetAttribute("State", guiStates.Claimable)
 	elseif state == guiStates.AlreadyClaimed then
 		claimButton.Visible = false
 		colorGradient.Color = ColorSequence.new(enums.Colors.RewardsColors.Claimed)
 		glow.Visible = false
 		backGlow.Visible = false
+		dayFrame:SetAttribute("State", guiStates.AlreadyClaimed)
 	end
 end
 
@@ -146,6 +152,7 @@ closeButton.MouseButton1Click:Connect(function()
 end)
 
 timeLeft.TextTransparency = 0
+local rewardReadyTriggered = false
 while true do
 	if not nextAvailableReward then
 		return
@@ -162,9 +169,13 @@ while true do
 
 	if timeLeftSec < 0 then
 		timeLeftSec = 0
-		timeLeft.Text = "Next reward: " .. "READY"
-		updateGUI()
+		if not rewardReadyTriggered then
+			timeLeft.Text = "Next reward: READY"
+			updateGUI()
+			rewardReadyTriggered = true
+		end
 	else
+		rewardReadyTriggered = false
 		local hours = math.floor(timeLeftSec / 3600)
 		local minutes = math.floor((timeLeftSec % 3600) / 60)
 		local seconds = timeLeftSec % 60
