@@ -23,12 +23,45 @@ local duration = 0.1
 local pulseGrowTween, pulseShrinkTween =
 	createTweenFunctions.Pulse(abilityGUI:WaitForChild("Center") :: Frame, scaleFactor, duration)
 
-function setAbility(equippedTool: Tool?)
+local function toolActivationCooldown(cd: number, index: number)
+	activationTable[index].canActivate = false
+	local tweenGrowCD = createTweenFunctions.Grow(cooldownGUI, cd)
+
+	tweenGrowCD.Completed:Once(function(playbackState)
+		if playbackState == Enum.PlaybackState.Completed then
+			cooldownGUI.Size = UDim2.new(0, 0, 0, 0)
+		end
+	end)
+	task.delay(cd, function()
+		if activationTable[index] then
+			activationTable[index].canActivate = true
+		end
+	end)
+	pulseGrowTween:Play()
+	pulseGrowTween.Completed:Once(function()
+		pulseShrinkTween:Play()
+	end)
+	tweenGrowCD:Play()
+end
+
+function setAbility(equippedTool: Tool?, isAdded: boolean?)
 	if equippedTool then
 		local abilityValsRef = equippedTool:FindFirstChild("AbilityVals")
 		local abilityEventRef = equippedTool:FindFirstChildOfClass("RemoteEvent")
 		abilityValsT = abilityValsRef
 		abilityEvent = abilityEventRef
+		if isAdded and abilityValsT then
+			local chargeTime = abilityValsT:GetAttribute("chargeTimeSeconds")
+			if chargeTime and chargeTime > 0 then
+				local entry = {
+					canActivate = true,
+					saveSlot = (abilityValsT.Parent and abilityValsT.Parent:GetAttribute("SaveSlot")) or " ",
+				}
+				table.insert(activationTable, entry)
+				local index = table.find(activationTable, entry)
+				toolActivationCooldown(chargeTime, index)
+			end
+		end
 	else
 		abilityValsT = nil
 		abilityEvent = nil
@@ -50,7 +83,7 @@ function updateGui()
 	titleText.Text = curText
 end
 
-function onCharChanges()
+function onCharChanges(isAdded: boolean?)
 	local playerChar = player.Character
 	local equippedTool = playerChar and playerChar:FindFirstChildOfClass("Tool")
 
@@ -58,7 +91,7 @@ function onCharChanges()
 		warn("Cant set vals")
 	end
 
-	setAbility(equippedTool)
+	setAbility(equippedTool, isAdded)
 	updateGui()
 end
 
@@ -106,7 +139,6 @@ local function activateAbility(actionName, inputState, inputObject)
 			and activationPairMatch.canActivate
 		then
 			local index = table.find(activationTable, activationPairMatch)
-			activationTable[index].canActivate = false
 
 			local cd = abilityValsT:GetAttribute("cooldown") :: number?
 			if not cd then
@@ -114,23 +146,7 @@ local function activateAbility(actionName, inputState, inputObject)
 				return
 			end
 
-			local tweenGrowCD = createTweenFunctions.Grow(cooldownGUI, cd)
-			tweenGrowCD.Completed:Once(function(playbackState)
-				if playbackState == Enum.PlaybackState.Completed then
-					cooldownGUI.Size = UDim2.new(0, 0, 0, 0)
-				end
-			end)
-
-			task.delay(cd, function()
-				if activationTable[index] then
-					activationTable[index].canActivate = true
-				end
-			end)
-			pulseGrowTween:Play()
-			pulseGrowTween.Completed:Once(function()
-				pulseShrinkTween:Play()
-			end)
-			tweenGrowCD:Play()
+			toolActivationCooldown(cd, index)
 
 			local toolId = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("ToolId")
 			if not toolId then
@@ -152,7 +168,7 @@ ContextActionService:BindAction("useAbility", activateAbility, true, Enum.KeyCod
 local function onCharacter(character: Model)
 	onCharChanges()
 	character.ChildAdded:Connect(function()
-		onCharChanges()
+		onCharChanges(true)
 	end)
 	character.ChildRemoved:Connect(function()
 		onCharChanges()
