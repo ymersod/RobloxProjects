@@ -14,25 +14,17 @@ jumpEvent.OnClientEvent:Connect(function(pad: BasePart, isAngular: boolean, mome
 		return
 	end
 
-	if humanoid.FloorMaterial == Enum.Material.Air then
-		return
-	end
-
-	print("Launching")
 	local launchDirection: Vector3
 	if isAngular then
 		launchDirection = pad.CFrame.UpVector -- or LookVector if needed
+		humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+		task.delay(0.5, function()
+			humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+		end)
 	else
 		launchDirection = Vector3.new(0, 1, 0)
 	end
 
-	local currentVel = rootPart.AssemblyLinearVelocity
-	local newVel = launchDirection.Unit * launchSpeed
-	local blendedVel = Vector3.new(
-		currentVel.X * momentumFactor + newVel.X * (1 - momentumFactor),
-		newVel.Y,
-		currentVel.Z * momentumFactor + newVel.Z * (1 - momentumFactor)
-	)
-
-	rootPart.AssemblyLinearVelocity = blendedVel
+	local newVelocity = launchDirection.Unit * launchSpeed
+	rootPart.AssemblyLinearVelocity = newVelocity
 end)
