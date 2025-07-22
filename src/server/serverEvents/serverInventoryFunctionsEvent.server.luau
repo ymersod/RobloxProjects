@@ -9,6 +9,10 @@ local equipEvent = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("InventoryFunctions")
 	:WaitForChild("EquipServer")
+local incrementSlotsEvent = ReplicatedStorage:WaitForChild("Shared")
+	:WaitForChild("Events")
+	:WaitForChild("InventoryFunctions")
+	:WaitForChild("IncrementSlots")
 
 local inventoryFunctions = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 
@@ -18,4 +22,8 @@ end
 
 addToInventoryEvent.OnServerInvoke = function(player: Player, tool: Tool, slot: number)
 	return inventoryFunctions.AddToInventory(player, tool, slot)
+end
+
+incrementSlotsEvent.OnServerInvoke = function(player: Player)
+	return inventoryFunctions.IncrementSlotSpace(player)
 end

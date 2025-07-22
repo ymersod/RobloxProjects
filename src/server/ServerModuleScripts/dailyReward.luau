@@ -62,6 +62,7 @@ function dailyRewardFunctions.progressRewards(playerId)
 	if success and newCount then
 		if dailyRewardData[newCount].rewardType == enums.RewardTypes.Ticket then
 			rollTickets.AddTickets(playerId, dailyRewardData[newCount].Amount)
+			print("Adding tickets to: ", playerId)
 			return { success = true, payload = "Success" }
 		else
 			return { success = false, payload = "No corresponding rewardstype" }

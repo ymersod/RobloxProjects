@@ -3,6 +3,9 @@ local localStats = player:WaitForChild("LocalStats")
 local tickets: IntValue = localStats:WaitForChild("Tickets")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
+local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local rollEvent = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("RollFunctions")
@@ -15,6 +18,10 @@ local addToInventoryServer = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("InventoryFunctions")
 	:WaitForChild("AddToInventoryServer")
+local incrementSlotsEvent = ReplicatedStorage:WaitForChild("Shared")
+	:WaitForChild("Events")
+	:WaitForChild("InventoryFunctions")
+	:WaitForChild("IncrementSlots")
 
 -- GUI LOCALS
 local activeSlapSlotUIPrefab =
@@ -26,18 +33,20 @@ local buttonPrefab: ImageButton =
 
 local screenGui = player.PlayerGui:WaitForChild("ScreenGui")
 local gachaGUIParent = screenGui:WaitForChild("Gacha") :: Frame
-local ticketsText: TextLabel = gachaGUIParent:WaitForChild("Roll"):WaitForChild("Tickets")
-local closeButton: ImageButton = gachaGUIParent:WaitForChild("OpenContainer"):WaitForChild("CloseButton")
-local rollButton: ImageButton = gachaGUIParent:WaitForChild("Roll"):WaitForChild("RollButton")
-local backpackGUI: Frame = gachaGUIParent:WaitForChild("InventoryReplica")
-local activeChoice = backpackGUI:WaitForChild("ActiveChoice") :: Frame
+local leftClip = gachaGUIParent:WaitForChild("ClipAll"):WaitForChild("LeftClip") :: CanvasGroup
+local rightClip = gachaGUIParent:WaitForChild("ClipAll"):WaitForChild("RightClip") :: CanvasGroup
+local closeButton: ImageButton = gachaGUIParent:FindFirstChildOfClass("ImageButton")
+local activeSlotUI: Frame = rightClip:WaitForChild("TopFrame"):WaitForChild("ActiveParent")
+
 local slotArr: { Frame } = {}
-for _, child in ipairs(backpackGUI:WaitForChild("InventoryOpen"):GetChildren()) do
+for _, child in ipairs(leftClip:GetChildren()) do
 	if child:HasTag("InventorySlot") then
 		table.insert(slotArr, child)
 	end
 end
-table.insert(slotArr, activeChoice)
+
+-- TWEENS
+local shrinkTween = createTweenFunctions.Shrink2(gachaGUIParent, 0.1, UDim2.new(0, 0, 0, 0))
 
 -- OTHER VARS
 local statBarColors = {
@@ -46,37 +55,17 @@ local statBarColors = {
 	Blue = Color3.fromRGB(0, 0, 255),
 	Purple = Color3.fromRGB(128, 0, 128),
 }
-local grey = Color3.fromRGB(147, 155, 163)
-local equippedSlapStyleTransparency = {
-	Equipped = 0.15,
-	Backpack = 0.75,
+
+local slotStateEnums = {
+	Locked = 0,
+	UnlockedNoTool = 1,
+	UnlockedWithTool = 2,
+	UnlockedWithEquippedTool = 3,
 }
-local activeRollSlot: number? = nil
 
-function updateSlotsOpenGUI(newValue: number)
-	for _, frame in ipairs(slotArr) do
-		local slotUI = frame:FindFirstChild("SlotUI")
-		local img: ImageLabel? = slotUI and slotUI:FindFirstChild("UnlockedBG")
-		local slot = frame:GetAttribute("SlotNumber")
-		if slotUI and img and slot <= newValue then
-			img.Transparency = 0
-			local buttonClone = buttonPrefab:Clone()
-			buttonClone.Parent = slotUI
-
-			buttonClone.MouseButton1Click:Connect(function()
-				local curSlot = buttonClone:FindFirstAncestor("SlotSpace") :: Frame?
-				local slotNumber = curSlot and curSlot:GetAttribute("SlotNumber")
-
-				activeRollSlot = slotNumber
-
-				print("Activeslot is: ", activeRollSlot)
-				updateActiveRollSlot()
-			end)
-		elseif slotUI and img then
-			img.Transparency = 1
-		end
-	end
-end
+local selectedSlot = Instance.new("IntValue")
+selectedSlot.Parent = script
+selectedSlot.Value = 0
 
 function extractDataFromTool(tool: Tool)
 	local statVals = tool:FindFirstChild("StatVals")
@@ -86,6 +75,7 @@ function extractDataFromTool(tool: Tool)
 		Speed = statVals:GetAttribute("Speed") :: number?,
 		Icon = tool:GetAttribute("InventoryImageID") :: string?,
 		ToolId = tool:GetAttribute("ToolId") :: string?,
+		Name = tool:GetAttribute("name") :: string?,
 	}
 end
 
@@ -118,74 +108,135 @@ function updateStatBar(bar: ImageLabel, val: number)
 	end
 end
 
-function updateActiveGUI(
-	data: { Damage: number, Range: number, Speed: number, Icon: string, id: string },
-	imgArr: { damageImgRef: ImageLabel, rangeImgRef: ImageLabel, speedImgRef: ImageLabel },
-	iconRef: ImageLabel
-)
-	iconRef.Image = data.Icon
-	updateStatBar(imgArr.damageImgRef, data.Damage)
-	updateStatBar(imgArr.rangeImgRef, data.Range)
-	updateStatBar(imgArr.speedImgRef, data.Speed)
+function setActiveRollSlotUI(slotUI)
+	local curActive = activeSlotUI:FindFirstChildOfClass("Frame")
+	curActive:Destroy()
+
+	local slotUIClone = slotUI:Clone()
+	slotUIClone.Parent = activeSlotUI
 end
 
-function updateActiveRollSlot()
-	for _, slot in ipairs(slotArr) do
-		local curSlot: number? = slot:GetAttribute("SlotNumber")
-		if curSlot < 0 then
-			continue
+-- TODO: connection happens legit 100000000000x times
+function setSetActiveButton(button, slotUI, tool)
+	button.MouseButton1Click:Connect(function()
+		print("Active button pressed")
+
+		selectedSlot.Value = slotUI.Parent and slotUI.Parent:GetAttribute("SlotNumber")
+		if tool then
+			setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedTool, slotUI, tool)
+		end
+		setActiveRollSlotUI(slotUI)
+	end)
+end
+
+function setStateOfSlotUI(state, slotUI: Frame, tool)
+	local slapIcon = slotUI:FindFirstChildOfClass("ImageLabel") :: ImageLabel
+	local setActiveButton = slotUI:FindFirstChild("SetRoll") :: ImageButton
+	local buyButton = slotUI:FindFirstChild("Buy") :: ImageButton
+	local statsFrame = slotUI:FindFirstChild("Stats") :: Frame
+	local statsNameFrame = statsFrame:FindFirstChild("Name") :: Frame
+	local bg = slotUI:FindFirstChild("Bg") :: Frame
+	local bgGradient = bg:FindFirstChildOfClass("UIGradient") :: UIGradient
+	local bgImg = bg:FindFirstChildOfClass("ImageLabel") :: ImageLabel
+
+	local rarity = tool and tool:GetAttribute("Rarity") :: string?
+	local rarityColors = enums.Colors.RarityColor
+
+	local curState = slotUI.Parent and slotUI.Parent:GetAttribute("SlotState")
+
+	if state == slotStateEnums.Locked and curState ~= slotStateEnums.Locked then
+		slapIcon.Visible = false
+		setActiveButton.Visible = false
+		buyButton.Visible = true
+		statsFrame.Visible = false
+		bgImg.Visible = true
+		bgGradient.Color = ColorSequence.new(enums.Colors.NotUnlockedBpSpace.Color)
+		bg.Transparency = enums.Colors.RarityColor.UnequippedOpacity
+
+		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.Locked)
+
+		buyButton.MouseButton1Click:Once(function()
+			print("Increment slots!")
+			incrementSlotsEvent:InvokeServer(player)
+		end)
+		--
+		--
+	elseif state == slotStateEnums.UnlockedNoTool and curState ~= slotStateEnums.UnlockedNoTool then
+		slapIcon.Visible = false
+		setActiveButton.Visible = true
+		buyButton.Visible = false
+		statsFrame.Visible = false
+		bgImg.Visible = false
+		bgGradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, enums.Colors.ActiveToolBgGradient.Start),
+			ColorSequenceKeypoint.new(1, enums.Colors.ActiveToolBgGradient.End),
+		})
+		bg.Transparency = enums.Colors.RarityColor.UnequippedOpacity
+
+		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.UnlockedNoTool)
+
+		setSetActiveButton(setActiveButton, slotUI, tool)
+		--
+		--
+	elseif state == slotStateEnums.UnlockedWithEquippedTool then
+		slapIcon.Visible = true
+		setActiveButton.Visible = true
+		buyButton.Visible = false
+		statsFrame.Visible = true
+		bgImg.Visible = false
+		bg.Transparency = 0
+
+		local colorScheme = rarityColors and rarityColors[rarity]
+		if colorScheme and typeof(colorScheme) == "table" and colorScheme.Start and colorScheme.End then
+			bgGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, colorScheme.Start),
+				ColorSequenceKeypoint.new(1, colorScheme.End),
+			})
+			statsNameFrame.BackgroundColor3 = colorScheme.End
 		end
 
-		local buttonToUpdateSlapStyle = slot and slot:FindFirstChild("EquipButton", true)
-		if buttonToUpdateSlapStyle and curSlot and activeRollSlot and tostring(curSlot) == tostring(activeRollSlot) then
-			buttonToUpdateSlapStyle.Transparency = equippedSlapStyleTransparency.Equipped
-			local curActiveChoiceUI = activeChoice:FindFirstChildOfClass("Frame")
+		setSetActiveButton(setActiveButton, slotUI, tool)
 
-			if curActiveChoiceUI then
-				curActiveChoiceUI:Destroy()
+		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.UnlockedWithEquippedTool)
+		--
+		--
+	elseif state == slotStateEnums.UnlockedWithTool and curState ~= slotStateEnums.UnlockedWithTool then
+		slapIcon.Visible = true
+		setActiveButton.Visible = true
+		buyButton.Visible = false
+		statsFrame.Visible = true
+		bgImg.Visible = false
+		bg.Transparency = rarityColors.UnequippedOpacity
 
-				local chosenGUIClone = slot:Clone()
-				chosenGUIClone.Parent = activeChoice
-			else
-				warn("Cant find data on GUI elements")
-			end
-		elseif buttonToUpdateSlapStyle then
-			buttonToUpdateSlapStyle.Transparency = equippedSlapStyleTransparency.Backpack
+		local colorScheme = rarityColors and rarityColors[rarity]
+		if colorScheme and typeof(colorScheme) == "table" and colorScheme.Start and colorScheme.End then
+			bgGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, colorScheme.Start),
+				ColorSequenceKeypoint.new(1, colorScheme.End),
+			})
+			statsNameFrame.BackgroundColor3 = colorScheme.End
 		end
 
-		local buttonToUpodateNoSlapStyle = slot and slot:FindFirstChild("Button", true)
-		if
-			buttonToUpodateNoSlapStyle
-			and curSlot
-			and activeRollSlot
-			and tostring(curSlot) == tostring(activeRollSlot)
-		then
-			local background: ImageLabel = slot:FindFirstChild("UnlockedBG", true)
-			background.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-			local curActiveChoiceUI = activeChoice:FindFirstChildOfClass("Frame")
-			if curActiveChoiceUI then
-				curActiveChoiceUI:Destroy()
+		setSetActiveButton(setActiveButton, slotUI, tool)
 
-				local chosenGUIClone = slot:Clone()
-				chosenGUIClone.Parent = activeChoice
-			else
-				warn("Cant find data on GUI elements")
-			end
-		elseif buttonToUpodateNoSlapStyle then
-			local background: ImageLabel = slot:FindFirstChild("UnlockedBG", true)
-			background.BackgroundColor3 = grey
-		end
+		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.UnlockedWithTool)
 	end
 end
 
-function updateBackpackGUI()
+function updateGachaBackpackGUI()
 	local playerInventory = player:FindFirstChild("Inventory")
 	local openSlots = playerInventory:FindFirstChildOfClass("IntValue").Value
 	local inventoryArr = playerInventory:GetChildren()
 
-	for _, slot in ipairs(slotArr) do
+	for _, slot in slotArr do
 		local slotUI = slot:FindFirstChildOfClass("Frame")
 		local saveSlot: number = slot:GetAttribute("SlotNumber")
+
+		if saveSlot > openSlots then
+			print("On saveslot:" .. saveSlot .. " Open slots: " .. openSlots)
+			setStateOfSlotUI(slotStateEnums.Locked, slotUI)
+			continue
+		end
 
 		local foundTool = nil
 		for _, inventoryTool in ipairs(inventoryArr) do
@@ -193,113 +244,107 @@ function updateBackpackGUI()
 				local toolSlot: number? = inventoryTool:GetAttribute("SaveSlot")
 				if toolSlot and tostring(toolSlot) == tostring(saveSlot) then
 					foundTool = inventoryTool
-					print("saveslot: ", saveSlot, " toolslot: ", toolSlot)
+					-- print("saveslot: ", saveSlot, " toolslot: ", toolSlot)
 					break
 				end
 			end
 		end
+
 		if foundTool then
 			if not foundTool then
 				warn("No slot for tool found")
 				return
 			end
-			slotUI:Destroy()
-			local newSlotGUI = activeSlapSlotUIPrefab:Clone()
-			newSlotGUI.Parent = slot
 
-			local statsFrame = newSlotGUI:FindFirstChild("Info"):FindFirstChild("Stats")
-			local dmgRef: ImageLabel? = statsFrame:FindFirstChild("Damage"):FindFirstChild("Fill")
-			local rangeRef: ImageLabel? = statsFrame:FindFirstChild("Range"):FindFirstChild("Fill")
-			local speedRef: ImageLabel? = statsFrame:FindFirstChild("Speed"):FindFirstChild("Fill")
-			local newIcon: ImageLabel? = newSlotGUI:FindFirstChild("Info"):FindFirstChild("SlapstyleIcon")
-			local equipButton: ImageButton? = newSlotGUI:FindFirstChildOfClass("ImageButton")
-			local chosenSlotToolIdRef: string? = slot:GetAttribute("ToolIdRef")
-			local playerChar = player.Character
-			if dmgRef and rangeRef and speedRef and newIcon and equipButton and playerChar and chosenSlotToolIdRef then
-				local data = extractDataFromTool(foundTool)
-				slot:SetAttribute("ToolIdRef", data.ToolId)
-				updateActiveGUI(
-					data,
-					{ damageImgRef = dmgRef, rangeImgRef = rangeRef, speedImgRef = speedRef },
-					newIcon
-				)
+			local data = extractDataFromTool(foundTool)
+			local stats = slotUI:FindFirstChild("Stats") :: Frame
+			updateStatBar(stats:FindFirstChild("Power"):WaitForChild("Fill"), data.Damage)
+			updateStatBar(stats:FindFirstChild("Range"):WaitForChild("Fill"), data.Range)
+			updateStatBar(stats:FindFirstChild("Speed"):WaitForChild("Fill"), data.Speed)
+			stats:FindFirstChild("Name"):FindFirstChildOfClass("TextLabel").Text = data.Name
 
-				equipButton.MouseButton1Click:Connect(function()
-					local curSlot = equipButton:FindFirstAncestor("SlotSpace") :: Frame?
-					local slotNumber = curSlot and curSlot:GetAttribute("SlotNumber")
+			local parent = slotUI.Parent
+			local toolId = foundTool:GetAttribute("ToolId")
+			local _ = parent and toolId and parent:SetAttribute("ToolIdRef", toolId)
 
-					activeRollSlot = slotNumber
-
-					print("Activeslot is: ", activeRollSlot)
-					updateActiveRollSlot()
-				end)
-			else
-				warn("1 or more of the prefab images were not found")
+			local slotState = slotUI.Parent:GetAttribute("SlotState")
+			if slotState == "" or slotState == slotStateEnums.Locked or slotState == slotStateEnums.UnlockedNoTool then
+				setStateOfSlotUI(slotStateEnums.UnlockedWithTool, slotUI, foundTool)
 			end
 		else
-			slotUI:Destroy()
-			local newSlotGUI = slotUIPrefab:Clone()
-			newSlotGUI.Parent = slot
-			print("oii")
+			setStateOfSlotUI(slotStateEnums.UnlockedNoTool, slotUI)
 		end
 	end
-
-	updateSlotsOpenGUI(openSlots)
-	updateActiveRollSlot()
 end
 
 function trackBackpack()
 	local inventory = player:FindFirstChild("Inventory")
+	local availableSlot = inventory:FindFirstChildOfClass("IntValue")
 
 	if not inventory then
 		warn("inventory not initialized")
 		return
 	end
-	updateBackpackGUI()
+	updateGachaBackpackGUI()
 
 	inventory.ChildAdded:Connect(function(child)
-		print("Adding tool")
 		if child.Name == "Bomb" then
 			return
 		end
-		updateBackpackGUI()
+		updateGachaBackpackGUI()
 	end)
 
 	inventory.ChildRemoved:Connect(function(child)
 		if child.Name == "Bomb" then
 			return
 		end
-		updateBackpackGUI()
+		updateGachaBackpackGUI()
+	end)
+
+	availableSlot.Changed:Connect(function()
+		updateGachaBackpackGUI()
 	end)
 end
 trackBackpack()
 
-closeButton.MouseButton1Click:Connect(function()
-	gachaGUIParent.Visible = false
-end)
+selectedSlot.Changed:Connect(function()
+	local playerInventory = player:FindFirstChild("Inventory")
+	local inventoryArr = playerInventory:GetChildren()
 
-rollButton.MouseButton1Click:Connect(function()
-	local ticketsRemaining = tickets.Value
-	if ticketsRemaining > 0 then
-		local recieved: Tool? = rollEvent:InvokeServer(activeRollSlot)
+	for _, slot in slotArr do
+		local slotUI = slot:FindFirstChildOfClass("Frame")
+		local saveSlot: number = slot:GetAttribute("SlotNumber")
+		local slotState = slot:GetAttribute("SlotState")
 
-		if recieved and recieved:IsA("Tool") then
-			addToInventoryServer:InvokeServer(recieved, activeRollSlot)
-			spendTicketsEvent:FireServer(1)
-			recieved:Destroy()
-		else
-			warn("Didnt recieve a new slapstyle ")
+		local foundTool = nil
+		for _, inventoryTool in ipairs(inventoryArr) do
+			if inventoryTool:IsA("Tool") then
+				local toolSlot: number? = inventoryTool:GetAttribute("SaveSlot")
+				if toolSlot and tostring(toolSlot) == tostring(saveSlot) then
+					foundTool = inventoryTool
+					break
+				end
+			end
 		end
-	else
-		warn("No more tickets")
+
+		if
+			saveSlot
+			and slotState
+			and saveSlot ~= selectedSlot.Value
+			and slotState == slotStateEnums.UnlockedWithEquippedTool
+		then
+			print("AHHH")
+			setStateOfSlotUI(slotStateEnums.UnlockedWithTool, slotUI, foundTool)
+		else
+			print("Dont update slot: ", selectedSlot.Value)
+		end
 	end
 end)
 
-function ticketsSetup()
-	ticketsText.Text = "Tickets: " .. tickets.Value
-
-	tickets.Changed:Connect(function(value)
-		ticketsText.Text = "Tickets: " .. value
+closeButton.MouseButton1Click:Connect(function()
+	shrinkTween:Play()
+	shrinkTween.Completed:Connect(function()
+		gachaGUIParent.Visible = false
 	end)
-end
-ticketsSetup()
+	selectedSlot.Value = 0
+end)
