@@ -37,6 +37,7 @@ end
 
 local curOwnerModel = script:FindFirstAncestorOfClass("Model")
 local curOwnerPlayer = Players:GetPlayerFromCharacter(curOwnerModel)
+local remote = bomb.Parent:FindFirstChild("ActivateAbility")
 
 local FUSE_TIME_SECOND = bomb:GetAttribute("FUSE_TIME_SECOND")
 local EXPLOSION_RADIUS = bomb:GetAttribute("EXPLOSION_RADIUS")
@@ -279,6 +280,10 @@ bomb.Parent:GetPropertyChangedSignal("Parent"):Connect(function()
 			setBombBoosts(newPlayer)
 		end
 	end
+end)
+
+remote.OnServerEvent:Connect(function(player)
+	explode()
 end)
 
 task.spawn(function()
