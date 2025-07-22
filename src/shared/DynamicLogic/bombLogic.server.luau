@@ -45,6 +45,9 @@ local COIN_VALUE_MIN = bomb:GetAttribute("COIN_VALUE_MIN")
 local COIN_VALUE_MAX = bomb:GetAttribute("COIN_VALUE_MAX")
 local COIN_SPAWN_RADIUS = bomb:GetAttribute("COIN_SPAWN_RADIUS")
 local KING_SCORE_DRAIN_PERCENT = bomb:GetAttribute("KING_SCORE_DRAIN_PERCENT")
+local AMP_JUMP_PERCENT = bomb:GetAttribute("AMP_JUMP_PERCENT")
+local AMP_SPEED_PERCENT = bomb:GetAttribute("AMP_SPEED_PERCENT")
+local PUSH_BACK_AMOUNT = bomb:GetAttribute("PUSH_BACK_AMOUNT")
 
 local touched_key = nil
 local lastTransferTime = 0
@@ -74,11 +77,11 @@ local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModul
 --TODO: Value to attributes
 local jumpAmp = {
 	Name = "BombJumpAmp",
-	Value = 5,
+	Value = AMP_JUMP_PERCENT,
 }
 local speedAmp = {
 	Name = "BombSpeedAmp",
-	Value = 5,
+	Value = AMP_SPEED_PERCENT,
 }
 
 local jumpValueKey = "JumpValue"
@@ -183,7 +186,7 @@ local function pushPlayerFromCurPlayer(player)
 		return
 	end
 
-	pushBackClient:FireClient(player, root.Position, 35) --TODO: should be a attribute
+	pushBackClient:FireClient(player, root.Position, PUSH_BACK_AMOUNT)
 end
 
 function EquipBomb(player)
