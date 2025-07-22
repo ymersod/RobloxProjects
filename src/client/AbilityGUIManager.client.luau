@@ -56,9 +56,6 @@ function onCharChanges()
 
 	if not equippedTool then
 		warn("Cant set vals")
-	elseif equippedTool.Name == "Bomb" then
-		warn("Bomb equipped, ")
-		equippedTool = nil
 	end
 
 	setAbility(equippedTool)
@@ -82,6 +79,10 @@ end)
 local function activateAbility(actionName, inputState, inputObject)
 	if abilityValsT and abilityEvent then
 		local curSaveSlot = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("SaveSlot")
+		if not curSaveSlot then
+			warn("No save slot given")
+			curSaveSlot = " "
+		end
 		local activationPairMatch: { canActivate: boolean, saveSlot: number }? = nil
 		for _, acvationPair in ipairs(activationTable) do
 			if tostring(acvationPair.saveSlot) == tostring(curSaveSlot) then
@@ -131,6 +132,10 @@ local function activateAbility(actionName, inputState, inputObject)
 			tweenGrowCD:Play()
 
 			local toolId = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("ToolId")
+			if not toolId then
+				warn("No toolId given")
+				toolId = " "
+			end
 			-- Add your ability logic here (e.g., effects, damage, etc.)
 			abilityEvent:FireServer(abilityValsT, curSaveSlot .. "" .. toolId)
 		end
