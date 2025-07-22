@@ -6,7 +6,8 @@ local expManagerFunctions = require(ServerScriptService.Server.ServerModuleScrip
 local part = script.Parent
 local partModel = part:FindFirstChild("KingZoneModel")
 local normalTransparency = part.Transparency
-
+local kingScoreBonus = 0
+local xpBonus = 0
 local kingCandidates = {}
 
 local function getPlayer(col: { name: string, Parent: Model }): Player?
@@ -35,10 +36,14 @@ local function updateKingZone(list)
 			tryToAddPlayer(player.UserId)
 		end
 	end
+	if #kingCandidates > 0 then
+		kingScoreBonus = math.round(5 / #kingCandidates)
+		xpBonus = math.round(5 / #kingCandidates) --Right now same calc, but might want it different in future
+	end
 end
 
-function scoreKing()
-	local king = players:GetPlayerByUserId(kingCandidates[1])
+function scoreKing(userId: number)
+	local king = players:GetPlayerByUserId(userId)
 	local leaderstats = king and king:FindFirstChild("leaderstats")
 	local kingScore: IntValue = leaderstats and leaderstats:FindFirstChild("King Score")
 
@@ -49,8 +54,14 @@ function scoreKing()
 	end
 
 	if kingScore then
-		kingScore.Value += 1
-		expManagerFunctions.incrementExp(king.UserId, 5 * xpBoost)
+		kingScore.Value += kingScoreBonus
+		expManagerFunctions.incrementExp(king.UserId, xpBonus * xpBoost)
+	end
+end
+
+function scoreKings()
+	for _, king in ipairs(kingCandidates) do
+		scoreKing(king)
 	end
 end
 
@@ -58,9 +69,9 @@ local function handleKingZone()
 	local partsInZone = workspace:GetPartsInPart(part)
 	updateKingZone(partsInZone)
 	if #kingCandidates > 0 then
-		if #kingCandidates == 1 then
+		if #kingCandidates > 0 and kingScoreBonus > 0 then
 			partModel.Color = Color3.fromRGB(9, 255, 0)
-			scoreKing()
+			scoreKings()
 		else
 			partModel.Color = Color3.fromRGB(255, 0, 0)
 		end
