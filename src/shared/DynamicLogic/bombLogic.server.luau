@@ -70,6 +70,38 @@ countdownText.Font = Enum.Font.FredokaOne
 countdownText.Text = FUSE_TIME_SECOND
 countdownText.Parent = billboardGui
 
+local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
+--TODO: Value to attributes
+local jumpAmp = {
+	Name = "BombJumpAmp",
+	Value = 5,
+}
+local speedAmp = {
+	Name = "BombSpeedAmp",
+	Value = 5,
+}
+
+local jumpValueKey = "JumpValue"
+local speedValueKey = "SpeedValue"
+
+local function getCompValues(player: Player)
+	local compIntValJump = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. jumpValueKey)
+	local compIntValSpeed = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. speedValueKey)
+	return { jump = compIntValJump, speed = compIntValSpeed }
+end
+
+local function removeBombBoosts(player: Player)
+	local compVals = getCompValues(player)
+	compVals.jump.removeModifier(jumpAmp.Name)
+	compVals.speed.removeModifier(speedAmp.Name)
+end
+
+local function setBombBoosts(player: Player)
+	local compVals = getCompValues(player)
+	compVals.jump += jumpAmp
+	compVals.speed += speedAmp
+end
+
 local function playExplosion(position: Vector3)
 	local explosion = Instance.new("Explosion")
 	explosion.Position = position
@@ -81,6 +113,9 @@ end
 
 function explode()
 	--TODO: Generalize this to a func, similar to the func in SafeZone server. Make a func that return players who is within a sphere
+	if curOwnerPlayer then
+		removeBombBoosts(curOwnerPlayer)
+	end
 	for _, player in pairs(Players:GetPlayers()) do
 		local char = player.Character
 		if not char or (curOwnerPlayer ~= player and player.States.Safe.Value) then
@@ -231,10 +266,14 @@ bomb.Parent:GetPropertyChangedSignal("Parent"):Connect(function()
 	local parent = bomb.Parent
 	local grandparent = parent and parent.Parent
 	if grandparent and grandparent:IsA("Model") then
-		local newPlayer = Players:GetPlayerFromCharacter(curOwnerModel)
-		if newPlayer then
+		local newPlayer = Players:GetPlayerFromCharacter(grandparent)
+		if newPlayer and newPlayer ~= curOwnerPlayer then
+			if curOwnerPlayer then
+				removeBombBoosts(curOwnerPlayer)
+			end
 			curOwnerModel = grandparent
 			curOwnerPlayer = newPlayer
+			setBombBoosts(newPlayer)
 		end
 	end
 end)
