@@ -45,6 +45,9 @@ local COIN_VALUE_MIN = bomb:GetAttribute("COIN_VALUE_MIN")
 local COIN_VALUE_MAX = bomb:GetAttribute("COIN_VALUE_MAX")
 local COIN_SPAWN_RADIUS = bomb:GetAttribute("COIN_SPAWN_RADIUS")
 local KING_SCORE_DRAIN_PERCENT = bomb:GetAttribute("KING_SCORE_DRAIN_PERCENT")
+local AMP_JUMP_PERCENT = bomb:GetAttribute("AMP_JUMP_PERCENT")
+local AMP_SPEED_PERCENT = bomb:GetAttribute("AMP_SPEED_PERCENT")
+local PUSH_BACK_AMOUNT = bomb:GetAttribute("PUSH_BACK_AMOUNT")
 
 local touched_key = nil
 local lastTransferTime = 0
@@ -70,6 +73,38 @@ countdownText.Font = Enum.Font.FredokaOne
 countdownText.Text = FUSE_TIME_SECOND
 countdownText.Parent = billboardGui
 
+local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
+--TODO: Value to attributes
+local jumpAmp = {
+	Name = "BombJumpAmp",
+	Value = AMP_JUMP_PERCENT,
+}
+local speedAmp = {
+	Name = "BombSpeedAmp",
+	Value = AMP_SPEED_PERCENT,
+}
+
+local jumpValueKey = "JumpValue"
+local speedValueKey = "SpeedValue"
+
+local function getCompValues(player: Player)
+	local compIntValJump = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. jumpValueKey)
+	local compIntValSpeed = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. speedValueKey)
+	return { jump = compIntValJump, speed = compIntValSpeed }
+end
+
+local function removeBombBoosts(player: Player)
+	local compVals = getCompValues(player)
+	compVals.jump.removeModifier(jumpAmp.Name)
+	compVals.speed.removeModifier(speedAmp.Name)
+end
+
+local function setBombBoosts(player: Player)
+	local compVals = getCompValues(player)
+	compVals.jump += jumpAmp
+	compVals.speed += speedAmp
+end
+
 local function playExplosion(position: Vector3)
 	local explosion = Instance.new("Explosion")
 	explosion.Position = position
@@ -81,6 +116,9 @@ end
 
 function explode()
 	--TODO: Generalize this to a func, similar to the func in SafeZone server. Make a func that return players who is within a sphere
+	if curOwnerPlayer then
+		removeBombBoosts(curOwnerPlayer)
+	end
 	for _, player in pairs(Players:GetPlayers()) do
 		local char = player.Character
 		if not char or (curOwnerPlayer ~= player and player.States.Safe.Value) then
@@ -148,7 +186,7 @@ local function pushPlayerFromCurPlayer(player)
 		return
 	end
 
-	pushBackClient:FireClient(player, root.Position, 35) --TODO: should be a attribute
+	pushBackClient:FireClient(player, root.Position, PUSH_BACK_AMOUNT)
 end
 
 function EquipBomb(player)
@@ -231,10 +269,14 @@ bomb.Parent:GetPropertyChangedSignal("Parent"):Connect(function()
 	local parent = bomb.Parent
 	local grandparent = parent and parent.Parent
 	if grandparent and grandparent:IsA("Model") then
-		local newPlayer = Players:GetPlayerFromCharacter(curOwnerModel)
-		if newPlayer then
+		local newPlayer = Players:GetPlayerFromCharacter(grandparent)
+		if newPlayer and newPlayer ~= curOwnerPlayer then
+			if curOwnerPlayer then
+				removeBombBoosts(curOwnerPlayer)
+			end
 			curOwnerModel = grandparent
 			curOwnerPlayer = newPlayer
+			setBombBoosts(newPlayer)
 		end
 	end
 end)
