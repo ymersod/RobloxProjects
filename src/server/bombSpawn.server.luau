@@ -319,6 +319,7 @@ task.spawn(function()
 					gui.StudsOffset = Vector3.new(0, 5, 0)
 					gui.AlwaysOnTop = true
 					gui.Parent = bomb.bombSpawner
+					gui.MaxDistance = 100
 
 					-- Create the TextLabel
 					local label = Instance.new("TextLabel")
