@@ -1,7 +1,11 @@
 print("got here fam co2")
-local kingZoneScript =
-	game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("kingzone")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local kingZoneScript =
+	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("kingzone")
+
+local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
+	
 local this = script.Parent
 local kingZones = {}
 local waitTime = this:GetAttribute("swapActiveZoneSeconds")
@@ -44,5 +48,33 @@ task.spawn(function()
 		currentSelectedZones = newActiveZones
 
 		task.wait(waitTime)
+
+		local pulseTweens : {Tween} = {}
+		local implodeTweens : {Tween} = {}
+		local initialSizes : {Vector3} = {}
+		for i, zone in ipairs(currentSelectedZones) do
+			local model = zone:FindFirstChildOfClass("UnionOperation")
+			if model then
+				local pulseTween = createTweenFunctions.PulseSize(model, model.Size*0.9, 4, 2)
+				local implodeTween = createTweenFunctions.Implode(model, 2)
+				table.insert(pulseTweens,pulseTween)
+				table.insert(implodeTweens,implodeTween)
+				table.insert(initialSizes, model.Size)
+			end
+		end
+		for i, t in ipairs(pulseTweens) do
+			t:Play()
+		end
+		pulseTweens[1].Completed:Wait()
+		for i, t in ipairs(implodeTweens) do
+			t:Play()
+		end
+		implodeTweens[1].Completed:Wait()
+		for i, zone in ipairs(currentSelectedZones) do
+			local model = zone:FindFirstChildOfClass("UnionOperation")
+			if model then
+				model.Size = initialSizes[i]
+			end
+		end
 	end
 end)

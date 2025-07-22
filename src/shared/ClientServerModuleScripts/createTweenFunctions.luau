@@ -163,4 +163,28 @@ function tweenCreate.FloatTextUp(
 	return blowUp, floatUp
 end
 
+function tweenCreate.PulseSize(part:BasePart, targetSize:Vector3, repeatCount:number, pulseDur:number)
+	local tweenInfo = TweenInfo.new(
+		pulseDur, -- Time
+		Enum.EasingStyle.Sine, -- EasingStyle
+		Enum.EasingDirection.InOut, -- EasingDirection
+		repeatCount, -- RepeatCount (when less than zero the tween will loop indefinitely)
+		true -- Reverses (tween will reverse once reaching its goal)
+	)
+	local pulse = TweenService:Create(part, tweenInfo, { Size = targetSize })
+
+	return pulse
+end
+
+function tweenCreate.Implode(part:BasePart?, dur:number)
+	local tweenInfo = TweenInfo.new(
+		dur, -- Time
+		Enum.EasingStyle.Sine, -- EasingStyle
+		Enum.EasingDirection.In -- EasingDirection
+	)
+	local pulse = TweenService:Create(part, tweenInfo, { Size = Vector3.zero })
+
+	return pulse
+end
+
 return tweenCreate
