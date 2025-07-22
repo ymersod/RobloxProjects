@@ -9,21 +9,19 @@ local expGainClient = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Eve
 
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 
-local billboard: BillboardGui = nil
-
-player.CharacterAdded:Connect(function(character)
-	local head = character:FindFirstChild("Head")
-
-	if head then
-		billboard = billboardGUI:Clone()
-		billboard.Parent = head
-		billboard.Enabled = true
-	end
-end)
-
 expGainClient.OnClientEvent:Connect(function(amount: number)
-	if not billboard then
+	if not player.Character and not player.Character:FindFirstChild("Head") then
 		return
+	end
+	local head = player.Character:FindFirstChild("Head")
+	local billboard = head:FindFirstChild("PointGainBillboard")
+	if not billboard then
+
+		if head then
+			billboard = billboardGUI:Clone();
+			((billboard :: any) :: BillboardGui).Parent = head;
+			((billboard :: any) :: BillboardGui).Enabled = true
+		end
 	end
 
 	local textLabel = billboard:FindFirstChildOfClass("TextLabel")
