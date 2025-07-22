@@ -112,13 +112,14 @@ local function activateAbility(actionName, inputState, inputObject)
 				warn("Cant find cd")
 				return
 			end
-			local tweenGrowCD = createTweenFunctions.Grow(cooldownGUI, cd)
 
+			local tweenGrowCD = createTweenFunctions.Grow(cooldownGUI, cd)
 			tweenGrowCD.Completed:Once(function(playbackState)
 				if playbackState == Enum.PlaybackState.Completed then
 					cooldownGUI.Size = UDim2.new(0, 0, 0, 0)
 				end
 			end)
+
 			task.delay(cd, function()
 				if activationTable[index] then
 					activationTable[index].canActivate = true

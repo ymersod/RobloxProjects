@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = game:GetService("Players").LocalPlayer
 local Types = require(ReplicatedStorage.Shared.ClientServerModuleScripts.Types)
+local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local getProgress = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
@@ -32,6 +33,9 @@ local timeLeft: TextLabel = dailyLoginRewards
 
 local days: { Frame } = {}
 local count = 1
+
+--TWEENS
+local shrinkTween = createTweenFunctions.Shrink2(dailyLoginRewards, 0.1, UDim2.new(0, 0, 0, 0))
 
 for _, item in
 	ipairs(
@@ -146,7 +150,10 @@ end
 updateGUI()
 
 closeButton.MouseButton1Click:Connect(function()
-	dailyLoginRewards.Visible = false
+	shrinkTween:Play()
+	shrinkTween.Completed:Connect(function()
+		dailyLoginRewards.Visible = false
+	end)
 end)
 
 timeLeft.TextTransparency = 0

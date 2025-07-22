@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Types = require(ReplicatedStorage.Shared.ClientServerModuleScripts.Types)
+local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local player = game:GetService("Players").LocalPlayer
 local level: IntValue = player:WaitForChild("LocalStats"):WaitForChild("Level")
 local progressRewards = ReplicatedStorage:WaitForChild("Shared")
@@ -43,6 +44,10 @@ for _, item in ipairs(levelUpRewardsGui:WaitForChild("Info"):WaitForChild("GridP
 		count += 1
 	end
 end
+
+-- TWEENS
+local shrinkTween = createTweenFunctions.Shrink2(levelUpRewardsGui, 0.1, UDim2.new(0, 0, 0, 0))
+
 local colors = {
 	Yellow = Color3.fromRGB(255, 255, 0),
 	Red = Color3.fromRGB(255, 0, 0),
@@ -98,7 +103,10 @@ end
 updateGUI()
 
 closeButton.MouseButton1Click:Connect(function()
-	levelUpRewardsGui.Visible = false
+	shrinkTween:Play()
+	shrinkTween.Completed:Connect(function()
+		levelUpRewardsGui.Visible = false
+	end)
 end)
 
 level.Changed:Connect(updateGUI)
