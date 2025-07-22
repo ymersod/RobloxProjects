@@ -95,7 +95,6 @@ function setForState(dayFrame: Frame, state)
 		backGlow.Visible = true
 
 		claimButton.MouseButton1Click:Once(function()
-			print("claim")
 			claimReward()
 			setForState(dayFrame, guiStates.AlreadyClaimed)
 		end)
@@ -125,7 +124,6 @@ function updateGUI()
 			count: string, -- or number
 		},
 	}
-	-- print("Response: ", response)
 	if not response.success then
 		warn("Something went wrong getting progress of daily")
 		return
