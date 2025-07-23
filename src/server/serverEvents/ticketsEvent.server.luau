@@ -6,7 +6,16 @@ local spendTicketEvent = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("TicketFunctions")
 	:WaitForChild("SpendTickets")
 
-spendTicketEvent.OnServerEvent:Connect(function(player: Player, amount: number)
-	print(player.UserId .. " AAA " .. amount)
-	rollTickets.SpendTickets(player.UserId, amount)
-end)
+local addTicketsEvent = ReplicatedStorage:WaitForChild("Shared")
+	:WaitForChild("Events")
+	:WaitForChild("TicketFunctions")
+	:WaitForChild("AddTickets")
+
+spendTicketEvent.OnServerInvoke = function(player: Player, amount: number)
+	-- print(player.UserId .. " AAA " .. amount)
+	return rollTickets.SpendTickets(player.UserId, amount)
+end
+
+addTicketsEvent.OnServerInvoke = function(player: Player, amount: number)
+	return rollTickets.AddTickets(player.UserId, amount)
+end

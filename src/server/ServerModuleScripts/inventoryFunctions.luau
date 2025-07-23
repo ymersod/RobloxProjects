@@ -50,8 +50,8 @@ function removeToolsInSlot(playerChar: Model, inventory: Folder, slot: number)
 		if toolInInventory:IsA("Tool") then
 			local toolInInventorySaveSlot = toolInInventory:GetAttribute("SaveSlot")
 			if toolInInventorySaveSlot and tostring(toolInInventorySaveSlot) == tostring(slot) then
-				toolInInventory:Destroy()
 				UnequipTool(playerChar, toolInInventory)
+				toolInInventory:Destroy()
 			end
 		end
 	end
@@ -69,12 +69,18 @@ function inventoryFunctions.AddToInventory(player: Player, tool: Tool, slot: num
 			local toolClone = tool:Clone()
 			toolClone.Parent = inventory
 			toolClone:SetAttribute("SaveSlot", slot)
+			-- task.delay(2, function()
+			-- 	tool:Destroy()
+			-- end)
 		else
 			warn("No more room in inventory")
+			return false
 		end
 	else
 		warn("Cant find inventory on player, might not be initialized yet")
+		return false
 	end
+	return true
 end
 function inventoryFunctions.GetInventory(player: Player)
 	local bpItems = {}

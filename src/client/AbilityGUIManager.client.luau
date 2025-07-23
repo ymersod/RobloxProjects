@@ -182,4 +182,5 @@ local function Setup()
 
 	player.CharacterAdded:Connect(onCharacter)
 end
+
 Setup()

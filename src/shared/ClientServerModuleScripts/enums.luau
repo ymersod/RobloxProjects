@@ -43,6 +43,7 @@ enums.Colors = {
 	},
 	RarityColor = {
 		UnequippedOpacity = 0.4,
+		ActiveBackGlowOpacity = 0.1,
 		-- Rarities below should match the exact names of possible rarities
 		common = {
 			Start = Color3.fromRGB(10, 147, 150),

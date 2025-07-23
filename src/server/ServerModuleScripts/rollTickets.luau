@@ -28,14 +28,18 @@ function TicketFuncs.AddTickets(playerId, amount)
 	if playerTickets[playerId] then
 		playerTickets[playerId] += amount
 		updateTickets(playerId)
+		print("Tickets : " .. playerTickets[playerId])
+		return true
+	else
+		return false
 	end
-	print("Tickets : " .. playerTickets[playerId])
 end
 
 function TicketFuncs.SpendTickets(playerId, amount)
 	print("spending Tickets for player with id: " .. playerId)
-	local f = playerTickets[playerId]
-	if playerTickets[playerId] and playerTickets[playerId] >= amount then
+
+	local p = playerTickets[playerId]
+	if p and tonumber(p) >= tonumber(amount) then
 		playerTickets[playerId] -= amount
 		updateTickets(playerId)
 		return true
