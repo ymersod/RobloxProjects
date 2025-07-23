@@ -9,6 +9,9 @@ local meshPart = coin:FindFirstChild("CoinMesh")
 local attachment = meshPart and meshPart:FindFirstChildWhichIsA("Attachment")
 local coinScore: IntValue = coin and coin:FindFirstChild("Coin score")
 
+local DESPAWN_TIME_SECONDS = coin:GetAttribute("DESPAWN_TIME_SECONDS")
+local ROTATION_SPEED = coin:GetAttribute("ROTATION_SPEED")
+
 -- Create a BillboardGui for the coin
 local billboardGui = Instance.new("BillboardGui")
 billboardGui.Name = "ScoreBillboard"
@@ -77,16 +80,15 @@ coin.Touched:Connect(function(other)
 	coin:Destroy()
 end)
 local angle = 0
-local speed = 90
 
 RunService.Heartbeat:Connect(function(dt)
-	angle += speed * dt
+	angle += (ROTATION_SPEED * dt) % 360
 	if attachment then
-		attachment.Rotation = Vector3.new(baseX, angle % 360, baseZ)
+		attachment.Rotation = Vector3.new(baseX, angle, baseZ)
 	end
 end)
 
-task.delay(60, function()
+task.delay(DESPAWN_TIME_SECONDS, function()
 	if script and coin then
 		coin:Destroy()
 	end
