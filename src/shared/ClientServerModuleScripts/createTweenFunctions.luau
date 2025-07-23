@@ -3,7 +3,7 @@ local TweenService = game:GetService("TweenService")
 local tweenCreate = {}
 
 -- Pulse: Enlarges and shrinks a GUI for visual feedback
-function tweenCreate.Pulse(gui: Frame, scaleFactor: number, duration: number)
+function tweenCreate.Pulse(gui: GuiObject, scaleFactor: number, duration: number)
 	local originalSize = gui.Size
 	local pulseSize = UDim2.new(originalSize.X.Scale + scaleFactor, 0, originalSize.Y.Scale + scaleFactor, 0)
 
@@ -163,7 +163,7 @@ function tweenCreate.FloatTextUp(
 	return blowUp, floatUp
 end
 
-function tweenCreate.PulseSize(part:BasePart, targetSize:Vector3, repeatCount:number, pulseDur:number)
+function tweenCreate.PulseSize(part: BasePart, targetSize: Vector3, repeatCount: number, pulseDur: number)
 	local tweenInfo = TweenInfo.new(
 		pulseDur, -- Time
 		Enum.EasingStyle.Sine, -- EasingStyle
@@ -176,7 +176,7 @@ function tweenCreate.PulseSize(part:BasePart, targetSize:Vector3, repeatCount:nu
 	return pulse
 end
 
-function tweenCreate.Implode(part:BasePart?, dur:number)
+function tweenCreate.Implode(part: BasePart?, dur: number)
 	local tweenInfo = TweenInfo.new(
 		dur, -- Time
 		Enum.EasingStyle.Sine, -- EasingStyle

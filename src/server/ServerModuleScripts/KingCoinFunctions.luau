@@ -7,18 +7,14 @@ end
 
 local funcs = {}
 
-function funcs.spawnKingCoinFromPlayer(value:number, player:Player, SPAWN_RADIUS:number)
+function funcs.spawnKingCoinFromPlayer(value: number, player: Player, SPAWN_RADIUS: number)
 	if not (player.Character and player.Character.PrimaryPart) then
 		return
 	end
 	local coinClone = kingCoin:Clone()
 	coinClone.Parent = workspace
 	coinClone.Position = player.Character.PrimaryPart.Position
-		+ Vector3.new(
-			math.random(-SPAWN_RADIUS, SPAWN_RADIUS),
-			0,
-			math.random(-SPAWN_RADIUS, SPAWN_RADIUS)
-		)
+		+ Vector3.new(math.random(-SPAWN_RADIUS, SPAWN_RADIUS), 0, math.random(-SPAWN_RADIUS, SPAWN_RADIUS))
 	local coinLogic: Script? = coinClone:FindFirstChildOfClass("Script")
 	local coinScore: IntValue? = coinClone:FindFirstChild("Coin score")
 	if not coinLogic then
@@ -41,7 +37,13 @@ function funcs.spawnKingCoinFromPlayer(value:number, player:Player, SPAWN_RADIUS
 	coinLogic.Enabled = true
 end
 
-function funcs.spawnMultipleKingCoinOfSizeRangesFromPlayer(player:Player, SPAWN_RADIUS:number, DRAIN_PERCENT:number, VALUE_MIN:number, VALUE_MAX:number)
+function funcs.spawnMultipleKingCoinOfSizeRangesFromPlayer(
+	player: Player,
+	SPAWN_RADIUS: number,
+	DRAIN_PERCENT: number,
+	VALUE_MIN: number,
+	VALUE_MAX: number
+)
 	local leaderstats = player:FindFirstChild("leaderstats")
 	local kingScore: IntValue = leaderstats and leaderstats:FindFirstChild("King Score")
 	if kingScore then

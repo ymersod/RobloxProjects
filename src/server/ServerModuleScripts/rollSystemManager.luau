@@ -1,3 +1,4 @@
+local inventoryFunctions = require(script.Parent.inventoryFunctions)
 local slapStyleFolder: Folder = game:GetService("ServerStorage"):WaitForChild("Tools"):WaitForChild("Slapstyles")
 local slapstyles = slapStyleFolder:GetDescendants()
 
@@ -70,8 +71,7 @@ function rollsystemManager.getNewItem(player: Player, rollSlot: number)
 	end
 
 	if rolledStyle then
-		rolledStyle.Parent = player
-		return rolledStyle
+		return inventoryFunctions.AddToInventory(player, rolledStyle, rollSlot)
 	else
 		warn("Something went wrong rolling for a new style")
 		return nil

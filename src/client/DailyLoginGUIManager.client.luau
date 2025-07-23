@@ -34,6 +34,10 @@ local timeLeft: TextLabel = dailyLoginRewards
 local days: { Frame } = {}
 local count = 1
 
+local rewardTypeIcons = {
+	Ticket = "rbxassetid://111009728990078",
+}
+
 --TWEENS
 local shrinkTween = createTweenFunctions.Shrink2(dailyLoginRewards, 0.1, UDim2.new(0, 0, 0, 0))
 
@@ -49,9 +53,10 @@ do
 	if item:IsA("Frame") then
 		local rewardTable = dailyRewards[count]
 
-		local rewardTypeText = item:WaitForChild("RewardTypeText")
-		local rewardAmountText = item:WaitForChild("RewardAmountText")
-		rewardTypeText.Text = rewardTable.rewardType
+		-- local rewardTypeText = item:WaitForChild("RewardTypeText")
+		local rewardIcon = item:WaitForChild("RewardIcon") :: ImageLabel
+		local rewardAmountText = item:WaitForChild("RewardAmountText") :: TextLabel
+		rewardIcon.Image = rewardTypeIcons[rewardTable.rewardType]
 		rewardAmountText.Text = rewardTable.Amount
 
 		table.insert(days, item)

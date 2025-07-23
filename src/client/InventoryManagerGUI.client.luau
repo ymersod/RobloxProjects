@@ -157,6 +157,7 @@ local statBarColors = {
 }
 
 function onEquip(curSlot: Frame)
+	print("equip")
 	local id = curSlot and curSlot:GetAttribute("ToolIdRef") :: string?
 	local inventorySaveSlot = curSlot and curSlot:GetAttribute("SlotNumber") :: number?
 	if not id then
@@ -385,9 +386,21 @@ function updateBackpackGUI()
 			local _ = parent and toolId and parent:SetAttribute("ToolIdRef", toolId)
 
 			local slotState = slotUI.Parent:GetAttribute("SlotState")
-			if slotState == "" or slotState == slotStateEnums.Locked or slotState == slotStateEnums.UnlockedNoTool then
+			if
+				slotState == ""
+				or slotState == slotStateEnums.Locked
+				or slotState == slotStateEnums.UnlockedNoTool
+				or slotState == slotStateEnums.UnlockedWithTool
+			then
 				setStateOfSlotUI(slotStateEnums.UnlockedWithTool, slotUI, foundTool)
+			elseif slotState == slotStateEnums.UnlockedWithEquippedTool then
+				setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedTool, slotUI, foundTool)
 			end
+
+			if equipButton:GetAttribute("ConnectionsSet") then
+				continue
+			end
+			equipButton:SetAttribute("ConnectionsSet", true)
 
 			equipButton.MouseButton1Click:Connect(function()
 				onEquip(slotUI.Parent)
