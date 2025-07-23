@@ -32,14 +32,31 @@ local rollButton: ImageButton = rightClip:WaitForChild("Buttons"):WaitForChild("
 local rollText = rollButton:WaitForChild("RollsLeft") :: TextLabel
 
 local slotArr: { Frame } = {}
-for _, child in ipairs(leftClip:GetChildren()) do
-	if child:HasTag("InventorySlot") then
-		table.insert(slotArr, child)
-	end
-end
+local tweens: {
+	[number]: {
+		bg: {
+			Grow: Tween,
+			Shrink: Tween,
+		},
+	},
+} = {}
+
 local scaleFactor = 0.1
 local duration = 0.1
 
+for _, child in ipairs(leftClip:GetChildren()) do
+	if child:HasTag("InventorySlot") then
+		table.insert(slotArr, child)
+
+		local pulseGrow, shrinkPulse = createTweenFunctions.Pulse(child, scaleFactor, duration)
+		tweens[child:GetAttribute("SlotNumber")] = {
+			bg = {
+				Grow = pulseGrow,
+				Shrink = shrinkPulse,
+			},
+		}
+	end
+end
 -- TWEENS
 local shrinkTween = createTweenFunctions.Shrink2(gachaGUIParent, scaleFactor, UDim2.new(0, 0, 0, 0))
 local growRoll, shrinkRoll = createTweenFunctions.Pulse(rollButton, scaleFactor, duration)
@@ -114,7 +131,7 @@ function setActiveRollSlotUI(slotUI)
 	slotUIClone.Parent = activeSlotUI
 end
 
-function setSetActiveButton(button, slotUI, tool)
+function setSetActiveButton(button, slotUI, tool, growPulse, shrinkPulse)
 	if button:GetAttribute("ConnectionsSet") then
 		return
 	end
@@ -134,9 +151,8 @@ function setSetActiveButton(button, slotUI, tool)
 		end
 		setActiveRollSlotUI(slotUI)
 
-		local pulseGrow, shrinkPulse = createTweenFunctions.Pulse(slotUI, scaleFactor, duration)
-		pulseGrow:Play()
-		pulseGrow.Completed:Connect(function()
+		growPulse:Play()
+		growPulse.Completed:Connect(function()
 			shrinkPulse:Play()
 		end)
 	end)
@@ -155,8 +171,14 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 
 	local rarity = tool and tool:GetAttribute("Rarity") :: string?
 	local rarityColors = enums.Colors.RarityColor
+	local parent = slotUI.Parent
 
-	-- local curState = slotUI.Parent and slotUI.Parent:GetAttribute("SlotState")
+	if not parent then
+		warn("SlotSpace gone??")
+		return
+	end
+	local slotNumber = parent and parent:GetAttribute("SlotNumber")
+	local localTweens = tweens[slotNumber]
 
 	if state == slotStateEnums.Locked then
 		slapIcon.Visible = false
@@ -197,7 +219,7 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 
 		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.UnlockedNoTool)
 
-		setSetActiveButton(setActiveButton, slotUI, tool)
+		setSetActiveButton(setActiveButton, slotUI, tool, localTweens.bg.Grow, localTweens.bg.Shrink)
 		--
 		--
 	elseif state == slotStateEnums.UnlockedWithEquippedNoTool then
@@ -216,7 +238,7 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 
 		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.UnlockedNoTool)
 
-		setSetActiveButton(setActiveButton, slotUI, tool)
+		setSetActiveButton(setActiveButton, slotUI, tool, localTweens.bg.Grow, localTweens.bg.Shrink)
 		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.UnlockedWithEquippedNoTool)
 		--
 		--
@@ -239,7 +261,7 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 			statsNameFrame.BackgroundColor3 = colorScheme.End
 		end
 
-		setSetActiveButton(setActiveButton, slotUI, tool)
+		setSetActiveButton(setActiveButton, slotUI, tool, localTweens.bg.Grow, localTweens.bg.Shrink)
 
 		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.UnlockedWithEquippedTool)
 		--
@@ -262,7 +284,7 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 			statsNameFrame.BackgroundColor3 = colorScheme.End
 		end
 
-		setSetActiveButton(setActiveButton, slotUI, tool)
+		setSetActiveButton(setActiveButton, slotUI, tool, localTweens.bg.Grow, localTweens.bg.Shrink)
 
 		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.UnlockedWithTool)
 	end
