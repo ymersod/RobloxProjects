@@ -3,14 +3,14 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 local expManagerFunctions = require(ServerScriptService.Server.ServerModuleScripts.expManagerFunctions)
 
-local part : Part = script.Parent
+local part: Part = script.Parent
 
-part.Touched:Connect(function(humanoidRootPart:BasePart)
+part.Touched:Connect(function(humanoidRootPart: BasePart)
 	print(humanoidRootPart.CollisionGroup)
-	if humanoidRootPart.CollisionGroup ~= "Players" then
+	if humanoidRootPart.CollisionGroup ~= "Players" or humanoidRootPart.Name ~= "HumanoidRootPart" then
 		return
 	end
-
+	print(humanoidRootPart.Name)
 	print("player touched zone")
 end)
 
@@ -21,13 +21,13 @@ function ZoneMainLoop()
 	while true do
 		task.wait(1)
 
-		local playerParts = workspace:GetPartsInPart(part,overlapParams)
-		if #playerParts>0 then
+		local playerParts = workspace:GetPartsInPart(part, overlapParams)
+		if #playerParts > 0 then
 			print("Players in zone:")
 		end
 
 		for i, humanoidRootPart in ipairs(playerParts) do
-			local player = players:GetPlayerFromCharacter(humanoidRootPart.Parent)			
+			local player = players:GetPlayerFromCharacter(humanoidRootPart.Parent)
 			if player then
 				local xpBoost = 1
 				local xpBoostIntValue: IntValue = player:WaitForChild("LocalStats"):WaitForChild("ExpBoost")

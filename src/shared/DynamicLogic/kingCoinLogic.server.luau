@@ -8,6 +8,7 @@ local coin = script.Parent :: Part
 local meshPart = coin:FindFirstChild("CoinMesh")
 local attachment = meshPart and meshPart:FindFirstChildWhichIsA("Attachment")
 local coinScore: IntValue = coin and coin:FindFirstChild("Coin score")
+local hitBox = coin:WaitForChild("HitBox")
 
 local DESPAWN_TIME_SECONDS = coin:GetAttribute("DESPAWN_TIME_SECONDS")
 local ROTATION_SPEED = coin:GetAttribute("ROTATION_SPEED")
@@ -45,7 +46,7 @@ if attachment then
 	baseZ = baseRot.Z
 end
 
-coin.Touched:Connect(function(other)
+hitBox.Touched:Connect(function(other)
 	local hitPlayerChar = other:FindFirstAncestorOfClass("Model")
 	if not hitPlayerChar then
 		return
