@@ -75,7 +75,7 @@ countdownText.Text = FUSE_TIME_SECOND
 countdownText.Parent = billboardGui
 
 local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
---TODO: Value to attributes
+
 local jumpAmp = {
 	Name = "BombJumpAmp",
 	Value = AMP_JUMP_PERCENT,
