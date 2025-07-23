@@ -33,6 +33,7 @@ local timeLeft: TextLabel = dailyLoginRewards
 
 local days: { Frame } = {}
 local count = 1
+local updateGUI -- forward declaration
 
 local rewardTypeIcons = {
 	Ticket = "rbxassetid://111009728990078",
@@ -106,6 +107,7 @@ function setForState(dayFrame: Frame, state)
 		claimButton.MouseButton1Click:Once(function()
 			claimReward()
 			setForState(dayFrame, guiStates.AlreadyClaimed)
+			updateGUI()
 		end)
 		dayFrame:SetAttribute("State", guiStates.Claimable)
 	elseif state == guiStates.AlreadyClaimed then
@@ -124,7 +126,7 @@ function initGUI()
 end
 initGUI()
 
-function updateGUI()
+updateGUI = function()
 	-- call server for progress
 	local response = getProgress:InvokeServer() :: {
 		success: boolean,

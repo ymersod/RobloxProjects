@@ -158,8 +158,12 @@ openCloseButton.MouseButton1Click:Connect(function()
 	end
 end)
 
-function closeOtherGuiOnNewOpen()
+function closeOtherGuiOnNewOpen(toggleGui)
 	for _, gui in ipairs(accessGuisKvPs) do
+		if toggleGui == gui.ToOpenGui then
+			continue
+		end
+
 		gui.ToOpenGui.Visible = false
 		gui.AccessGuiBg.BackgroundColor3 = enums.Colors.InactiveMenuOption.Color
 		gui.AccessGuiGlow.ImageColor3 = enums.Colors.InactiveMenuOption.Color
@@ -174,12 +178,15 @@ local function handleOpenCloseAccessGUIS(button, elasticTween, growTween, shrink
 			shrinkTween:Play()
 		end)
 
-		if closeOthers then
-			closeOtherGuiOnNewOpen()
+		guiToToggle.Visible = true
+
+		if guiToToggle.Visible then
+			elasticTween:Play()
 		end
-		local isVisible = guiToToggle.Visible
-		guiToToggle.Visible = not isVisible
-		elasticTween:Play()
+
+		if closeOthers then
+			closeOtherGuiOnNewOpen(guiToToggle)
+		end
 	end)
 end
 handleOpenCloseAccessGUIS(

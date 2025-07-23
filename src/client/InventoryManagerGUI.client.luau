@@ -146,6 +146,84 @@ for _, child in ipairs(inventorySlotsParent:GetChildren()) do
 		}
 	end
 end
+local slotUIStateConfigs = {
+	[slotStateEnums.Locked] = {
+		visible = {
+			bg = true,
+			stats = false,
+			button = false,
+			img = false,
+		},
+		transparency = 1,
+		gradient = ColorSequence.new(enums.Colors.NotUnlockedBpSpace.Color),
+		setState = slotStateEnums.Locked,
+		tween = function() end,
+	},
+
+	[slotStateEnums.UnlockedNoTool] = {
+		visible = {
+			bg = true,
+			stats = false,
+			button = false,
+			img = false,
+		},
+		transparency = 1,
+		gradient = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, enums.Colors.ActiveToolBgGradient.Start),
+			ColorSequenceKeypoint.new(1, enums.Colors.ActiveToolBgGradient.End),
+		}),
+		setState = slotStateEnums.UnlockedNoTool,
+		tween = function() end,
+	},
+
+	[slotStateEnums.UnlockedWithEquippedTool] = {
+		visible = {
+			bg = true,
+			stats = true,
+			button = true,
+			img = true,
+		},
+		transparency = 0,
+		useRarityGradient = true,
+		setState = slotStateEnums.UnlockedWithEquippedTool,
+		tween = function(tweenRefs)
+			tweenRefs.bg.Grow:Play()
+			tweenRefs.name.Grow:Play()
+			tweenRefs.name.MoveOut:Play()
+			tweenRefs.power.Grow:Play()
+			tweenRefs.power.MoveOut:Play()
+			tweenRefs.speed.Grow:Play()
+			tweenRefs.speed.MoveOut:Play()
+			tweenRefs.range.Grow:Play()
+			tweenRefs.range.MoveOut:Play()
+			tweenRefs.img.MoveOut:Play()
+		end,
+	},
+
+	[slotStateEnums.UnlockedWithTool] = {
+		visible = {
+			bg = true,
+			stats = true,
+			button = true,
+			img = false,
+		},
+		transparency = 0.4,
+		useRarityGradient = true,
+		setState = slotStateEnums.UnlockedWithTool,
+		tween = function(tweenRefs)
+			tweenRefs.bg.Shrink:Play()
+			tweenRefs.name.Shrink:Play()
+			tweenRefs.name.MoveIn:Play()
+			tweenRefs.power.Shrink:Play()
+			tweenRefs.power.MoveIn:Play()
+			tweenRefs.speed.Shrink:Play()
+			tweenRefs.speed.MoveIn:Play()
+			tweenRefs.range.Shrink:Play()
+			tweenRefs.range.MoveIn:Play()
+			tweenRefs.img.MoveIn:Play()
+		end,
+	},
+}
 
 -- OTHER VARS
 -- TODO: Should find new colors and put them in enums.Colors
@@ -244,99 +322,53 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 	local gradient = bg:FindFirstChildOfClass("UIGradient")
 	local nameFrame = stats:WaitForChild("Name") :: Frame
 
-	local rarity = tool and tool:GetAttribute("Rarity") :: string?
-	local rarityColors = enums.Colors.RarityColor
-
 	local parent = slotUI.Parent
-
 	if not parent then
 		warn("SlotSpace gone??")
 		return
 	end
-	local slotNumber = parent and parent:GetAttribute("SlotNumber")
 
-	if state == slotStateEnums.Locked then
-		bg.Visible = true
-		gradient.Color = ColorSequence.new(enums.Colors.NotUnlockedBpSpace.Color)
+	local slotNumber = parent:GetAttribute("SlotNumber")
+	local localTweens = tweens[slotNumber]
+	local rarity = tool and tool:GetAttribute("Rarity")
+	local rarityColors = enums.Colors.RarityColor
 
-		stats.Visible = false
-		button.Visible = false
-		img.Visible = false
-
-		parent:SetAttribute("SlotState", slotStateEnums.Locked)
-	elseif state == slotStateEnums.UnlockedNoTool then
-		bg.Visible = true
-		gradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, enums.Colors.ActiveToolBgGradient.Start),
-			ColorSequenceKeypoint.new(1, enums.Colors.ActiveToolBgGradient.End),
-		})
-
-		stats.Visible = false
-		button.Visible = false
-		img.Visible = false
-
-		parent:SetAttribute("SlotState", slotStateEnums.UnlockedNoTool)
-	elseif state == slotStateEnums.UnlockedWithEquippedTool then
-		local colorScheme = rarityColors and rarityColors[rarity]
-		if colorScheme and typeof(colorScheme) == "table" and colorScheme.Start and colorScheme.End then
-			gradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, colorScheme.Start),
-				ColorSequenceKeypoint.new(1, colorScheme.End),
-			})
-			nameFrame.BackgroundColor3 = colorScheme.End
-		end
-		bg.Transparency = 0
-
-		bg.Visible = true
-
-		stats.Visible = true
-		button.Visible = true
-		img.Visible = true
-
-		local localTweens = tweens[slotNumber]
-		localTweens.bg.Grow:Play()
-		localTweens.name.Grow:Play()
-		localTweens.name.MoveOut:Play()
-		localTweens.power.Grow:Play()
-		localTweens.power.MoveOut:Play()
-		localTweens.speed.Grow:Play()
-		localTweens.speed.MoveOut:Play()
-		localTweens.range.Grow:Play()
-		localTweens.range.MoveOut:Play()
-		localTweens.img.MoveOut:Play()
-
-		parent:SetAttribute("SlotState", slotStateEnums.UnlockedWithEquippedTool)
-	elseif state == slotStateEnums.UnlockedWithTool then
-		local colorScheme = rarityColors and rarityColors[rarity]
-		if colorScheme and typeof(colorScheme) == "table" and colorScheme.Start and colorScheme.End then
-			gradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, colorScheme.Start),
-				ColorSequenceKeypoint.new(1, colorScheme.End),
-			})
-			nameFrame.BackgroundColor3 = colorScheme.End
-		end
-		bg.Transparency = 0.4
-
-		bg.Visible = true
-
-		stats.Visible = true
-		button.Visible = true
-		img.Visible = false
-
-		local localTweens = tweens[slotNumber]
-		localTweens.bg.Shrink:Play()
-		localTweens.name.Shrink:Play()
-		localTweens.name.MoveIn:Play()
-		localTweens.power.Shrink:Play()
-		localTweens.power.MoveIn:Play()
-		localTweens.speed.Shrink:Play()
-		localTweens.speed.MoveIn:Play()
-		localTweens.range.Shrink:Play()
-		localTweens.range.MoveIn:Play()
-		localTweens.img.MoveIn:Play()
-
-		parent:SetAttribute("SlotState", slotStateEnums.UnlockedWithTool)
+	local config = slotUIStateConfigs[state]
+	if not config then
+		warn("Unknown UI state:", state)
+		return
 	end
+
+	-- Apply visibility
+	bg.Visible = config.visible.bg
+	stats.Visible = config.visible.stats
+	button.Visible = config.visible.button
+	img.Visible = config.visible.img
+
+	-- Apply gradient
+	if config.useRarityGradient and rarity and rarityColors[rarity] then
+		local color = rarityColors[rarity]
+		if color.Start and color.End then
+			gradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, color.Start),
+				ColorSequenceKeypoint.new(1, color.End),
+			})
+			nameFrame.BackgroundColor3 = color.End
+		end
+	elseif config.gradient then
+		gradient.Color = config.gradient
+	end
+
+	-- Transparency
+	bg.Transparency = config.transparency
+
+	-- Tween execution
+	if config.tween then
+		config.tween(localTweens)
+	end
+
+	-- Set state attribute
+	parent:SetAttribute("SlotState", config.setState)
 end
 
 function updateBackpackGUI()
