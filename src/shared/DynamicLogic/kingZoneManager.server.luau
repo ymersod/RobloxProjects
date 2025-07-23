@@ -26,6 +26,7 @@ if #kingZones < numberOfZonesActive then
 end
 
 task.spawn(function()
+	local initialSizes : {{Model:UnionOperation, Size:Vector3}} = {}
 	while true do
 		if #currentSelectedZones > 0 then
 			for _, kingZone in ipairs(currentSelectedZones) do
@@ -47,11 +48,23 @@ task.spawn(function()
 
 		currentSelectedZones = newActiveZones
 
+		for i, zone in ipairs(initialSizes) do
+			zone.Model.Size = zone.Size
+		end
+		for i, zone in ipairs(currentSelectedZones) do
+			local model = zone:FindFirstChildOfClass("UnionOperation")
+			if model then
+				local blowUpSizeTween = createTweenFunctions.BlowToSize(model, model.Size, 2)
+				model.Size = Vector3.zero
+				blowUpSizeTween:Play()
+			end
+		end
+		table.clear(initialSizes)
+
 		task.wait(waitTime)
 
 		local pulseTweens : {Tween} = {}
 		local implodeTweens : {Tween} = {}
-		local initialSizes : {Vector3} = {}
 		for i, zone in ipairs(currentSelectedZones) do
 			local model = zone:FindFirstChildOfClass("UnionOperation")
 			if model then
@@ -59,7 +72,7 @@ task.spawn(function()
 				local implodeTween = createTweenFunctions.Implode(model, 2)
 				table.insert(pulseTweens,pulseTween)
 				table.insert(implodeTweens,implodeTween)
-				table.insert(initialSizes, model.Size)
+				table.insert(initialSizes, { Model=model, Size = model.Size })
 			end
 		end
 		for i, t in ipairs(pulseTweens) do
@@ -70,11 +83,5 @@ task.spawn(function()
 			t:Play()
 		end
 		implodeTweens[1].Completed:Wait()
-		for i, zone in ipairs(currentSelectedZones) do
-			local model = zone:FindFirstChildOfClass("UnionOperation")
-			if model then
-				model.Size = initialSizes[i]
-			end
-		end
 	end
 end)

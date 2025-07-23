@@ -80,19 +80,39 @@ local function handleKingZone()
 	end
 end
 
+part.AttributeChanged:Connect(function(attr)
+	print("attr " .. attr .. " changed")
+	local isActive = part:GetAttribute("isActive")
+	if isActive then
+		if partModel.Transparency ~= normalTransparency then
+			partModel.Transparency = normalTransparency
+		end
+	elseif partModel.Transparency == normalTransparency then
+		partModel.Transparency = 1
+	end
+end)
+
 local function kingZoneMainLoop()
 	if part.Transparency then
 		part.Transparency = 1
+	end
+		local isActive = part:GetAttribute("isActive")
+	if isActive then
+		if partModel.Transparency ~= normalTransparency then
+			partModel.Transparency = normalTransparency
+		end
+	elseif partModel.Transparency == normalTransparency then
+		partModel.Transparency = 1
 	end
 	while true do
 		local isActive = part:GetAttribute("isActive")
 		if isActive then
 			handleKingZone()
-			if partModel.Transparency ~= normalTransparency then
-				partModel.Transparency = normalTransparency
-			end
-		elseif partModel.Transparency == normalTransparency then
-			partModel.Transparency = 1
+		-- 	if partModel.Transparency ~= normalTransparency then
+		-- 		partModel.Transparency = normalTransparency
+		-- 	end
+		-- elseif partModel.Transparency == normalTransparency then
+		-- 	partModel.Transparency = 1
 		end
 		task.wait(1)
 	end

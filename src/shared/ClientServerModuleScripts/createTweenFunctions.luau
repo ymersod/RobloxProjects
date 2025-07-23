@@ -187,4 +187,15 @@ function tweenCreate.Implode(part:BasePart?, dur:number)
 	return pulse
 end
 
+function tweenCreate.BlowToSize(part:BasePart?, targetSize:Vector3, dur:number)
+	local tweenInfo = TweenInfo.new(
+		dur, -- Time
+		Enum.EasingStyle.Sine, -- EasingStyle
+		Enum.EasingDirection.Out -- EasingDirection
+	)
+	local pulse = TweenService:Create(part, tweenInfo, { Size = targetSize })
+
+	return pulse
+end
+
 return tweenCreate
