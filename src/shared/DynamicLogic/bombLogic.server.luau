@@ -59,9 +59,8 @@ billboardGui.Name = "BombTimer"
 billboardGui.Adornee = bomb
 billboardGui.Size = UDim2.new(4, 0, 2, 0) -- Width, Height
 billboardGui.StudsOffset = Vector3.new(0, 3, 0) -- Position above the bomb
-billboardGui.AlwaysOnTop = true
+billboardGui.AlwaysOnTop = false
 billboardGui.Parent = bomb
-billboardGui.MaxDistance = 100
 
 -- Add a TextLabel for the countdown
 local countdownText = Instance.new("TextLabel")

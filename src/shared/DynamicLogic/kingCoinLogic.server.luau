@@ -20,7 +20,7 @@ billboardGui.Name = "ScoreBillboard"
 billboardGui.Adornee = coin
 billboardGui.Size = UDim2.new(4, 0, 2, 0) -- Width, Height
 billboardGui.StudsOffset = Vector3.new(0, 3, 0) -- Position above the coin
-billboardGui.AlwaysOnTop = true
+billboardGui.AlwaysOnTop = false
 billboardGui.Parent = coin
 
 -- Add a TextLabel for the score label
