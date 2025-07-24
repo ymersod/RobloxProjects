@@ -82,8 +82,8 @@ function inventoryFunctions.AddToInventory(player: Player, tool: Tool, slot: num
 	end
 	return true
 end
-function inventoryFunctions.GetInventory(player: Player)
-	local bpItems = {}
+function inventoryFunctions.GetInventory(player: Player): { Tool }
+	local bpItems: { Tool } = {}
 	local inventory = player:FindFirstChild("Inventory")
 	if inventory then
 		for _, item in ipairs(inventory:GetChildren()) do
@@ -95,6 +95,7 @@ function inventoryFunctions.GetInventory(player: Player)
 
 	return bpItems
 end
+
 function inventoryFunctions.RemoveFromInventory(player: Player, slotToRemove: number)
 	local inventory = player:FindFirstChild("Inventory")
 	local playerChar = getCharacter(player)
