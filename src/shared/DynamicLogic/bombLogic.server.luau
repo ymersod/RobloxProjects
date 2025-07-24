@@ -119,6 +119,7 @@ function explode()
 	if curOwnerPlayer then
 		removeBombBoosts(curOwnerPlayer)
 	end
+	local playersHit = {}
 	for _, player in pairs(Players:GetPlayers()) do
 		local char = player.Character
 		if not char or (curOwnerPlayer ~= player and player.States.Safe.Value) then
@@ -133,15 +134,16 @@ function explode()
 		local origin = bomb.Position
 		if (root.Position - origin).Magnitude <= EXPLOSION_RADIUS then
 			killPlayerServer.killPlayer(char, player)
-			kingCoinFuncs.spawnMultipleKingCoinOfSizeRangesFromPlayer(
-				player,
-				COIN_SPAWN_RADIUS,
-				KING_SCORE_DRAIN_PERCENT,
-				COIN_VALUE_MIN,
-				COIN_VALUE_MAX
-			)
+			table.insert(playersHit, player)
 		end
 	end
+	kingCoinFuncs.spawnMultipleKingCoinOfSizeRangesFromPlayers(
+		playersHit,
+		COIN_SPAWN_RADIUS,
+		KING_SCORE_DRAIN_PERCENT,
+		COIN_VALUE_MIN,
+		COIN_VALUE_MAX
+	)
 	local sphere = explosionSphere:Clone()
 	sphere.Position = bomb.Position
 	sphere.Parent = workspace
