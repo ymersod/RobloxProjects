@@ -171,7 +171,7 @@ function tweenCreate.PulseSize(part: BasePart, targetSize: Vector3, repeatCount:
 		repeatCount, -- RepeatCount (when less than zero the tween will loop indefinitely)
 		true -- Reverses (tween will reverse once reaching its goal)
 	)
-	local pulse = TweenService:Create(part, tweenInfo, { Size = targetSize })
+	local pulse = TweenService:Create(part, tweenInfo, { Size = targetSize, Transparency = 0.25 })
 
 	return pulse
 end

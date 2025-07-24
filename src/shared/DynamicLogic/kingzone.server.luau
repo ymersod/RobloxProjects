@@ -108,11 +108,6 @@ local function kingZoneMainLoop()
 		local isActive = part:GetAttribute("isActive")
 		if isActive then
 			handleKingZone()
-		-- 	if partModel.Transparency ~= normalTransparency then
-		-- 		partModel.Transparency = normalTransparency
-		-- 	end
-		-- elseif partModel.Transparency == normalTransparency then
-		-- 	partModel.Transparency = 1
 		end
 		task.wait(1)
 	end
