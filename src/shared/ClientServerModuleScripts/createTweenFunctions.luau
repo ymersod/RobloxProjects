@@ -86,15 +86,27 @@ function tweenCreate.Grow2(gui: Frame, duration: number, endSize: UDim2?)
 	return tween
 end
 
-function tweenCreate.GrowElastic(gui: Frame, duration: number, endSize: UDim2?)
+function tweenCreate.Elastic(
+	gui: Frame,
+	durationGrow: number,
+	durationShrink: number,
+	endSize: UDim2?,
+	setZero: true | false
+)
 	local finalSize = endSize or UDim2.new(1, 0, 1, 0)
+	local zeroSize = UDim2.new(0, 0, 0, 0)
 
-	-- Elastic easing: fast grow + overshoot + settle
-	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+	if setZero then
+		gui.Size = zeroSize
+	end
+	-- Elastic easing: fast scale + overshoot + settle
+	local tweenInfoGrow = TweenInfo.new(durationGrow, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+	local tweenInfoShrink = TweenInfo.new(durationShrink, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 
-	local tween = TweenService:Create(gui, tweenInfo, { Size = finalSize })
+	local growTween = TweenService:Create(gui, tweenInfoGrow, { Size = finalSize })
+	local shrinkTween = TweenService:Create(gui, tweenInfoShrink, { Size = zeroSize })
 
-	return tween
+	return growTween, shrinkTween
 end
 
 function tweenCreate.Shrink(gui: Frame, duration: number, startSize: UDim2?, endSize: UDim2?)
@@ -187,7 +199,7 @@ function tweenCreate.Implode(part: BasePart?, dur: number)
 	return pulse
 end
 
-function tweenCreate.BlowToSize(part:BasePart?, targetSize:Vector3, dur:number)
+function tweenCreate.BlowToSize(part: BasePart?, targetSize: Vector3, dur: number)
 	local tweenInfo = TweenInfo.new(
 		dur, -- Time
 		Enum.EasingStyle.Sine, -- EasingStyle

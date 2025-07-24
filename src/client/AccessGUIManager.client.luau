@@ -3,6 +3,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 
+local elasticGrowDur = 0.3
+local elasticShrinkDur = 0.1
+
 -- GUI elements
 local accessGuisKvPs: { { ToOpenGui: Frame, Shrink: Tween, AccessGuiBg: ImageLabel, AccessGuiGlow: ImageLabel } } = {}
 local screenGui = player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
@@ -23,8 +26,8 @@ local openCloseBackGlow = openCloseGui:WaitForChild("backglow") :: ImageLabel
 
 local openCloseGachaGUI = accessParentGui:WaitForChild("Roll") :: Frame
 local openCloseGachaButton = openCloseGachaGUI:WaitForChild("OpenCloseButton") :: ImageButton
-local growRealGachaGUI = createTweenFunctions.GrowElastic(gachaGUI, 0.3, gachaGUI.Size)
-local shrinkRealGachaGUI = createTweenFunctions.Shrink(gachaGUI, 0.1, UDim2.new(0, 0, 0, 0))
+local growRealGachaGUI, shrinkRealGachaGUI =
+	createTweenFunctions.Elastic(gachaGUI, elasticGrowDur, elasticShrinkDur, gachaGUI.Size, true)
 table.insert(accessGuisKvPs, {
 	ToOpenGui = gachaGUI,
 	Shrink = shrinkRealGachaGUI,
@@ -34,8 +37,8 @@ table.insert(accessGuisKvPs, {
 
 local openCloseDailyGUI = accessParentGui:WaitForChild("Daily") :: Frame
 local openCloseDailyButton = openCloseDailyGUI:WaitForChild("OpenCloseButton") :: ImageButton
-local growRealDailyGUI = createTweenFunctions.GrowElastic(dailyLoginRewards, 0.3, dailyLoginRewards.Size)
-local shrinkRealDailyGUI = createTweenFunctions.Shrink(dailyLoginRewards, 0.1, UDim2.new(0, 0, 0, 0))
+local growRealDailyGUI, shrinkRealDailyGUI =
+	createTweenFunctions.Elastic(dailyLoginRewards, elasticGrowDur, elasticShrinkDur, dailyLoginRewards.Size, true)
 table.insert(accessGuisKvPs, {
 	ToOpenGui = dailyLoginRewards,
 	Shrink = shrinkRealDailyGUI,
@@ -45,8 +48,8 @@ table.insert(accessGuisKvPs, {
 
 local openCloseLevelUpGUI = accessParentGui:WaitForChild("LevelUp") :: Frame
 local openCloseLevelUpButton = openCloseLevelUpGUI:WaitForChild("OpenCloseButton") :: ImageButton
-local growRealLevelUpGUI = createTweenFunctions.GrowElastic(levelUpRewards, 0.3, levelUpRewards.Size)
-local shrinkRealLevelUpGUI = createTweenFunctions.Shrink(levelUpRewards, 0.1, UDim2.new(0, 0, 0, 0))
+local growRealLevelUpGUI, shrinkRealLevelUpGUI =
+	createTweenFunctions.Elastic(levelUpRewards, elasticGrowDur, elasticShrinkDur, levelUpRewards.Size, true)
 table.insert(accessGuisKvPs, {
 	ToOpenGui = levelUpRewards,
 	Shrink = shrinkRealLevelUpGUI,
@@ -56,8 +59,8 @@ table.insert(accessGuisKvPs, {
 
 local openCloseShopGUI: Frame = accessParentGui:WaitForChild("Shop") :: Frame
 local openCloseShopButton = openCloseShopGUI:WaitForChild("OpenCloseButton") :: ImageButton
-local growRealShopGUI = createTweenFunctions.GrowElastic(shopGUI, 0.3, shopGUI.Size)
-local shrinkRealShopGUI = createTweenFunctions.Shrink(shopGUI, 0.1, UDim2.new(0, 0, 0, 0))
+local growRealShopGUI, shrinkRealShopGUI =
+	createTweenFunctions.Elastic(shopGUI, elasticGrowDur, elasticShrinkDur, shopGUI.Size, true)
 table.insert(accessGuisKvPs, {
 	ToOpenGui = shopGUI,
 	Shrink = shrinkRealShopGUI,
@@ -171,17 +174,31 @@ function closeOtherGuiOnNewOpen(toggleGui)
 	end
 end
 
-local function handleOpenCloseAccessGUIS(button, elasticTween, growTween, shrinkTween, guiToToggle, closeOthers)
+local function handleOpenCloseAccessGUIS(
+	button,
+	elasticGrow: Tween,
+	elasticShrink: Tween,
+	growTween,
+	shrinkTween,
+	guiToToggle,
+	closeOthers
+)
 	button.MouseButton1Click:Connect(function()
 		growTween:Play()
 		growTween.Completed:Once(function()
 			shrinkTween:Play()
 		end)
 
-		guiToToggle.Visible = true
+		local isVisible = guiToToggle.Visible
 
-		if guiToToggle.Visible then
-			elasticTween:Play()
+		if not guiToToggle.Visible then
+			guiToToggle.Visible = not isVisible
+			elasticGrow:Play()
+		else
+			elasticShrink:Play()
+			elasticShrink.Completed:Connect(function()
+				guiToToggle.Visible = not isVisible
+			end)
 		end
 
 		if closeOthers then
@@ -192,6 +209,7 @@ end
 handleOpenCloseAccessGUIS(
 	openCloseLevelUpButton,
 	growRealLevelUpGUI,
+	shrinkRealLevelUpGUI,
 	growTweenLevelUp,
 	shrinkTweenLevelUp,
 	levelUpRewards,
@@ -200,13 +218,30 @@ handleOpenCloseAccessGUIS(
 handleOpenCloseAccessGUIS(
 	openCloseDailyButton,
 	growRealDailyGUI,
+	shrinkRealDailyGUI,
 	growTweenDaily,
 	shrinkTweenDaily,
 	dailyLoginRewards,
 	true
 )
-handleOpenCloseAccessGUIS(openCloseGachaButton, growRealGachaGUI, growTweenGacha, shrinkTweenGacha, gachaGUI, true)
-handleOpenCloseAccessGUIS(openCloseShopButton, growRealShopGUI, growTweenShop, shrinkTweenShop, shopGUI, true)
+handleOpenCloseAccessGUIS(
+	openCloseGachaButton,
+	growRealGachaGUI,
+	shrinkRealGachaGUI,
+	growTweenGacha,
+	shrinkTweenGacha,
+	gachaGUI,
+	true
+)
+handleOpenCloseAccessGUIS(
+	openCloseShopButton,
+	growRealShopGUI,
+	shrinkRealShopGUI,
+	growTweenShop,
+	shrinkTweenShop,
+	shopGUI,
+	true
+)
 
 for _, gui in ipairs(accessGuisKvPs) do
 	gui.ToOpenGui.Changed:Connect(function()
