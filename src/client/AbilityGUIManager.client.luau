@@ -17,11 +17,11 @@ local cooldownGUI: Frame = abilityGUI:WaitForChild("Cooldown")
 local titleText: TextLabel = abilityGUI:WaitForChild("Center"):WaitForChild("AbilityName")
 
 -- Tweens
-local scaleFactor = 0.05 -- 5% increase
-local duration = 0.1
+local SCALE_FACTOR = 0.05 -- 5% increase
+local DURATION = 0.1
 
 local pulseGrowTween, pulseShrinkTween =
-	createTweenFunctions.Pulse(abilityGUI:WaitForChild("Center") :: Frame, scaleFactor, duration)
+	createTweenFunctions.Pulse(abilityGUI:WaitForChild("Center") :: Frame, SCALE_FACTOR, DURATION)
 
 local function toolActivationCooldown(cd: number, index: number)
 	activationTable[index].canActivate = false

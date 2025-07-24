@@ -10,6 +10,7 @@ export type LevelUpReward = {
 	level: number,
 	rewardType: RewardType,
 	Amount: number,
+	Stars: number,
 }
 
 export type RewardsData = {
