@@ -11,11 +11,13 @@ local inventoryFunctionsScript = game:GetService("ServerScriptService")
 	:WaitForChild("inventoryFunctions")
 local inventoryFunctions = require(inventoryFunctionsScript)
 
-backpackPersistenceClone = {}
+local backpackPersistenceClone = {}
 
 players.PlayerAdded:Connect(function(player)
 	backpackPersistenceClone[player.UserId] = {}
+
 	player:WaitForChild("Inventory").ChildAdded:Connect(function(instance)
+		local bp = inventoryFunctions.GetInventory(player)
 		if not instance:IsA("Tool") then
 			return
 		end
@@ -23,33 +25,36 @@ players.PlayerAdded:Connect(function(player)
 			return
 		end
 
-		print("adding tool: " .. instance:GetAttribute("ToolId"))
-		backpackPersistenceClone[player.UserId][#backpackPersistenceClone[player.UserId] + 1] = instance:GetAttribute(
-			"SaveSlot"
-		) .. "," .. instance:GetAttribute("ToolId")
-	end)
-	player:WaitForChild("Inventory").ChildRemoved:Connect(function(instance)
-		if not instance:IsA("Tool") then
-			return
-		end
-		if not instance:GetAttribute("ToolId") and not instance:GetAttribute("SaveSlot") then
-			return
-		end
-
-		for i, toolId in ipairs(backpackPersistenceClone[player.UserId]) do
-			print("trying to remove tool: " .. toolId)
-			if
-				tonumber(toolId:split(",")[1]) == instance:GetAttribute("SaveSlot")
-				and toolId:split(",")[2] == instance:GetAttribute("ToolId")
-			then
-				backpackPersistenceClone[player.UserId][i] = nil
+		-- Rebuild backpackPersistenceClone from bp
+		backpackPersistenceClone[player.UserId] = {}
+		for _, tool in ipairs(bp) do
+			if tool:IsA("Tool") and tool:GetAttribute("ToolId") and tool:GetAttribute("SaveSlot") then
+				local entry = tool:GetAttribute("SaveSlot") .. "," .. tool:GetAttribute("ToolId")
+				table.insert(backpackPersistenceClone[player.UserId], entry)
+				print("Added tool to clone: " .. entry)
 			end
-			if
-				backpackPersistenceClone[player.UserId][i] == nil
-				and backpackPersistenceClone[player.UserId][i + 1] ~= nil
-			then
-				backpackPersistenceClone[player.UserId][i] = backpackPersistenceClone[player.UserId][i + 1]
-				backpackPersistenceClone[player.UserId][i + 1] = nil
+		end
+	end)
+
+	player:WaitForChild("Inventory").ChildRemoved:Connect(function(instance)
+		local bp = inventoryFunctions.GetInventory(player)
+		if not instance:IsA("Tool") then
+			warn("Not a tool?: ", instance)
+			return
+		end
+
+		if not instance:GetAttribute("ToolId") and not instance:GetAttribute("SaveSlot") then
+			warn("Tool doesn't have correct attributes?: ", instance)
+			return
+		end
+
+		-- Rebuild backpackPersistenceClone from bp
+		backpackPersistenceClone[player.UserId] = {}
+		for _, tool in ipairs(bp) do
+			if tool:IsA("Tool") and tool:GetAttribute("ToolId") and tool:GetAttribute("SaveSlot") then
+				local entry = tool:GetAttribute("SaveSlot") .. "," .. tool:GetAttribute("ToolId")
+				table.insert(backpackPersistenceClone[player.UserId], entry)
+				print("Kept tool in clone: " .. entry)
 			end
 		end
 	end)
@@ -73,10 +78,10 @@ players.PlayerAdded:Connect(function(player)
 			local value = inventory:FindFirstChildOfClass("IntValue")
 			value.Value = tonumber(split[2])
 		end
-		for i, itemId in ipairs(split[1]:split(";")) do
+		for _, itemId in ipairs(split[1]:split(";")) do
 			print("trying to instantiate tool:" .. itemId)
 			local itemValues = itemId:split(",")
-			for j, style in ipairs(slapstyles) do
+			for _, style in ipairs(slapstyles) do
 				if #itemValues > 1 and itemValues[2] == style:GetAttribute("ToolId") then
 					inventoryFunctions.AddToInventory(player, style, tonumber(itemValues[1]) :: number)
 				end
@@ -92,10 +97,14 @@ players.PlayerRemoving:Connect(function(player)
 	end
 
 	local success, err = pcall(function()
-		print("saving: " .. table.concat(backpackPersistenceClone[player.UserId], ";"))
-
 		local inventory = player:FindFirstChild("Inventory") :: Folder?
 		local value = inventory:FindFirstChildOfClass("IntValue")
+
+		print(
+			"saving: "
+				.. table.concat(backpackPersistenceClone[player.UserId], ";")
+				.. if value then "--" .. value.Value else ""
+		)
 
 		-- saving as: {SaveSlot},{ToolId};{SaveSlot},{ToolId}...--{inventorySlots}
 		inventoryStore:SetAsync(
