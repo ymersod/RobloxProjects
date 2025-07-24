@@ -127,6 +127,7 @@ game.Players.PlayerAdded:Connect(function(player)
 	expBoost.Name = "ExpBoost"
 	expBoost.Value = 100
 	expBoost.Parent = localStats
+
 	local speedBoost = Instance.new("IntValue")
 	speedBoost.Name = "SpeedValue"
 	speedBoost.Value = 16
