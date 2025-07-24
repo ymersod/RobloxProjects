@@ -8,9 +8,11 @@ local coin = script.Parent :: Part
 local meshPart = coin:FindFirstChild("CoinMesh")
 local attachment = meshPart and meshPart:FindFirstChildWhichIsA("Attachment")
 local coinScore: IntValue = coin and coin:FindFirstChild("Coin score")
+local hitBox = coin:WaitForChild("HitBox")
 
 local DESPAWN_TIME_SECONDS = coin:GetAttribute("DESPAWN_TIME_SECONDS")
 local ROTATION_SPEED = coin:GetAttribute("ROTATION_SPEED")
+local BASE_XP_ON_COLLECT = coin:GetAttribute("BASE_XP_ON_COLLECT")
 
 -- Create a BillboardGui for the coin
 local billboardGui = Instance.new("BillboardGui")
@@ -45,7 +47,7 @@ if attachment then
 	baseZ = baseRot.Z
 end
 
-coin.Touched:Connect(function(other)
+hitBox.Touched:Connect(function(other)
 	local hitPlayerChar = other:FindFirstAncestorOfClass("Model")
 	if not hitPlayerChar then
 		return
@@ -74,11 +76,12 @@ coin.Touched:Connect(function(other)
 			xpBoost = xpBoostIntValue.Value / 100
 		end
 
-		expManagerFunctions.incrementExp(playerHit.UserId, 50 * xpBoost)
+		expManagerFunctions.incrementExp(playerHit.UserId, BASE_XP_ON_COLLECT * xpBoost)
 	end
 
 	coin:Destroy()
 end)
+
 local angle = 0
 
 RunService.Heartbeat:Connect(function(dt)

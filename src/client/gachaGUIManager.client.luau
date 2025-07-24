@@ -76,6 +76,106 @@ local slotStateEnums = {
 	UnlockedWithEquippedTool = 3,
 	UnlockedWithEquippedNoTool = 4,
 }
+local setSetActiveButton
+
+local stateConfigs = {
+	[slotStateEnums.Locked] = {
+		visible = {
+			slapIcon = false,
+			setActiveButton = false,
+			buyButton = true,
+			statsFrame = false,
+			bgImg = true,
+			bgBackGlow = false,
+		},
+		bgTransparency = enums.Colors.RarityColor.UnequippedOpacity,
+		bgGradient = ColorSequence.new(enums.Colors.NotUnlockedBpSpace.Color),
+		slotState = slotStateEnums.Locked,
+		setup = function(buyButton)
+			if not buyButton:GetAttribute("ConnectionsSet") then
+				buyButton:SetAttribute("ConnectionsSet", true)
+				buyButton.MouseButton1Click:Once(function()
+					print("Increment slots!")
+					incrementSlotsEvent:InvokeServer(player)
+				end)
+			end
+		end,
+	},
+
+	[slotStateEnums.UnlockedNoTool] = {
+		visible = {
+			slapIcon = false,
+			setActiveButton = true,
+			buyButton = false,
+			statsFrame = false,
+			bgImg = false,
+			bgBackGlow = false,
+		},
+		bgTransparency = enums.Colors.RarityColor.UnequippedOpacity,
+		bgGradient = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, enums.Colors.ActiveToolBgGradient.Start),
+			ColorSequenceKeypoint.new(1, enums.Colors.ActiveToolBgGradient.End),
+		}),
+		slotState = slotStateEnums.UnlockedNoTool,
+		setup = function(buyButton, slotUI, setActiveButton, grow, shrink)
+			setSetActiveButton(setActiveButton, slotUI, grow, shrink)
+		end,
+	},
+
+	[slotStateEnums.UnlockedWithEquippedNoTool] = {
+		visible = {
+			slapIcon = false,
+			setActiveButton = true,
+			buyButton = false,
+			statsFrame = false,
+			bgImg = false,
+			bgBackGlow = true,
+		},
+		bgTransparency = 0,
+		bgGradient = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, enums.Colors.ActiveToolBgGradient.Start),
+			ColorSequenceKeypoint.new(1, enums.Colors.ActiveToolBgGradient.End),
+		}),
+		slotState = slotStateEnums.UnlockedWithEquippedNoTool,
+		setup = function(buyButton, slotUI, setActiveButton, grow, shrink)
+			setSetActiveButton(setActiveButton, slotUI, grow, shrink)
+		end,
+	},
+
+	[slotStateEnums.UnlockedWithTool] = {
+		visible = {
+			slapIcon = true,
+			setActiveButton = true,
+			buyButton = false,
+			statsFrame = true,
+			bgImg = false,
+			bgBackGlow = false,
+		},
+		bgTransparency = enums.Colors.RarityColor.UnequippedOpacity,
+		slotState = slotStateEnums.UnlockedWithTool,
+		usesRarityColors = true,
+		setup = function(buyButton, slotUI, setActiveButton, grow, shrink)
+			setSetActiveButton(setActiveButton, slotUI, grow, shrink)
+		end,
+	},
+
+	[slotStateEnums.UnlockedWithEquippedTool] = {
+		visible = {
+			slapIcon = true,
+			setActiveButton = true,
+			buyButton = false,
+			statsFrame = true,
+			bgImg = false,
+			bgBackGlow = true,
+		},
+		bgTransparency = 0,
+		slotState = slotStateEnums.UnlockedWithEquippedTool,
+		usesRarityColors = true,
+		setup = function(buyButton, slotUI, setActiveButton, grow, shrink)
+			setSetActiveButton(setActiveButton, slotUI, grow, shrink)
+		end,
+	},
+}
 
 local selectedSlot = Instance.new("IntValue")
 selectedSlot.Parent = script
@@ -131,7 +231,7 @@ function setActiveRollSlotUI(slotUI)
 	slotUIClone.Parent = activeSlotUI
 end
 
-function setSetActiveButton(button, slotUI, tool, growPulse, shrinkPulse)
+setSetActiveButton = function(button, slotUI, growPulse, shrinkPulse)
 	if button:GetAttribute("ConnectionsSet") then
 		return
 	end
@@ -139,16 +239,9 @@ function setSetActiveButton(button, slotUI, tool, growPulse, shrinkPulse)
 	button:SetAttribute("ConnectionsSet", true)
 
 	button.MouseButton1Click:Connect(function()
-		local curState = slotUI.Parent and slotUI.Parent:GetAttribute("SlotState")
 		selectedSlot.Value = slotUI.Parent and slotUI.Parent:GetAttribute("SlotNumber")
 
-		if curState == slotStateEnums.UnlockedNoTool then
-			setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedNoTool, slotUI, tool)
-		elseif curState == slotStateEnums.UnlockedWithTool then
-			setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedTool, slotUI, tool)
-		else
-			warn("States went wrong")
-		end
+		updateGachaBackpackGUI()
 		setActiveRollSlotUI(slotUI)
 
 		growPulse:Play()
@@ -163,130 +256,63 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 	local setActiveButton = slotUI:FindFirstChild("SetRoll") :: ImageButton
 	local buyButton = slotUI:FindFirstChild("Buy") :: ImageButton
 	local statsFrame = slotUI:FindFirstChild("Stats") :: Frame
-	local statsNameFrame = statsFrame:FindFirstChild("Name") :: Frame
+	local statsNameFrame = statsFrame and statsFrame:FindFirstChild("Name") :: Frame
 	local bg = slotUI:FindFirstChild("Bg") :: Frame
 	local bgGradient = bg:FindFirstChildOfClass("UIGradient") :: UIGradient
 	local bgImg = bg:FindFirstChild("bgimg") :: ImageLabel
 	local bgBackGlow = bg:FindFirstChild("backglow") :: ImageLabel
 
-	local rarity = tool and tool:GetAttribute("Rarity") :: string?
+	local rarity = tool and tool:GetAttribute("Rarity")
 	local rarityColors = enums.Colors.RarityColor
 	local parent = slotUI.Parent
-
 	if not parent then
 		warn("SlotSpace gone??")
 		return
 	end
-	local slotNumber = parent and parent:GetAttribute("SlotNumber")
+
+	local slotNumber = parent:GetAttribute("SlotNumber")
 	local localTweens = tweens[slotNumber]
+	local config = stateConfigs[state]
+	if not config then
+		warn("Missing config for state", state)
+		return
+	end
 
-	if state == slotStateEnums.Locked then
-		slapIcon.Visible = false
-		setActiveButton.Visible = false
-		buyButton.Visible = true
-		statsFrame.Visible = false
-		bgImg.Visible = true
-		bgGradient.Color = ColorSequence.new(enums.Colors.NotUnlockedBpSpace.Color)
-		bg.Transparency = enums.Colors.RarityColor.UnequippedOpacity
-		bgBackGlow.ImageTransparency = 1
+	-- Visibility
+	slapIcon.Visible = config.visible.slapIcon
+	setActiveButton.Visible = config.visible.setActiveButton
+	buyButton.Visible = config.visible.buyButton
+	statsFrame.Visible = config.visible.statsFrame
+	bgImg.Visible = config.visible.bgImg
+	bgBackGlow.Visible = config.visible.bgBackGlow
 
-		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.Locked)
+	-- Transparency and gradient
+	bg.Transparency = config.bgTransparency
+	bgBackGlow.ImageTransparency = config.visible.bgBackGlow and enums.Colors.RarityColor.ActiveBackGlowOpacity or 1
 
-		if buyButton:GetAttribute("ConnectionsSet") then
-			return
-		end
-		-- Mark the connection as set
-		buyButton:SetAttribute("ConnectionsSet", true)
+	-- Color
+	if config.bgGradient then
+		bgGradient.Color = config.bgGradient
+	end
 
-		buyButton.MouseButton1Click:Once(function()
-			print("Increment slots!")
-			incrementSlotsEvent:InvokeServer(player)
-		end)
-		--
-		--
-	elseif state == slotStateEnums.UnlockedNoTool then
-		slapIcon.Visible = false
-		setActiveButton.Visible = true
-		buyButton.Visible = false
-		statsFrame.Visible = false
-		bgImg.Visible = false
-		bgGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, enums.Colors.ActiveToolBgGradient.Start),
-			ColorSequenceKeypoint.new(1, enums.Colors.ActiveToolBgGradient.End),
-		})
-		bg.Transparency = enums.Colors.RarityColor.UnequippedOpacity
-		bgBackGlow.ImageTransparency = 1
-
-		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.UnlockedNoTool)
-
-		setSetActiveButton(setActiveButton, slotUI, tool, localTweens.bg.Grow, localTweens.bg.Shrink)
-		--
-		--
-	elseif state == slotStateEnums.UnlockedWithEquippedNoTool then
-		slapIcon.Visible = false
-		setActiveButton.Visible = true
-		buyButton.Visible = false
-		statsFrame.Visible = false
-		bgImg.Visible = false
-		bgGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, enums.Colors.ActiveToolBgGradient.Start),
-			ColorSequenceKeypoint.new(1, enums.Colors.ActiveToolBgGradient.End),
-		})
-		bg.Transparency = 0
-		bgBackGlow.ImageTransparency = enums.Colors.RarityColor.ActiveBackGlowOpacity
-		bgBackGlow.ImageColor3 = enums.Colors.ActiveToolBgGradient.End
-
-		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.UnlockedNoTool)
-
-		setSetActiveButton(setActiveButton, slotUI, tool, localTweens.bg.Grow, localTweens.bg.Shrink)
-		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.UnlockedWithEquippedNoTool)
-		--
-		--
-	elseif state == slotStateEnums.UnlockedWithEquippedTool then
-		slapIcon.Visible = true
-		setActiveButton.Visible = true
-		buyButton.Visible = false
-		statsFrame.Visible = true
-		bgImg.Visible = false
-		bg.Transparency = 0
-		bgBackGlow.ImageTransparency = enums.Colors.RarityColor.ActiveBackGlowOpacity
-
-		local colorScheme = rarityColors and rarityColors[rarity]
-		if colorScheme and typeof(colorScheme) == "table" and colorScheme.Start and colorScheme.End then
+	if config.usesRarityColors and rarity and rarityColors[rarity] then
+		local color = rarityColors[rarity]
+		if color.Start and color.End then
 			bgGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, colorScheme.Start),
-				ColorSequenceKeypoint.new(1, colorScheme.End),
+				ColorSequenceKeypoint.new(0, color.Start),
+				ColorSequenceKeypoint.new(1, color.End),
 			})
-			bgBackGlow.ImageColor3 = colorScheme.End
-			statsNameFrame.BackgroundColor3 = colorScheme.End
+			bgBackGlow.ImageColor3 = color.End
+			if statsNameFrame then
+				statsNameFrame.BackgroundColor3 = color.End
+			end
 		end
+	end
 
-		setSetActiveButton(setActiveButton, slotUI, tool, localTweens.bg.Grow, localTweens.bg.Shrink)
+	parent:SetAttribute("SlotState", config.slotState)
 
-		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.UnlockedWithEquippedTool)
-		--
-		--
-	elseif state == slotStateEnums.UnlockedWithTool then
-		slapIcon.Visible = true
-		setActiveButton.Visible = true
-		buyButton.Visible = false
-		statsFrame.Visible = true
-		bgImg.Visible = false
-		bg.Transparency = rarityColors.UnequippedOpacity
-		bgBackGlow.ImageTransparency = 1
-
-		local colorScheme = rarityColors and rarityColors[rarity]
-		if colorScheme and typeof(colorScheme) == "table" and colorScheme.Start and colorScheme.End then
-			bgGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, colorScheme.Start),
-				ColorSequenceKeypoint.new(1, colorScheme.End),
-			})
-			statsNameFrame.BackgroundColor3 = colorScheme.End
-		end
-
-		setSetActiveButton(setActiveButton, slotUI, tool, localTweens.bg.Grow, localTweens.bg.Shrink)
-
-		_ = slotUI.Parent and slotUI.Parent:SetAttribute("SlotState", slotStateEnums.UnlockedWithTool)
+	if config.setup then
+		config.setup(buyButton, slotUI, setActiveButton, localTweens.bg.Grow, localTweens.bg.Shrink)
 	end
 end
 
@@ -334,17 +360,12 @@ function updateGachaBackpackGUI()
 			local toolId = foundTool:GetAttribute("ToolId")
 			local _ = parent and toolId and parent:SetAttribute("ToolIdRef", toolId)
 
-			local slotState = slotUI.Parent:GetAttribute("SlotState")
-			if
-				slotState == ""
-				or slotState == slotStateEnums.Locked
-				or slotState == slotStateEnums.UnlockedNoTool
-				or slotState == slotStateEnums.UnlockedWithTool
-				or slotState == slotStateEnums.UnlockedWithEquippedNoTool
-			then
-				setStateOfSlotUI(slotStateEnums.UnlockedWithTool, slotUI, foundTool)
-			elseif slotState == slotStateEnums.UnlockedWithEquippedTool then
+			-- local slotState = slotUI.Parent:GetAttribute("SlotState")
+
+			if selectedSlot.Value == saveSlot then
 				setStateOfSlotUI(slotStateEnums.UnlockedWithEquippedTool, slotUI, foundTool)
+			else
+				setStateOfSlotUI(slotStateEnums.UnlockedWithTool, slotUI, foundTool)
 			end
 		else
 			setStateOfSlotUI(slotStateEnums.UnlockedNoTool, slotUI)
@@ -383,47 +404,15 @@ end
 trackBackpack()
 
 selectedSlot.Changed:Connect(function()
-	local playerInventory = player:FindFirstChild("Inventory")
-	local inventoryArr = playerInventory:GetChildren()
-
 	for _, slot in slotArr do
 		local slotUI = slot:FindFirstChildOfClass("Frame")
 		local saveSlot: number = slot:GetAttribute("SlotNumber")
-		local slotState = slot:GetAttribute("SlotState")
 
 		if saveSlot == selectedSlot.Value then
 			print("NewSelected")
 			selectedSlotUI = slotUI
 		end
-
-		local foundTool = nil
-		for _, inventoryTool in ipairs(inventoryArr) do
-			if inventoryTool:IsA("Tool") then
-				local toolSlot: number? = inventoryTool:GetAttribute("SaveSlot")
-				if toolSlot and tostring(toolSlot) == tostring(saveSlot) then
-					foundTool = inventoryTool
-					break
-				end
-			end
-		end
-
-		if
-			saveSlot
-			and slotState
-			and saveSlot ~= selectedSlot.Value
-			and slotState == slotStateEnums.UnlockedWithEquippedTool
-		then
-			setStateOfSlotUI(slotStateEnums.UnlockedWithTool, slotUI, foundTool)
-		elseif
-			saveSlot
-			and slotState
-			and saveSlot ~= selectedSlot.Value
-			and slotState == slotStateEnums.UnlockedWithEquippedNoTool
-		then
-			setStateOfSlotUI(slotStateEnums.UnlockedNoTool, slotUI, foundTool)
-		else
-			print("Dont update slot: ", selectedSlot.Value)
-		end
+		updateGachaBackpackGUI()
 	end
 end)
 

@@ -58,6 +58,10 @@ end
 
 -- print(availableItems)
 function rollsystemManager.getNewItem(player: Player, rollSlot: number)
+	if rollSlot < 1 or rollSlot > 4 then
+		warn("Selectedslot is out of range: ", rollSlot)
+		return nil
+	end
 	local change = math.random()
 	local rolledStyle: Tool?
 	if change >= 1 - ROLL_CLASSES.legendary then
