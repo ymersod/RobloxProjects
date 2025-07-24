@@ -317,9 +317,8 @@ task.spawn(function()
 					gui.Name = "BombCountdownGui"
 					gui.Size = UDim2.new(0, 200, 0, 50)
 					gui.StudsOffset = Vector3.new(0, 5, 0)
-					gui.AlwaysOnTop = true
+					gui.AlwaysOnTop = false
 					gui.Parent = bomb.bombSpawner
-					gui.MaxDistance = 100
 
 					-- Create the TextLabel
 					local label = Instance.new("TextLabel")

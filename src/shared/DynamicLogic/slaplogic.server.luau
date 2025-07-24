@@ -69,10 +69,15 @@ tool.Activated:Connect(function()
 			directionV3 = tool.Parent:FindFirstChildOfClass("Humanoid").MoveDirection
 		end
 
+		local castParams = RaycastParams.new()
+		castParams.CollisionGroup = "MeeleTools"
+		castParams.FilterType = Enum.RaycastFilterType.Exclude
+
 		local shapeCastResults = workspace:Blockcast(
 			tool.Parent.PrimaryPart.CFrame,
-			Vector3.new(20, 10, 10),
-			directionV3 * (statVals:GetAttribute("Range") + 1)
+			Vector3.new(30, 10, 1),
+			directionV3 * (statVals:GetAttribute("Range") + 6),
+			castParams
 		)
 
 		if

@@ -64,15 +64,42 @@ function rollsystemManager.getNewItem(player: Player, rollSlot: number)
 	end
 	local change = math.random()
 	local rolledStyle: Tool?
-	if change >= 1 - ROLL_CLASSES.legendary then
-		rolledStyle = availableItems.legendary[math.random(#availableItems.legendary)]:Clone()
-	elseif change >= 1 - ROLL_CLASSES.rare then
-		rolledStyle = availableItems.rare[math.random(#availableItems.rare)]:Clone()
-	elseif change >= 1 - ROLL_CLASSES.uncommon then
-		rolledStyle = availableItems.uncommon[math.random(#availableItems.uncommon)]:Clone()
-	else
-		rolledStyle = availableItems.common[math.random(#availableItems.common)]:Clone()
-	end
+	local failSafeTable = {}
+	local rollAttempt = 0
+	repeat
+		rollAttempt += 1
+		if change >= 1 - ROLL_CLASSES.legendary then
+			rolledStyle = availableItems.legendary[math.random(#availableItems.legendary)]:Clone()
+			if #failSafeTable == #availableItems.legendary then
+				table.clear(failSafeTable)
+				change = math.random()
+			end
+		elseif change >= 1 - ROLL_CLASSES.rare then
+			rolledStyle = availableItems.rare[math.random(#availableItems.rare)]:Clone()
+			if #failSafeTable == #availableItems.rare then
+				table.clear(failSafeTable)
+				change = math.random()
+			end
+		elseif change >= 1 - ROLL_CLASSES.uncommon then
+			rolledStyle = availableItems.uncommon[math.random(#availableItems.uncommon)]:Clone()
+			if #failSafeTable == #availableItems.uncommon then
+				table.clear(failSafeTable)
+				change = math.random()
+			end
+		else
+			rolledStyle = availableItems.common[math.random(#availableItems.common)]:Clone()
+			if #failSafeTable == #availableItems.common then
+				table.clear(failSafeTable)
+				change = math.random()
+			end
+		end
+
+		if rolledStyle then
+			table.insert(failSafeTable, rolledStyle)
+		end
+	until (rolledStyle and not inventoryFunctions.HasTool(player, rolledStyle)) or rollAttempt > 1000
+
+	print(rollAttempt .. " attempts was tried to get a new tool")
 
 	if rolledStyle then
 		return inventoryFunctions.AddToInventory(player, rolledStyle, rollSlot)

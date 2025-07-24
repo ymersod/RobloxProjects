@@ -8,6 +8,9 @@ local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModul
 local crown = serverStorage:WaitForChild("Hats"):WaitForChild("Crown") :: Part
 local curCrown: Part? = nil
 
+local CROWN_SPEED_BOOST = 1.5
+local CROWN_JUMP_BOOST = 1.5
+
 local oldLeader: Player? = nil
 runner.Heartbeat:Connect(function()
 	local topScore = 0
@@ -28,6 +31,10 @@ runner.Heartbeat:Connect(function()
 			if speedCompIntValue.containsMod("KingSpeedBoost") then
 				speedCompIntValue.removeModifier("KingSpeedBoost")
 			end
+			local jumpCompIntValue = compositeIntValueMultiton.getCompositeIntValue(child.UserId.."JumpValue")
+			if jumpCompIntValue.containsMod("KingJumpBoost") then
+				jumpCompIntValue.removeModifier("KingJumpBoost")
+			end
 		end
 	end
 	if leader and leader.Character then	
@@ -39,13 +46,17 @@ runner.Heartbeat:Connect(function()
 		end
 
 		local speedCompIntValue = compositeIntValueMultiton.getCompositeIntValue(leader.UserId.."SpeedValue")
+		local jumpCompIntValue = compositeIntValueMultiton.getCompositeIntValue(leader.UserId.."JumpValue")
 		if leader:IsA("Player") and (not oldLeader or leader.UserId ~= oldLeader.UserId) then
 			local compIntValue = compositeIntValueMultiton.getCompositeIntValue(leader.UserId.."ExpBoost")
 			if not compIntValue.containsMod("KingExpBoost") then
 				compIntValue += { Name = "KingExpBoost", Value = 100 }
 			end
 			if not speedCompIntValue.containsMod("KingSpeedBoost") then
-				speedCompIntValue += { Name = "KingSpeedBoost", Value = 1.5 }
+				speedCompIntValue += { Name = "KingSpeedBoost", Value = CROWN_SPEED_BOOST }
+			end
+			if not jumpCompIntValue.containsMod("KingJumpBoost") then
+				jumpCompIntValue += { Name = "KingJumpBoost", Value = CROWN_JUMP_BOOST }
 			end
 		end
 
