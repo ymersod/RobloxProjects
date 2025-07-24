@@ -28,8 +28,14 @@ local closeButton: ImageButton = gachaGUIParent:FindFirstChildOfClass("ImageButt
 local activeSlotUI: Frame = rightClip:WaitForChild("TopFrame"):WaitForChild("ActiveParent")
 local defaultActive = activeSlotUI:FindFirstChildOfClass("Frame") :: Frame
 local defaultActiveClone = defaultActive:Clone()
+local abiltiy = rightClip:WaitForChild("TopFrame"):WaitForChild("AbilityRef") :: Frame
+local abilityImage = abiltiy:WaitForChild("ImageLabel") :: ImageLabel
+local abilityText = abiltiy:WaitForChild("AbilityName") :: TextLabel
 local rollButton: ImageButton = rightClip:WaitForChild("Buttons"):WaitForChild("RollButton")
 local rollText = rollButton:WaitForChild("RollsLeft") :: TextLabel
+
+local defaultAbility = abilityImage.Image
+local defaultabilityText = abilityText.Text
 
 local slotArr: { Frame } = {}
 local tweens: {
@@ -224,6 +230,30 @@ function updateStatBar(bar: ImageLabel, val: number)
 end
 
 function setActiveRollSlotUI(slotUI)
+	local toolIdRef = slotUI.Parent and slotUI.Parent:GetAttribute("ToolIdRef")
+
+	if toolIdRef ~= 0 then
+		local inventory = player:FindFirstChild("Inventory"):GetChildren()
+		for _, tool in inventory do
+			if tool:IsA("Tool") then
+				local toolId = tool:GetAttribute("ToolId")
+
+				if toolId and tostring(toolId) == tostring(toolIdRef) then
+					local abilityVals = tool:FindFirstChild("AbilityVals")
+					local abilityName = abilityVals and abilityVals:GetAttribute("name")
+
+					if abilityName then
+						abilityText.Text = abilityName
+						-- TODO: Connect icon to image
+					end
+				end
+			end
+		end
+	else
+		abilityImage.Image = defaultAbility
+		abilityText.Text = defaultabilityText
+	end
+
 	local curActive = activeSlotUI:FindFirstChildOfClass("Frame")
 	curActive:Destroy()
 
