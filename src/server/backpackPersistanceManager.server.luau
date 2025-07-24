@@ -98,7 +98,10 @@ players.PlayerRemoving:Connect(function(player)
 		local value = inventory:FindFirstChildOfClass("IntValue")
 
 		-- saving as: {SaveSlot},{ToolId};{SaveSlot},{ToolId}...--{inventorySlots}
-		inventoryStore:SetAsync(player.UserId, table.concat(backpackPersistenceClone[player.UserId], ";") .. if value then "--" .. value.Value else "")
+		inventoryStore:SetAsync(
+			player.UserId,
+			table.concat(backpackPersistenceClone[player.UserId], ";") .. if value then "--" .. value.Value else ""
+		)
 	end)
 	if not success then
 		warn(err)

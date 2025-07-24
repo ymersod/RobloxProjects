@@ -117,7 +117,7 @@ local stateConfigs = {
 			ColorSequenceKeypoint.new(1, enums.Colors.ActiveToolBgGradient.End),
 		}),
 		slotState = slotStateEnums.UnlockedNoTool,
-		setup = function(slotUI, setActiveButton, grow, shrink)
+		setup = function(buyButton, slotUI, setActiveButton, grow, shrink)
 			setSetActiveButton(setActiveButton, slotUI, grow, shrink)
 		end,
 	},
@@ -137,7 +137,7 @@ local stateConfigs = {
 			ColorSequenceKeypoint.new(1, enums.Colors.ActiveToolBgGradient.End),
 		}),
 		slotState = slotStateEnums.UnlockedWithEquippedNoTool,
-		setup = function(slotUI, setActiveButton, grow, shrink)
+		setup = function(buyButton, slotUI, setActiveButton, grow, shrink)
 			setSetActiveButton(setActiveButton, slotUI, grow, shrink)
 		end,
 	},
@@ -154,7 +154,7 @@ local stateConfigs = {
 		bgTransparency = enums.Colors.RarityColor.UnequippedOpacity,
 		slotState = slotStateEnums.UnlockedWithTool,
 		usesRarityColors = true,
-		setup = function(slotUI, setActiveButton, grow, shrink)
+		setup = function(buyButton, slotUI, setActiveButton, grow, shrink)
 			setSetActiveButton(setActiveButton, slotUI, grow, shrink)
 		end,
 	},
@@ -171,7 +171,7 @@ local stateConfigs = {
 		bgTransparency = 0,
 		slotState = slotStateEnums.UnlockedWithEquippedTool,
 		usesRarityColors = true,
-		setup = function(slotUI, setActiveButton, grow, shrink)
+		setup = function(buyButton, slotUI, setActiveButton, grow, shrink)
 			setSetActiveButton(setActiveButton, slotUI, grow, shrink)
 		end,
 	},
@@ -312,7 +312,7 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 	parent:SetAttribute("SlotState", config.slotState)
 
 	if config.setup then
-		config.setup(slotUI, setActiveButton, localTweens.bg.Grow, localTweens.bg.Shrink)
+		config.setup(buyButton, slotUI, setActiveButton, localTweens.bg.Grow, localTweens.bg.Shrink)
 	end
 end
 

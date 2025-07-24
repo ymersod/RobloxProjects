@@ -154,7 +154,7 @@ local slotUIStateConfigs = {
 			button = false,
 			img = false,
 		},
-		transparency = 1,
+		transparency = 0.4,
 		gradient = ColorSequence.new(enums.Colors.NotUnlockedBpSpace.Color),
 		setState = slotStateEnums.Locked,
 		tween = function() end,
@@ -167,7 +167,7 @@ local slotUIStateConfigs = {
 			button = false,
 			img = false,
 		},
-		transparency = 1,
+		transparency = 0.4,
 		gradient = ColorSequence.new({
 			ColorSequenceKeypoint.new(0, enums.Colors.ActiveToolBgGradient.Start),
 			ColorSequenceKeypoint.new(1, enums.Colors.ActiveToolBgGradient.End),
@@ -356,6 +356,7 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 			nameFrame.BackgroundColor3 = color.End
 		end
 	elseif config.gradient then
+		print("Setting gradient")
 		gradient.Color = config.gradient
 	end
 
