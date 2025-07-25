@@ -27,7 +27,7 @@ local openCloseBackGlow = openCloseGui:WaitForChild("backglow") :: ImageLabel
 local openCloseGachaGUI = accessParentGui:WaitForChild("Roll") :: Frame
 local openCloseGachaButton = openCloseGachaGUI:WaitForChild("OpenCloseButton") :: ImageButton
 local growRealGachaGUI, shrinkRealGachaGUI =
-	createTweenFunctions.Elastic(gachaGUI, elasticGrowDur, elasticShrinkDur, gachaGUI.Size, true)
+	createTweenFunctions.Elastic(gachaGUI, elasticGrowDur, elasticShrinkDur, gachaGUI.Size, UDim2.new(0, 0, 0, 0), true)
 table.insert(accessGuisKvPs, {
 	ToOpenGui = gachaGUI,
 	Shrink = shrinkRealGachaGUI,
@@ -37,8 +37,14 @@ table.insert(accessGuisKvPs, {
 
 local openCloseDailyGUI = accessParentGui:WaitForChild("Daily") :: Frame
 local openCloseDailyButton = openCloseDailyGUI:WaitForChild("OpenCloseButton") :: ImageButton
-local growRealDailyGUI, shrinkRealDailyGUI =
-	createTweenFunctions.Elastic(dailyLoginRewards, elasticGrowDur, elasticShrinkDur, dailyLoginRewards.Size, true)
+local growRealDailyGUI, shrinkRealDailyGUI = createTweenFunctions.Elastic(
+	dailyLoginRewards,
+	elasticGrowDur,
+	elasticShrinkDur,
+	dailyLoginRewards.Size,
+	UDim2.new(0, 0, 0, 0),
+	true
+)
 table.insert(accessGuisKvPs, {
 	ToOpenGui = dailyLoginRewards,
 	Shrink = shrinkRealDailyGUI,
@@ -48,8 +54,14 @@ table.insert(accessGuisKvPs, {
 
 local openCloseLevelUpGUI = accessParentGui:WaitForChild("LevelUp") :: Frame
 local openCloseLevelUpButton = openCloseLevelUpGUI:WaitForChild("OpenCloseButton") :: ImageButton
-local growRealLevelUpGUI, shrinkRealLevelUpGUI =
-	createTweenFunctions.Elastic(levelUpRewards, elasticGrowDur, elasticShrinkDur, levelUpRewards.Size, true)
+local growRealLevelUpGUI, shrinkRealLevelUpGUI = createTweenFunctions.Elastic(
+	levelUpRewards,
+	elasticGrowDur,
+	elasticShrinkDur,
+	levelUpRewards.Size,
+	UDim2.new(0, 0, 0, 0),
+	true
+)
 table.insert(accessGuisKvPs, {
 	ToOpenGui = levelUpRewards,
 	Shrink = shrinkRealLevelUpGUI,
@@ -60,7 +72,7 @@ table.insert(accessGuisKvPs, {
 local openCloseShopGUI: Frame = accessParentGui:WaitForChild("Shop") :: Frame
 local openCloseShopButton = openCloseShopGUI:WaitForChild("OpenCloseButton") :: ImageButton
 local growRealShopGUI, shrinkRealShopGUI =
-	createTweenFunctions.Elastic(shopGUI, elasticGrowDur, elasticShrinkDur, shopGUI.Size, true)
+	createTweenFunctions.Elastic(shopGUI, elasticGrowDur, elasticShrinkDur, shopGUI.Size, UDim2.new(0, 0, 0, 0), true)
 table.insert(accessGuisKvPs, {
 	ToOpenGui = shopGUI,
 	Shrink = shrinkRealShopGUI,

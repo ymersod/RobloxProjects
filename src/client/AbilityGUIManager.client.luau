@@ -11,37 +11,68 @@ local abilityEvent: RemoteEvent? = nil
 -- GUI
 local abilityGUI =
 	game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("ScreenGui"):WaitForChild("Ability")
-local pressE: Frame = abilityGUI:WaitForChild("PressIndicator")
 local uiButton: ImageButton = abilityGUI:WaitForChild("Center"):WaitForChild("ActivateAbility")
-local cooldownGUI: Frame = abilityGUI:WaitForChild("Cooldown")
 local titleText: TextLabel = abilityGUI:WaitForChild("Center"):WaitForChild("AbilityName")
+local backGlow: ImageLabel = abilityGUI:WaitForChild("Center"):WaitForChild("Backglow")
+local icon: ImageLabel = abilityGUI:WaitForChild("Center"):WaitForChild("ImageLabel")
+local glow = uiButton:WaitForChild("glow") :: ImageLabel
+local center = abilityGUI:WaitForChild("Center") :: Frame
+local pressE: Frame = center:WaitForChild("PressIndicator")
+
+local individualCdsFrame: Frame = abilityGUI:WaitForChild("IndividualCds")
+local defaultCd = individualCdsFrame:WaitForChild("cd") :: Frame
+local defaultCdClone = defaultCd:Clone()
+defaultCd:Destroy()
+
+-- TODO: SHOULD USE ICONS PUT IN ABILITYVALS
 
 -- Tweens
-local SCALE_FACTOR = 0.05 -- 5% increase
-local DURATION = 0.1
+local SCALE_FACTOR = 0.75
+local DURATION = 0.2
 
-local pulseGrowTween, pulseShrinkTween =
-	createTweenFunctions.Pulse(abilityGUI:WaitForChild("Center") :: Frame, SCALE_FACTOR, DURATION)
+-- local pulseGrowTween, pulseShrinkTween =
+-- 	createTweenFunctions.Pulse(abilityGUI:WaitForChild("Center") :: Frame, SCALE_FACTOR, DURATION)
+local elasticGrow, elasticShrink = createTweenFunctions.Elastic(
+	center,
+	DURATION,
+	DURATION,
+	center.Size,
+	UDim2.new(SCALE_FACTOR, 0, SCALE_FACTOR, 0),
+	false
+)
+
+local function createLocalCooldown(cd: number)
+	local newCd = defaultCdClone:Clone()
+	local coolDownGUI = newCd:WaitForChild("Cooldown")
+	local tweenGrowCD = coolDownGUI and createTweenFunctions.Grow(coolDownGUI, cd)
+	local text = newCd:WaitForChild("cdText") :: TextLabel
+
+	newCd.BackgroundColor3 = enums.Colors.abilitiy.Inactive
+	newCd.Parent = individualCdsFrame
+
+	tweenGrowCD:Play()
+	tweenGrowCD.Completed:Connect(function()
+		newCd:Destroy()
+	end)
+	task.spawn(function()
+		for i = cd, 0, -1 do
+			text.Text = i
+			task.wait(1)
+		end
+	end)
+end
 
 local function toolActivationCooldown(cd: number, index: number)
 	activationTable[index].canActivate = false
-	local tweenGrowCD = createTweenFunctions.Grow(cooldownGUI, cd)
 
-	tweenGrowCD.Completed:Once(function(playbackState)
-		if playbackState == Enum.PlaybackState.Completed then
-			cooldownGUI.Size = UDim2.new(0, 0, 0, 0)
-		end
-	end)
 	task.delay(cd, function()
 		if activationTable[index] then
 			activationTable[index].canActivate = true
 		end
+		updateGui()
 	end)
-	pulseGrowTween:Play()
-	pulseGrowTween.Completed:Once(function()
-		pulseShrinkTween:Play()
-	end)
-	tweenGrowCD:Play()
+	updateGui()
+	createLocalCooldown(cd)
 end
 
 function setAbility(equippedTool: Tool?, isAdded: boolean?)
@@ -76,10 +107,43 @@ function setAbility(equippedTool: Tool?, isAdded: boolean?)
 end
 
 function updateGui()
-	local curText = abilityValsT and abilityValsT:GetAttribute("name")
 	if not abilityValsT then
-		curText = "???"
+		titleText.Text = "???"
+		elasticShrink:Play()
+		backGlow.Visible = false
+		glow.Visible = false
+		uiButton.BackgroundColor3 = enums.Colors.abilitiy.Inactive
+		return
 	end
+
+	local curSaveSlot = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("SaveSlot")
+	local activationPairMatch: { canActivate: boolean, saveSlot: number }? = nil
+	for _, acvationPair in ipairs(activationTable) do
+		if tostring(acvationPair.saveSlot) == tostring(curSaveSlot) then
+			activationPairMatch = acvationPair
+			continue
+		end
+	end
+
+	print(activationPairMatch, " acti")
+	if not activationPairMatch then
+		local entry = { canActivate = true, saveSlot = curSaveSlot }
+		table.insert(activationTable, entry)
+		activationPairMatch = entry
+	end
+	if activationPairMatch and activationPairMatch.canActivate then
+		elasticGrow:Play()
+		backGlow.Visible = true
+		glow.Visible = true
+		uiButton.BackgroundColor3 = enums.Colors.abilitiy.Active
+	else
+		elasticShrink:Play()
+		backGlow.Visible = false
+		glow.Visible = false
+		uiButton.BackgroundColor3 = enums.Colors.abilitiy.Inactive
+	end
+
+	local curText = abilityValsT and abilityValsT:GetAttribute("name")
 	titleText.Text = curText
 end
 

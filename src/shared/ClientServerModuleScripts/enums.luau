@@ -62,6 +62,11 @@ enums.Colors = {
 			End = Color3.fromRGB(202, 103, 2),
 		},
 	},
+	abilitiy = {
+		InactiveOpacity = 0.5,
+		Active = Color3.fromRGB(174, 32, 18),
+		Inactive = Color3.fromRGB(59, 56, 56),
+	},
 }
 
 return enums

@@ -90,11 +90,12 @@ function tweenCreate.Elastic(
 	gui: Frame,
 	durationGrow: number,
 	durationShrink: number,
-	endSize: UDim2?,
+	endSizeGrow: UDim2?,
+	endSizeShrink: UDim2?,
 	setZero: true | false
 )
-	local finalSize = endSize or UDim2.new(1, 0, 1, 0)
-	local zeroSize = UDim2.new(0, 0, 0, 0)
+	local finalSize = endSizeGrow or UDim2.new(1, 0, 1, 0)
+	local zeroSize = endSizeShrink or UDim2.new(0, 0, 0, 0)
 
 	if setZero then
 		gui.Size = zeroSize
