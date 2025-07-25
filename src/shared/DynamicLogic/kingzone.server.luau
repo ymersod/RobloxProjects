@@ -9,6 +9,41 @@ local normalTransparency = part.Transparency
 local kingScoreBonus = 0
 local xpBonus = 0
 local kingCandidates = {}
+local partibleEmitters = {}
+
+local COLOR_SUCCESS = Color3.fromRGB(9, 255, 0)
+local COLOR_FAILURE = Color3.fromRGB(255, 0, 0)
+local COLOR_IDLE = Color3.fromRGB(156, 34, 165)
+
+for _, descendant in ipairs(part:GetDescendants()) do
+	if descendant:IsA("ParticleEmitter") then
+		table.insert(partibleEmitters, descendant)
+	end
+end
+
+local function setParticleColor(color: Color3)
+	for _, emitter in ipairs(partibleEmitters) do
+		emitter.Color = ColorSequence.new(color)
+	end
+end
+
+local function particleEmitterSwitch(turnOn: boolean)
+	for _, emitter in ipairs(partibleEmitters) do
+		emitter.Enabled = turnOn
+	end
+end
+
+local function kingZoneSwitch()
+	local isActive = part:GetAttribute("isActive")
+	if isActive then
+		if partModel.Transparency ~= normalTransparency then
+			partModel.Transparency = normalTransparency
+		end
+	elseif partModel.Transparency == normalTransparency then
+		partModel.Transparency = 1
+	end
+	particleEmitterSwitch(isActive)
+end
 
 local function getPlayer(col: { name: string, Parent: Model }): Player?
 	local char = col.Parent
@@ -70,40 +105,28 @@ local function handleKingZone()
 	updateKingZone(partsInZone)
 	if #kingCandidates > 0 then
 		if #kingCandidates > 0 and kingScoreBonus > 0 then
-			partModel.Color = Color3.fromRGB(9, 255, 0)
+			partModel.Color = COLOR_SUCCESS
+			setParticleColor(COLOR_SUCCESS)
 			scoreKings()
 		else
-			partModel.Color = Color3.fromRGB(255, 0, 0)
+			partModel.Color = COLOR_FAILURE
+			setParticleColor(COLOR_FAILURE)
 		end
 	else
-		partModel.Color = Color3.fromRGB(156, 34, 165)
+		partModel.Color = COLOR_IDLE
+		setParticleColor(COLOR_IDLE)
 	end
 end
 
 part.AttributeChanged:Connect(function(attr)
-	print("attr " .. attr .. " changed")
-	local isActive = part:GetAttribute("isActive")
-	if isActive then
-		if partModel.Transparency ~= normalTransparency then
-			partModel.Transparency = normalTransparency
-		end
-	elseif partModel.Transparency == normalTransparency then
-		partModel.Transparency = 1
-	end
+	kingZoneSwitch()
 end)
 
 local function kingZoneMainLoop()
 	if part.Transparency then
 		part.Transparency = 1
 	end
-		local isActive = part:GetAttribute("isActive")
-	if isActive then
-		if partModel.Transparency ~= normalTransparency then
-			partModel.Transparency = normalTransparency
-		end
-	elseif partModel.Transparency == normalTransparency then
-		partModel.Transparency = 1
-	end
+	kingZoneSwitch()
 	while true do
 		local isActive = part:GetAttribute("isActive")
 		if isActive then
