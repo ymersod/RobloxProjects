@@ -1,11 +1,21 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ragdollClientEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("RagdollClient")
 
-local ragdollModule = require(ReplicatedStorage.Shared.ClientServerModuleScripts.ragdollPlayerClient)
-
-ragdollClientEvent.OnClientEvent:Connect(function(hitPosition: Vector3, direction: Vector3)
+ragdollClientEvent.OnClientEvent:Connect(function(toRagdoll: boolean)
 	local player = game.Players.LocalPlayer
-	local character = player.Character or player.CharacterAdded:Wait()
+	local char = player and player.Character
+	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 
-	ragdollModule.Ragdoll(character, hitPosition, direction)
+	if toRagdoll then
+		humanoid.AutoRotate = false
+		humanoid.PlatformStand = true
+	else
+		if humanoid:GetState() == Enum.HumanoidStateType.Dead then
+			return
+		end
+		humanoid.PlatformStand = false
+		humanoid.AutoRotate = true
+		humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+		humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+	end
 end)

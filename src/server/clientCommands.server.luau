@@ -5,7 +5,6 @@ local ServerStorage = game:GetService("ServerStorage")
 local killModule = require(
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("killPlayerServer")
 )
-local ragdollEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("RagdollClient")
 local pushBackClientEvent =
 	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("PushBackClient")
 local ServerScriptService = game:GetService("ServerScriptService")
@@ -32,6 +31,7 @@ local dataStoreDevManagementFunctions = require(dataStoreDevManagementFunctionsS
 local inventoryFuncs = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 
 local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
+local ragdollUtils = require(ServerScriptService.Server.ServerModuleScripts.ragdollUtils)
 local rollTickets = require(ServerScriptService.Server.ServerModuleScripts.rollTickets)
 
 local slapStyleFolder: Folder = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles")
@@ -68,11 +68,7 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 			killModule.killPlayer(player.Character, player)
 		elseif command.command == "/ragdoll" then
 			if #command.args > 0 then
-				ragdollEvent:FireClient(
-					player,
-					player.Character.PrimaryPart.Position,
-					Vector3.new(command.args[1], command.args[1], command.args[1])
-				)
+				ragdollUtils.ragdoll(player, Vector3.new(command.args[1], command.args[1], command.args[1]))
 			end
 		elseif command.command == "/selfxp" then
 			if #command.args > 0 then

@@ -2,9 +2,10 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local ServerScripService = game:GetService("ServerScriptService")
-
+local ServerScriptService = game:GetService("ServerScriptService")
 local kingCoinFuncsScript =
 	ServerScripService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("KingCoinFunctions")
+local ragdollUtils = require(ServerScriptService.Server.ServerModuleScripts.ragdollUtils)
 local kingCoinFuncs = require(kingCoinFuncsScript)
 local expManagerFuncsScript =
 	ServerScripService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("expManagerFunctions")
@@ -112,7 +113,7 @@ tool.Activated:Connect(function()
 			end
 			local attackerHRP = tool.Parent:FindFirstChild("HumanoidRootPart")
 			local hitDirection = (shapeCastResults.Instance.Position - attackerHRP.Position).Unit * POWER_MULT
-			ragdollClientEvent:FireClient(targetPlayer, shapeCastResults.Position, hitDirection)
+			ragdollUtils.ragdoll(targetPlayer, hitDirection)
 		end
 	end
 end)
