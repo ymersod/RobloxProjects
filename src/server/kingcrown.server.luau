@@ -168,7 +168,6 @@ local function applyCrownToPlayer(crownEntry: CrownEntry)
 	local crown = crownEntry.item
 
 	if not crown then
-		print("DAMN its destroyed")
 		crown = crown:Clone()
 		crownEntry.item = crown
 	end

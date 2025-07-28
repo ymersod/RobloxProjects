@@ -6,12 +6,9 @@ local expManagerFunctions = require(ServerScriptService.Server.ServerModuleScrip
 local part: Part = script.Parent
 
 part.Touched:Connect(function(humanoidRootPart: BasePart)
-	print(humanoidRootPart.CollisionGroup)
 	if humanoidRootPart.CollisionGroup ~= "Players" or humanoidRootPart.Name ~= "HumanoidRootPart" then
 		return
 	end
-	print(humanoidRootPart.Name)
-	print("player touched zone")
 end)
 
 function ZoneMainLoop()
@@ -22,9 +19,6 @@ function ZoneMainLoop()
 		task.wait(1)
 
 		local playerParts = workspace:GetPartsInPart(part, overlapParams)
-		if #playerParts > 0 then
-			print("Players in zone:")
-		end
 
 		for i, humanoidRootPart in ipairs(playerParts) do
 			local player = players:GetPlayerFromCharacter(humanoidRootPart.Parent)

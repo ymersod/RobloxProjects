@@ -101,7 +101,6 @@ local stateConfigs = {
 			if not buyButton:GetAttribute("ConnectionsSet") then
 				buyButton:SetAttribute("ConnectionsSet", true)
 				buyButton.MouseButton1Click:Once(function()
-					print("Increment slots!")
 					incrementSlotsEvent:InvokeServer(player)
 				end)
 			end
@@ -217,7 +216,7 @@ function updateStatBar(bar: ImageLabel, val: number)
 			color = statBarColors.Purple
 			scale = 1
 		else
-			warn(bar.Name .. " value of: " .. val .. " is not 1, 2, 3 or 4")
+			warn(bar.Name .. " value of: " .. val .. " is out of the 1–4 range")
 		end
 
 		if color and scale then
@@ -356,7 +355,7 @@ function updateGachaBackpackGUI()
 		local saveSlot: number = slot:GetAttribute("SlotNumber")
 
 		if saveSlot > openSlots then
-			print("On saveslot:" .. saveSlot .. " Open slots: " .. openSlots)
+			--print("On saveslot:" .. saveSlot .. " Open slots: " .. openSlots)
 			setStateOfSlotUI(slotStateEnums.Locked, slotUI)
 			continue
 		end
@@ -476,7 +475,6 @@ rollButton.MouseButton1Click:Connect(function()
 	end)
 
 	if tickets.Value < 1 then
-		warn("No more tickets (client check)")
 		return
 	end
 	local rollResult = rollEvent:InvokeServer(selectedSlot.Value)
@@ -488,8 +486,6 @@ rollButton.MouseButton1Click:Connect(function()
 				updateGachaBackpackGUI()
 				setActiveRollSlotUI(selectedSlotUI)
 			end
-		else
-			warn("No more tickets (server check)")
 		end
 	else
 		warn("Something went wrong with rolling & adding to inventory")

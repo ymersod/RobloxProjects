@@ -235,7 +235,6 @@ local statBarColors = {
 }
 
 function onEquip(curSlot: Frame)
-	print("equip")
 	local id = curSlot and curSlot:GetAttribute("ToolIdRef") :: string?
 	local inventorySaveSlot = curSlot and curSlot:GetAttribute("SlotNumber") :: number?
 	if not id then
@@ -260,7 +259,7 @@ function onEquip(curSlot: Frame)
 		end
 	end
 	if not toolToEquip then
-		warn("No bp-tool mathcing UI Slot")
+		warn("No bp-tool matching UI Slot")
 		return
 	end
 
@@ -273,6 +272,7 @@ function onEquip(curSlot: Frame)
 	local result = equipServerEvent:InvokeServer(toolToEquip) -- equip tool
 	print("Returned slapStyle: ", result)
 end
+
 function extractDataFromTool(tool: Tool)
 	local statVals = tool:FindFirstChild("StatVals")
 	return {
@@ -302,7 +302,7 @@ function updateStatBar(bar: Frame, val: number)
 			color = statBarColors.Purple
 			scale = 1
 		else
-			warn(bar.Name .. " value of: " .. val .. " is not 1, 2, 3 or 4")
+			warn(bar.Name .. " value of: " .. val .. " is out of the 1–4 range")
 		end
 
 		if color and scale then
@@ -356,7 +356,6 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 			nameFrame.BackgroundColor3 = color.End
 		end
 	elseif config.gradient then
-		print("Setting gradient")
 		gradient.Color = config.gradient
 	end
 
@@ -383,7 +382,7 @@ function updateBackpackGUI()
 		local saveSlot: number = slot:GetAttribute("SlotNumber")
 
 		if saveSlot > openSlots then
-			print("On saveslot:" .. saveSlot .. " Open slots: " .. openSlots)
+			--print("On saveslot:" .. saveSlot .. " Open slots: " .. openSlots)
 			setStateOfSlotUI(slotStateEnums.Locked, slotUI)
 			continue
 		end
@@ -476,10 +475,6 @@ function trackBackpack()
 		local tool = player.Character:FindFirstChildOfClass("Tool")
 		local toolSlot = tool and tool:GetAttribute("SaveSlot")
 
-		if not toolSlot then
-			warn("Tool not found")
-		end
-
 		for _, slot in ipairs(slotArr) do
 			local slotNumber = slot:GetAttribute("SlotNumber")
 			local slotGUI = slot:FindFirstChildOfClass("Frame")
@@ -505,10 +500,6 @@ trackBackpack()
 
 local inventory: Folder = player:FindFirstChild("Inventory")
 local slotsOpen = inventory:FindFirstChildOfClass("IntValue")
-
-if not inventory or not slotsOpen then
-	warn("Inventory or slotsopen not found")
-end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if gameProcessed then

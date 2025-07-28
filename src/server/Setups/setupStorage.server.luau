@@ -92,7 +92,7 @@ for _, slapPrefab in ipairs(slapPrefabs:GetChildren()) do
 	end
 
 	if not matchedAbility then
-		warn("No ability found for slapstyle: ", slapPrefab)
+		print("No ability found for slapstyle: ", slapPrefab)
 	end
 end
 

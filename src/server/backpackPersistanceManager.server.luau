@@ -31,7 +31,6 @@ players.PlayerAdded:Connect(function(player)
 			if tool:IsA("Tool") and tool:GetAttribute("ToolId") and tool:GetAttribute("SaveSlot") then
 				local entry = tool:GetAttribute("SaveSlot") .. "," .. tool:GetAttribute("ToolId")
 				table.insert(backpackPersistenceClone[player.UserId], entry)
-				print("Added tool to clone: " .. entry)
 			end
 		end
 	end)
@@ -54,7 +53,6 @@ players.PlayerAdded:Connect(function(player)
 			if tool:IsA("Tool") and tool:GetAttribute("ToolId") and tool:GetAttribute("SaveSlot") then
 				local entry = tool:GetAttribute("SaveSlot") .. "," .. tool:GetAttribute("ToolId")
 				table.insert(backpackPersistenceClone[player.UserId], entry)
-				print("Kept tool in clone: " .. entry)
 			end
 		end
 	end)
@@ -69,17 +67,14 @@ players.PlayerAdded:Connect(function(player)
 		else
 			currentInventory = ""
 		end
-		print(currentInventory)
 		local slapstyles = slapStyleFolder:GetDescendants()
 		local split = currentInventory:split("--")
 		if #split > 1 and split[2] then
-			print("amount of slots")
 			local inventory = player:FindFirstChild("Inventory") :: Folder?
 			local value = inventory:FindFirstChildOfClass("IntValue")
 			value.Value = tonumber(split[2])
 		end
 		for _, itemId in ipairs(split[1]:split(";")) do
-			print("trying to instantiate tool:" .. itemId)
 			local itemValues = itemId:split(",")
 			for _, style in ipairs(slapstyles) do
 				if #itemValues > 1 and itemValues[2] == style:GetAttribute("ToolId") then

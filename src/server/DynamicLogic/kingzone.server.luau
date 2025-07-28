@@ -58,7 +58,6 @@ end
 
 local function tryToAddPlayer(userId)
 	kingCandidates[#kingCandidates + 1] = userId
-	print(kingCandidates)
 end
 
 local function updateKingZone(list)

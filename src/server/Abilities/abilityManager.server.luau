@@ -11,7 +11,6 @@ local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModul
 local ragdollUtils = require(ServerScriptService.Server.ServerModuleScripts.ragdollUtils)
 
 speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slotToolId: string)
-	print("SpeedVals: ", abilityVals)
 	local playerUserId = player.UserId
 
 	local character = player.Character
@@ -46,7 +45,6 @@ speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slo
 end)
 
 jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slotToolId: string)
-	print("Yump vals: ", abilityVals)
 	local playerUserId = player.UserId
 
 	local character = player.Character

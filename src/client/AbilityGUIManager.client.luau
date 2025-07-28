@@ -97,12 +97,6 @@ function setAbility(equippedTool: Tool?, isAdded: boolean?)
 		abilityValsT = nil
 		abilityEvent = nil
 	end
-
-	if not abilityValsT and not abilityEvent then
-		warn("Cant find data on ability")
-		return
-	end
-
 	-- canActivate = true
 end
 
@@ -157,7 +151,6 @@ function onCharChanges(isAdded: boolean?)
 	local equippedTool = playerChar and playerChar:FindFirstChildOfClass("Tool")
 
 	if not equippedTool then
-		warn("Cant set vals")
 	end
 
 	setAbility(equippedTool, isAdded)
@@ -182,7 +175,6 @@ local function activateAbility(actionName, inputState, inputObject)
 	if abilityValsT and abilityEvent then
 		local curSaveSlot = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("SaveSlot")
 		if not curSaveSlot then
-			warn("No save slot given")
 			curSaveSlot = " "
 		end
 		local activationPairMatch: { canActivate: boolean, saveSlot: number }? = nil
@@ -211,7 +203,6 @@ local function activateAbility(actionName, inputState, inputObject)
 
 			local cd = abilityValsT:GetAttribute("cooldown") :: number?
 			if not cd then
-				warn("Cant find cd")
 				return
 			end
 
@@ -219,7 +210,6 @@ local function activateAbility(actionName, inputState, inputObject)
 
 			local toolId = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("ToolId")
 			if not toolId then
-				warn("No toolId given")
 				toolId = " "
 			end
 			-- Add your ability logic here (e.g., effects, damage, etc.)

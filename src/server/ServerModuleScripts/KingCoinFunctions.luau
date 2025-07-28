@@ -60,9 +60,6 @@ function funcs.spawnKingCoinFromRandomPlayer(
 	valueMax: number,
 	spawnRadius: number
 )
-	if totalToDrop < 1 then
-		print("Total coin amount is no acceptable for spawn: " .. totalToDrop)
-	end
 	local dropped = 0
 
 	while dropped < totalToDrop do

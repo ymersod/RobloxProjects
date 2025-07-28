@@ -157,9 +157,6 @@ end
 
 function createBombItem(bomb: Tool, startingPosition: Vector3, parent)
 	local item = itemSphere:Clone()
-	if not item then
-		warn("can't clone itemSphere")
-	end
 	item.Position = startingPosition
 	item.Parent = parent
 
