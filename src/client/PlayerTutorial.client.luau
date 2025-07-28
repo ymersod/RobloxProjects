@@ -388,4 +388,4 @@ function start()
 		end
 	end)
 end
-start()
+-- start()

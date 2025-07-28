@@ -11,7 +11,7 @@ if not explosionSphere then
 end
 
 local explosionSphereAnimationScript: Script =
-	replicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("bombSphereExplosion")
+	ServerScriptService:WaitForChild("Server"):WaitForChild("DynamicLogic"):WaitForChild("bombSphereExplosion")
 if not explosionSphereAnimationScript then
 	error("Missing explosion animation script in ReplicatedStorage.Shared.DynamicLogic")
 end
@@ -150,6 +150,7 @@ function explode()
 	sphere.Size = Vector3.new(EXPLOSION_RADIUS * 2, EXPLOSION_RADIUS * 2, EXPLOSION_RADIUS * 2)
 	local expScript = explosionSphereAnimationScript:Clone()
 	expScript.Parent = sphere
+	expScript.Enabled = true
 
 	playExplosion(bomb.Position)
 	local sound = bomb:FindFirstChildOfClass("Sound")

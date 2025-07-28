@@ -1,11 +1,10 @@
-print("got here fam co2")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 
-local kingZoneScript =
-	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("DynamicLogic"):WaitForChild("kingzone")
+local kingZoneScript = ServerScriptService:WaitForChild("Server"):WaitForChild("DynamicLogic"):WaitForChild("kingzone")
 
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
-	
+
 local this = script.Parent
 local kingZones = {}
 local waitTime = this:GetAttribute("swapActiveZoneSeconds")
@@ -16,7 +15,10 @@ for _, kingZone in ipairs(this:GetChildren()) do
 		continue
 	end
 	kingZone:SetAttribute("isActive", false)
-	kingZoneScript:Clone().Parent = kingZone
+
+	local kingZoneScriptClone = kingZoneScript:Clone()
+	kingZoneScriptClone.Parent = kingZone
+	kingZoneScriptClone.Enabled = true
 	table.insert(kingZones, kingZone)
 end
 
@@ -25,9 +27,9 @@ if #kingZones < numberOfZonesActive then
 end
 
 --- Returns all zones from a_1 that aren't in a_2
-local function DifferenceOperation(a_1:{Instance},a_2:{Instance}): {Instance}
+local function DifferenceOperation(a_1: { Instance }, a_2: { Instance }): { Instance }
 	local output = {}
-	for i,inst1 in ipairs(a_1) do
+	for i, inst1 in ipairs(a_1) do
 		local foundInA_2 = false
 		for j, inst2 in ipairs(a_2) do
 			if inst1 == inst2 then
@@ -36,14 +38,14 @@ local function DifferenceOperation(a_1:{Instance},a_2:{Instance}): {Instance}
 			end
 		end
 		if not foundInA_2 then
-			table.insert(output,inst1)
+			table.insert(output, inst1)
 		end
 	end
 	return output
 end
 
 task.spawn(function()
-	local initialSizes : {{Model:UnionOperation, Size:Vector3}} = {}
+	local initialSizes: { { Model: UnionOperation, Size: Vector3 } } = {}
 	while true do
 		local newActiveZones = {}
 		local selectIndex = math.random(1, #kingZones)
@@ -61,16 +63,16 @@ task.spawn(function()
 		local unselectedZone = DifferenceOperation(kingZones, newActiveZones) -- gets all zones that won't be active
 
 		-- creates and plays the animations for all zones that won't be active
-		local pulseTweens : {Tween} = {}
-		local implodeTweens : {Tween} = {}
+		local pulseTweens: { Tween } = {}
+		local implodeTweens: { Tween } = {}
 		for i, zone in ipairs(unselectedZone) do
 			local model = zone:FindFirstChildOfClass("UnionOperation")
 			if model and zone:GetAttribute("isActive") then
-				local pulseTween = createTweenFunctions.PulseSize(model, model.Size*0.9, 4, 2)
+				local pulseTween = createTweenFunctions.PulseSize(model, model.Size * 0.9, 4, 2)
 				local implodeTween = createTweenFunctions.Implode(model, 2)
-				table.insert(pulseTweens,pulseTween)
-				table.insert(implodeTweens,implodeTween)
-				table.insert(initialSizes, { Model=model, Size = model.Size })
+				table.insert(pulseTweens, pulseTween)
+				table.insert(implodeTweens, implodeTween)
+				table.insert(initialSizes, { Model = model, Size = model.Size })
 			end
 		end
 		for i, t in ipairs(pulseTweens) do
