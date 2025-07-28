@@ -124,6 +124,7 @@ function ragdollUtils.UnragdollCharacter(character: Model, getUpState: number?)
 end
 
 function ragdollUtils.ragdoll(targetPlayer: Player, direction: Vector3)
+	print("Ragdolling")
 	local char = targetPlayer and targetPlayer.Character
 	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 	local hrp = humanoid and humanoid.RootPart
@@ -144,6 +145,7 @@ function ragdollUtils.ragdoll(targetPlayer: Player, direction: Vector3)
 
 	-- Start timer to call
 	task.delay(2, function()
+		print("Unragdolling")
 		ragdollUtils.UnragdollCharacter(char)
 	end)
 end
