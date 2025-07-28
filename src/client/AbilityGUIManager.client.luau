@@ -86,7 +86,7 @@ function setAbility(equippedTool: Tool?, isAdded: boolean?)
 			if chargeTime and chargeTime > 0 then
 				local entry = {
 					canActivate = true,
-					saveSlot = (abilityValsT.Parent and abilityValsT.Parent:GetAttribute("SaveSlot")) or " ",
+					saveSlot = (abilityValsT.Parent and abilityValsT.Parent:GetAttribute("SaveSlot")),
 				}
 				table.insert(activationTable, entry)
 				local index = table.find(activationTable, entry)
@@ -126,9 +126,15 @@ function updateGui()
 	end
 
 	if not activationPairMatch then
-		local entry = { canActivate = true, saveSlot = curSaveSlot }
-		table.insert(activationTable, entry)
-		activationPairMatch = entry
+		if not curSaveSlot then
+			local entry = { canActivate = false, saveSlot = curSaveSlot }
+			table.insert(activationTable, entry)
+			activationPairMatch = entry
+		else
+			local entry = { canActivate = true, saveSlot = curSaveSlot }
+			table.insert(activationTable, entry)
+			activationPairMatch = entry
+		end
 	end
 	if activationPairMatch and activationPairMatch.canActivate then
 		elasticGrow:Play()
