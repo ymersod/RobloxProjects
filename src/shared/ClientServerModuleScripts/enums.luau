@@ -11,6 +11,7 @@ enums.Platforms = {
 
 enums.RewardTypes = {
 	Ticket = "Ticket",
+	SlotUpgrade = "SlotUpgrade",
 }
 
 enums.Login = {

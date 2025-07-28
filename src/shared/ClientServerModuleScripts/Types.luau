@@ -1,4 +1,4 @@
-export type RewardType = "Ticket" -- Add more as needed
+export type RewardType = "Ticket" | "SlotUpgrade" -- Add more as needed
 
 export type DailyReward = {
 	day: number,
