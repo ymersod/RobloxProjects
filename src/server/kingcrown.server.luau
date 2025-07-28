@@ -5,7 +5,7 @@ local serverStorage = game:GetService("ServerStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
 
-local crown = serverStorage:WaitForChild("Hats"):WaitForChild("Crown") :: Part
+local crown = serverStorage:WaitForChild("Hats"):WaitForChild("KingCrowns"):WaitForChild("GoldCrown") :: Part
 local curCrown: Part? = nil
 
 local CROWN_SPEED_BOOST = 1.5
@@ -23,32 +23,36 @@ runner.Heartbeat:Connect(function()
 			leader = child
 		end
 		if child:IsA("Player") and (not oldLeader or child.UserId ~= oldLeader.UserId) then
-			local compIntValue = compositeIntValueMultiton.getCompositeIntValue(child.UserId.."ExpBoost")
+			local compIntValue = compositeIntValueMultiton.getCompositeIntValue(child.UserId .. "ExpBoost")
 			if compIntValue.containsMod("KingExpBoost") then
 				compIntValue.removeModifier("KingExpBoost")
 			end
-			local speedCompIntValue = compositeIntValueMultiton.getCompositeIntValue(child.UserId.."SpeedValue")
+			local speedCompIntValue = compositeIntValueMultiton.getCompositeIntValue(child.UserId .. "SpeedValue")
 			if speedCompIntValue.containsMod("KingSpeedBoost") then
 				speedCompIntValue.removeModifier("KingSpeedBoost")
 			end
-			local jumpCompIntValue = compositeIntValueMultiton.getCompositeIntValue(child.UserId.."JumpValue")
+			local jumpCompIntValue = compositeIntValueMultiton.getCompositeIntValue(child.UserId .. "JumpValue")
 			if jumpCompIntValue.containsMod("KingJumpBoost") then
 				jumpCompIntValue.removeModifier("KingJumpBoost")
 			end
 		end
 	end
-	if leader and leader.Character then	
+	if leader and leader.Character then
 		local leaderChar = leader.Character
 		local leaderHumanoid = leaderChar:FindFirstChildOfClass("Humanoid")
 
-		if (not leaderHumanoid) or leaderHumanoid.Health < 1 or not leader.Character:FindFirstChild("HumanoidRootPart") then
+		if
+			not leaderHumanoid
+			or leaderHumanoid.Health < 1
+			or not leader.Character:FindFirstChild("HumanoidRootPart")
+		then
 			return
 		end
 
-		local speedCompIntValue = compositeIntValueMultiton.getCompositeIntValue(leader.UserId.."SpeedValue")
-		local jumpCompIntValue = compositeIntValueMultiton.getCompositeIntValue(leader.UserId.."JumpValue")
+		local speedCompIntValue = compositeIntValueMultiton.getCompositeIntValue(leader.UserId .. "SpeedValue")
+		local jumpCompIntValue = compositeIntValueMultiton.getCompositeIntValue(leader.UserId .. "JumpValue")
 		if leader:IsA("Player") and (not oldLeader or leader.UserId ~= oldLeader.UserId) then
-			local compIntValue = compositeIntValueMultiton.getCompositeIntValue(leader.UserId.."ExpBoost")
+			local compIntValue = compositeIntValueMultiton.getCompositeIntValue(leader.UserId .. "ExpBoost")
 			if not compIntValue.containsMod("KingExpBoost") then
 				compIntValue += { Name = "KingExpBoost", Value = 100 }
 			end
@@ -60,7 +64,6 @@ runner.Heartbeat:Connect(function()
 			end
 		end
 
-		
 		if leader.Character:FindFirstChild("Crown") or (leaderHumanoid and leaderHumanoid.Health <= 0) then
 			return
 		end
