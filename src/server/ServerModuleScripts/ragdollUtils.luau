@@ -179,8 +179,9 @@ local function BuildCollisionParts(character: Model)
 end
 
 local function SetupHumanoid(humanoid: Humanoid)
-	humanoid.BreakJointsOnDeath = false
-	humanoid.RequiresNeck = false
+	-- Seems to not be doing anything?
+	-- humanoid.BreakJointsOnDeath = false
+	-- humanoid.RequiresNeck = false
 end
 
 local function WaitForCharacterAndSetup()
