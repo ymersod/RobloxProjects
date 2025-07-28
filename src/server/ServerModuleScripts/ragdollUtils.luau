@@ -17,8 +17,10 @@ function ragdollUtils.EnableMotor6D(character: Model, enabled: boolean)
 			v.Enabled = enabled
 		end
 		if v:IsA("BasePart") then
-			if enabled then
+			if enabled and v.Name ~= "HumanoidRootPart" then
 				PhysicsService:SetPartCollisionGroup(v, "Players")
+			elseif enabled then
+				PhysicsService:SetPartCollisionGroup(v, "PlayerRootPart")
 			else
 				PhysicsService:SetPartCollisionGroup(v, "RagdollCollide")
 			end
