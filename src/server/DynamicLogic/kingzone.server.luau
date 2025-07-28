@@ -1,5 +1,8 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local players = game:GetService("Players")
+
+local kingZoneActivateClient = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("KingZoneActivateClient")
 
 local expManagerFunctions = require(ServerScriptService.Server.ServerModuleScripts.expManagerFunctions)
 
@@ -39,6 +42,7 @@ local function kingZoneSwitch()
 		if partModel.Transparency ~= normalTransparency then
 			partModel.Transparency = normalTransparency
 		end
+		kingZoneActivateClient:FireAllClients((partModel :: Part).Position)
 	elseif partModel.Transparency == normalTransparency then
 		partModel.Transparency = 1
 	end
