@@ -81,5 +81,5 @@ jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slot
 end)
 
 slapBind.Event:Connect(function(targetPlayer, direction)
-	ragdollUtils.ragdoll(targetPlayer, direction)
+	ragdollUtils.ragdoll(targetPlayer, direction, 2)
 end)

@@ -65,10 +65,14 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 	player.Chatted:Connect(function(message)
 		local command = parseCommand(message)
 		if command.command == "/kill" then
-			killModule.killPlayer(player.Character, player)
+			killModule.killPlayer(player)
 		elseif command.command == "/ragdoll" then
 			if #command.args > 0 then
-				ragdollUtils.ragdoll(player, Vector3.new(command.args[1], command.args[1], command.args[1]))
+				ragdollUtils.ragdoll(
+					player,
+					Vector3.new(command.args[1], command.args[1], command.args[1]),
+					command.args[2]
+				)
 			end
 		elseif command.command == "/selfxp" then
 			if #command.args > 0 then

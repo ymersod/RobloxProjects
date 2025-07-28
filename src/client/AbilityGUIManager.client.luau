@@ -125,7 +125,6 @@ function updateGui()
 		end
 	end
 
-	print(activationPairMatch, " acti")
 	if not activationPairMatch then
 		local entry = { canActivate = true, saveSlot = curSaveSlot }
 		table.insert(activationTable, entry)

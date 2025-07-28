@@ -133,7 +133,7 @@ function explode()
 
 		local origin = bomb.Position
 		if (root.Position - origin).Magnitude <= EXPLOSION_RADIUS then
-			killPlayerServer.killPlayer(char, player)
+			killPlayerServer.killPlayer(player)
 			table.insert(playersHit, player)
 		end
 	end

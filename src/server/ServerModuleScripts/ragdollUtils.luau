@@ -125,8 +125,7 @@ function ragdollUtils.UnragdollCharacter(character: Model, getUpState: number?)
 	ragdollUtils.EnableCollisionParts(character, false)
 end
 
-function ragdollUtils.ragdoll(targetPlayer: Player, direction: Vector3)
-	print("Ragdolling")
+function ragdollUtils.ragdoll(targetPlayer: Player, direction: Vector3, duration: number)
 	local char = targetPlayer and targetPlayer.Character
 	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 	local hrp = humanoid and humanoid.RootPart
@@ -146,9 +145,14 @@ function ragdollUtils.ragdoll(targetPlayer: Player, direction: Vector3)
 	end
 
 	-- Start timer to call
-	task.delay(2, function()
-		print("Unragdolling")
-		ragdollUtils.UnragdollCharacter(char)
+	task.delay(duration, function()
+		local newChar = targetPlayer.Character
+		local newHum = newChar and newChar:FindFirstChildOfClass("Humanoid")
+		local newHrp = newHum and newHum.RootPart
+
+		if newHrp.CollisionGroup == "RagdollCollide" then
+			ragdollUtils.UnragdollCharacter(newChar)
+		end
 	end)
 end
 

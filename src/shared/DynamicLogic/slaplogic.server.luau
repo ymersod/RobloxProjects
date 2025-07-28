@@ -7,7 +7,6 @@ local slapBind = ServerScripService:WaitForChild("Server")
 	:WaitForChild("Abilities")
 	:WaitForChild("BindableEvents")
 	:WaitForChild("slapBind")
--- local ragdollUtils = require(ServerScriptService.Server.ServerModuleScripts.ragdollUtils)
 local kingCoinFuncs = require(kingCoinFuncsScript)
 local expManagerFuncsScript =
 	ServerScripService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("expManagerFunctions")
@@ -114,9 +113,7 @@ tool.Activated:Connect(function()
 			end
 			local attackerHRP = tool.Parent:FindFirstChild("HumanoidRootPart")
 			local hitDirection = (shapeCastResults.Instance.Position - attackerHRP.Position).Unit * POWER_MULT
-			print("Slapping")
 			slapBind:Fire(targetPlayer, hitDirection)
-			-- ragdollUtils.ragdoll(targetPlayer, hitDirection)
 		end
 	end
 end)
