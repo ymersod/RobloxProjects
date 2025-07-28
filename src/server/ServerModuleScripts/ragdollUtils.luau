@@ -25,6 +25,7 @@ function ragdollUtils.EnableMotor6D(character: Model, enabled: boolean)
 		end
 	end
 end
+
 function ragdollUtils.BuildJoints(character: Model)
 	for _, v in pairs(character:GetDescendants()) do
 		if not v:IsA("BasePart") or v:FindFirstAncestorOfClass("Accessory") or v.Name == "Handle" then

@@ -5,10 +5,12 @@ local bindableEvents =
 	ServerScriptService:WaitForChild("Server"):WaitForChild("Abilities"):WaitForChild("BindableEvents")
 local speedBoostBind = bindableEvents:WaitForChild("speedBoostBind")
 local jumpBoostBind = bindableEvents:WaitForChild("jumpBoostBind")
+local slapBind = bindableEvents:WaitForChild("slapBind")
 
 local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
+local ragdollUtils = require(ServerScriptService.Server.ServerModuleScripts.ragdollUtils)
 
-speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slotToolId:string)
+speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slotToolId: string)
 	print("SpeedVals: ", abilityVals)
 	local playerUserId = player.UserId
 
@@ -43,7 +45,7 @@ speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slo
 	end)
 end)
 
-jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slotToolId:string)
+jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slotToolId: string)
 	print("Yump vals: ", abilityVals)
 	local playerUserId = player.UserId
 
@@ -76,4 +78,8 @@ jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slot
 			end)
 		end
 	end)
+end)
+
+slapBind.Event:Connect(function(targetPlayer, direction)
+	ragdollUtils.ragdoll(targetPlayer, direction)
 end)

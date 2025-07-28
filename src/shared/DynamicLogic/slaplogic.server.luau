@@ -1,17 +1,18 @@
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local ServerScripService = game:GetService("ServerScriptService")
 local ServerScriptService = game:GetService("ServerScriptService")
 local kingCoinFuncsScript =
 	ServerScripService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("KingCoinFunctions")
-local ragdollUtils = require(ServerScriptService.Server.ServerModuleScripts.ragdollUtils)
+local slapBind = ServerScripService:WaitForChild("Server")
+	:WaitForChild("Abilities")
+	:WaitForChild("BindableEvents")
+	:WaitForChild("slapBind")
 local kingCoinFuncs = require(kingCoinFuncsScript)
 local expManagerFuncsScript =
 	ServerScripService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("expManagerFunctions")
 local expManagerFuncs = require(expManagerFuncsScript)
 
-local ragdollClientEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("RagdollClient")
 local slapAnimation = ServerStorage:WaitForChild("Animations"):WaitForChild("SlapAni")
 local part = script:FindFirstAncestorOfClass("Tool"):FindFirstChildOfClass("MeshPart") :: MeshPart
 local tool = part.Parent :: Tool
@@ -113,7 +114,7 @@ tool.Activated:Connect(function()
 			end
 			local attackerHRP = tool.Parent:FindFirstChild("HumanoidRootPart")
 			local hitDirection = (shapeCastResults.Instance.Position - attackerHRP.Position).Unit * POWER_MULT
-			ragdollUtils.ragdoll(targetPlayer, hitDirection)
+			slapBind:Fire(targetPlayer, hitDirection)
 		end
 	end
 end)
