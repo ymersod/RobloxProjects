@@ -1,9 +1,12 @@
 local DataStoreService = game:GetService("DataStoreService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local RewardsData = require(ServerScriptService.Server.DataModules.RewardsData)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local expManagerFunctions = require(script.Parent.expManagerFunctions)
+local inventoryFunctions = require(script.Parent.inventoryFunctions)
+
 local rollTickets = require(script.Parent.rollTickets)
 local rewardsStore = DataStoreService:GetDataStore("LevelupRewards")
 
@@ -59,8 +62,13 @@ function levelupRewardsFunctions.progressRewards(playerId)
 		)
 	end)
 	if success then
-		if levelUpRewardsData[newCount].rewardType == enums.RewardTypes.Ticket then
+		local rewardType = levelUpRewardsData[newCount].rewardType
+		if rewardType == enums.RewardTypes.Ticket then
 			rollTickets.AddTickets(playerId, levelUpRewardsData[newCount].Amount)
+			return { success = true, payload = "Success" }
+		elseif rewardType == enums.RewardTypes.SlotUpgrade then
+			print("Upgrading slots")
+			inventoryFunctions.IncrementSlotSpace(Players:GetPlayerByUserId(playerId))
 			return { success = true, payload = "Success" }
 		else
 			return { success = false, payload = "No corresponding rewardstype" }

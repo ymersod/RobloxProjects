@@ -21,6 +21,7 @@ local getLevelUpRewards = ReplicatedStorage:WaitForChild("Shared")
 local levelUpRewards: { Types.LevelUpReward } = getLevelUpRewards:InvokeServer()
 local rewardTypeIcons = {
 	Ticket = "rbxassetid://111009728990078",
+	SlotUpgrade = "rbxassetid://80456559529773",
 }
 -- GUI elements
 local screenGui = player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui")
@@ -34,12 +35,6 @@ local lastClaimedLevelCache = 0
 -- TWEENS
 local shrinkTween = createTweenFunctions.Shrink2(levelUpRewardsGui, 0.1, UDim2.new(0, 0, 0, 0))
 
-local colors = {
-	Yellow = Color3.fromRGB(255, 255, 0),
-	Red = Color3.fromRGB(255, 0, 0),
-	Green = Color3.fromRGB(0, 255, 0),
-}
-
 local uiStates = {
 	NotClaimable = 1,
 	Claimed = 2,
@@ -47,8 +42,6 @@ local uiStates = {
 }
 
 local updateGUI
-
-local lastLevel = 0
 
 local function setStars(starChildren: { Frame }, locked: boolean)
 	local foundStar = nil
