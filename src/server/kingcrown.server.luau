@@ -18,6 +18,7 @@ type CrownEntry = {
 	item: Instance?,
 	speedBoost: number,
 	jumpBoost: number,
+	expBoost: number,
 	currentPlayer: Player?,
 	enabled: boolean,
 }
@@ -46,11 +47,18 @@ for _, item in ipairs(hatsFolder:GetChildren()) do
 			jumpBoost = 1
 		end
 
+		local expBoost = item:GetAttribute("CROWN_EXP_BOOST")
+		if not expBoost then
+			warn("No expBoost given on ", item.Name, " default to 0")
+			expBoost = 0
+		end
+
 		crowns[rank] = {
 			itemPrefab = item,
 			item = item:Clone(),
 			speedBoost = speedBoost,
 			jumpBoost = jumpBoost,
+			expBoost = expBoost,
 			currentPlayer = nil,
 			enabled = true,
 		}
@@ -86,17 +94,17 @@ local function applyModifier(crownEntry: CrownEntry)
 	local expCompIntValue =
 		compositeIntValueMultiton.getCompositeIntValue(crownEntry.currentPlayer.UserId .. "ExpBoost")
 	if not expCompIntValue.containsMod("KingExpBoost") then
-		expCompIntValue += { Name = "KingExpBoost", Value = 100 }
+		expCompIntValue += { Name = "KingExpBoost", Value = crownEntry.expBoost }
 	end
 	local speedCompIntValue =
 		compositeIntValueMultiton.getCompositeIntValue(crownEntry.currentPlayer.UserId .. "SpeedValue")
 	if not speedCompIntValue.containsMod("KingSpeedBoost") then
-		speedCompIntValue += { Name = "KingSpeedBoost", Value = CROWN_SPEED_BOOST }
+		speedCompIntValue += { Name = "KingSpeedBoost", Value = crownEntry.speedBoost }
 	end
 	local jumpCompIntValue =
 		compositeIntValueMultiton.getCompositeIntValue(crownEntry.currentPlayer.UserId .. "JumpValue")
 	if not jumpCompIntValue.containsMod("KingJumpBoost") then
-		jumpCompIntValue += { Name = "KingJumpBoost", Value = CROWN_JUMP_BOOST }
+		jumpCompIntValue += { Name = "KingJumpBoost", Value = crownEntry.jumpBoost }
 	end
 end
 
