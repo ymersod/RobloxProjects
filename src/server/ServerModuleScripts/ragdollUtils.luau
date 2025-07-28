@@ -179,8 +179,8 @@ local function BuildCollisionParts(character: Model)
 end
 
 local function SetupHumanoid(humanoid: Humanoid)
-	-- Seems to not be doing anything?
-	-- humanoid.BreakJointsOnDeath = false
+	-- INFO: Requiresneck = false, makes humanoid immortal lulle
+	humanoid.BreakJointsOnDeath = false
 	-- humanoid.RequiresNeck = false
 end
 
