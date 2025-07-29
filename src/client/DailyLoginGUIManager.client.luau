@@ -42,7 +42,7 @@ local rewardTypeIcons = {
 --TWEENS
 local shrinkTween = createTweenFunctions.Shrink2(dailyLoginRewards, 0.1, UDim2.new(0, 0, 0, 0))
 
-for _, item in
+for _, itemParent in
 	ipairs(
 		dailyLoginRewards
 			:WaitForChild("ClipAll")
@@ -51,16 +51,17 @@ for _, item in
 			:GetChildren()
 	)
 do
-	if item:IsA("Frame") then
+	if itemParent:IsA("Frame") then
+		local dayFrame = itemParent:FindFirstChildOfClass("Frame")
 		local rewardTable = dailyRewards[count]
 
 		-- local rewardTypeText = item:WaitForChild("RewardTypeText")
-		local rewardIcon = item:WaitForChild("RewardIcon") :: ImageLabel
-		local rewardAmountText = item:WaitForChild("RewardAmountText") :: TextLabel
+		local rewardIcon = dayFrame:WaitForChild("RewardIcon") :: ImageLabel
+		local rewardAmountText = dayFrame:WaitForChild("RewardAmountText") :: TextLabel
 		rewardIcon.Image = rewardTypeIcons[rewardTable.rewardType]
 		rewardAmountText.Text = rewardTable.Amount
 
-		table.insert(days, item)
+		table.insert(days, dayFrame)
 		count += 1
 	end
 end
@@ -105,6 +106,11 @@ function setForState(dayFrame: Frame, state)
 		backGlow.Visible = true
 
 		claimButton.MouseButton1Click:Once(function()
+			local grow, shrink = createTweenFunctions.Pulse(dayFrame, 0.1, 0.1)
+			grow:Play()
+			grow.Completed:Connect(function()
+				shrink:Play()
+			end)
 			claimReward()
 			setForState(dayFrame, guiStates.AlreadyClaimed)
 			updateGUI()
