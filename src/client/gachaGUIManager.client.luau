@@ -25,10 +25,11 @@ local gachaGUIParent = screenGui:WaitForChild("Gacha") :: Frame
 local leftClip = gachaGUIParent:WaitForChild("ClipAll"):WaitForChild("LeftClip") :: CanvasGroup
 local rightClip = gachaGUIParent:WaitForChild("ClipAll"):WaitForChild("RightClip") :: CanvasGroup
 local closeButton: ImageButton = gachaGUIParent:FindFirstChildOfClass("ImageButton")
-local activeSlotUI: Frame = rightClip:WaitForChild("TopFrame"):WaitForChild("ActiveParent")
+local topFrame = rightClip:WaitForChild("TopFrame") :: Frame
+local activeSlotUI: Frame = topFrame:WaitForChild("ActiveParent")
 local defaultActive = activeSlotUI:FindFirstChildOfClass("Frame") :: Frame
 local defaultActiveClone = defaultActive:Clone()
-local abiltiy = rightClip:WaitForChild("TopFrame"):WaitForChild("AbilityRef") :: Frame
+local abiltiy = topFrame:WaitForChild("AbilityRef") :: Frame
 local abilityImage = abiltiy:WaitForChild("ImageLabel") :: ImageLabel
 local abilityText = abiltiy:WaitForChild("AbilityName") :: TextLabel
 local rollButton: ImageButton = rightClip:WaitForChild("Buttons"):WaitForChild("RollFrame"):WaitForChild("RollButton")
@@ -73,6 +74,13 @@ local statBarColors = {
 	Yellow = Color3.fromRGB(255, 255, 0),
 	Blue = Color3.fromRGB(0, 0, 255),
 	Purple = Color3.fromRGB(128, 0, 128),
+}
+
+local rarities = {
+	Common = enums.Colors.RarityColor.common,
+	Uncommon = enums.Colors.RarityColor.uncommon,
+	Rare = enums.Colors.RarityColor.rare,
+	Legendary = enums.Colors.RarityColor.legendary,
 }
 
 local slotStateEnums = {
@@ -199,7 +207,7 @@ function extractDataFromTool(tool: Tool)
 	}
 end
 
-function updateStatBar(bar: ImageLabel, val: number)
+function updateStatBar(bar: Frame, val: number)
 	if val >= 1 and val <= 4 then
 		local scale, color
 
@@ -468,26 +476,129 @@ local function trackRolls()
 end
 trackRolls()
 
+local function getRandomRarityColor(): { End: Color3, Start: Color3 }
+	local keys = {}
+	for k in pairs(rarities) do
+		table.insert(keys, k)
+	end
+	local randomKey = keys[math.random(1, #keys)]
+	return rarities[randomKey]
+end
+
+local function RollAnimation(callback)
+	local topFrameClone = topFrame:Clone()
+	topFrame.Visible = false
+
+	topFrameClone.Parent = rightClip
+	topFrameClone:FindFirstChild("AbilityRef"):Destroy()
+
+	local activeParentClone = topFrameClone:FindFirstChild("ActiveParent") :: Frame
+	local activeClone = activeParentClone:FindFirstChild("Active") :: Frame
+	local bgClone = activeClone:FindFirstChild("Bg") :: Frame
+	local bgGradientClone = bgClone:FindFirstChildOfClass("UIGradient")
+	local bgBackGlowClone = bgClone:FindFirstChild("backglow") :: ImageLabel
+	local bgImgClone = bgClone:FindFirstChild("bgimg") :: ImageLabel
+
+	local statsClone = activeClone:FindFirstChild("Stats")
+	local nameClone = statsClone:FindFirstChild("Name") :: Frame
+	local nameLabelClone = nameClone:FindFirstChildOfClass("TextLabel")
+
+	local fillClones: { Frame } = {}
+	table.insert(fillClones, statsClone:FindFirstChild("Power"):FindFirstChild("Fill"))
+	table.insert(fillClones, statsClone:FindFirstChild("Range"):FindFirstChild("Fill"))
+	table.insert(fillClones, statsClone:FindFirstChild("Speed"):FindFirstChild("Fill"))
+
+	-- Animation logic
+	task.spawn(function()
+		bgClone.Transparency = 0
+		bgBackGlowClone.Visible = true
+		if bgImgClone then
+			bgImgClone.Visible = false
+		end
+		nameLabelClone.Text = "??"
+
+		local interval = 0.05
+		for _ = 1, 20 do
+			local rolls = {}
+			for _ = 1, 3 do
+				table.insert(rolls, math.random(1, 4))
+			end
+			for j, fillClone in ipairs(fillClones) do
+				local rollValue = rolls[j]
+				updateStatBar(fillClone, rollValue)
+			end
+
+			local rColor = getRandomRarityColor()
+			bgGradientClone.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, rColor.Start),
+				ColorSequenceKeypoint.new(1, rColor.End),
+			})
+			nameClone.BackgroundColor3 = rColor.End
+			bgBackGlowClone.ImageColor3 = rColor.End
+
+			task.wait(interval)
+			interval += 0.01
+		end
+
+		local rolls = {}
+		for _ = 1, 3 do
+			table.insert(rolls, math.random(1, 4))
+		end
+		for j, fillClone in ipairs(fillClones) do
+			local rollValue = rolls[j]
+			updateStatBar(fillClone, rollValue)
+		end
+
+		local finalColor = getRandomRarityColor()
+		bgGradientClone.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, finalColor.Start),
+			ColorSequenceKeypoint.new(1, finalColor.End),
+		})
+		nameClone.BackgroundColor3 = finalColor.End
+		bgBackGlowClone.ImageColor3 = finalColor.End
+
+		task.wait(0.3)
+
+		if callback then
+			callback(topFrameClone)
+		end
+	end)
+end
+local isRolling = false
 rollButton.MouseButton1Click:Connect(function()
+	if isRolling then
+		return
+	end
+	if tickets.Value < 1 then
+		return
+	end
+	if selectedSlot.Value == 0 then
+		return
+	end
+
+	isRolling = true
+
 	growRoll:Play()
 	growRoll.Completed:Connect(function()
 		shrinkRoll:Play()
 	end)
 
-	if tickets.Value < 1 then
-		return
-	end
-	local rollResult = rollEvent:InvokeServer(selectedSlot.Value)
-
-	if rollResult then
-		local resultTickets = spendTicketsEvent:InvokeServer(1)
-		if resultTickets then
-			if selectedSlotUI then
-				updateGachaBackpackGUI()
-				setActiveRollSlotUI(selectedSlotUI)
+	RollAnimation(function(topFrameClone)
+		local rollResult = rollEvent:InvokeServer(selectedSlot.Value)
+		if rollResult then
+			local resultTickets = spendTicketsEvent:InvokeServer(1)
+			if resultTickets then
+				if selectedSlotUI then
+					updateGachaBackpackGUI()
+					setActiveRollSlotUI(selectedSlotUI)
+				end
 			end
+		else
+			warn("Something went wrong with rolling & adding to inventory")
 		end
-	else
-		warn("Something went wrong with rolling & adding to inventory")
-	end
+
+		isRolling = false
+		topFrameClone:Destroy()
+		topFrame.Visible = true
+	end)
 end)

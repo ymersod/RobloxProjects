@@ -96,7 +96,7 @@ function inventoryFunctions.GetInventory(player: Player): { Tool }
 	return bpItems
 end
 
-function inventoryFunctions.HasTool(player: Player,tool: Tool): boolean
+function inventoryFunctions.HasTool(player: Player, tool: Tool): boolean
 	local inventory = player:FindFirstChild("Inventory")
 	if inventory then
 		for _, item in ipairs(inventory:GetChildren()) do
