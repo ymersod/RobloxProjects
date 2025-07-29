@@ -76,10 +76,7 @@ function SetupStarterTools(player: Player)
 		print("Logindata is: ", loginData)
 		if loginData == nil then
 			SetDataStore(enums.Login.FirstTimeLogin)
-		elseif loginData == enums.Login.FirstTimeLogin then
-			-- TEST
-			-- SetDataStore(enums.Login.FirstTimeLogin)
-			-- print()
+		elseif loginData == enums.Login.FirstTimeLogin or loginData == enums.Login.ConcurrentLogin then
 			SetDataStore(enums.Login.ConcurrentLogin)
 		end
 	else
