@@ -10,9 +10,6 @@ local hatsFolder = serverStorage:WaitForChild("Hats"):WaitForChild("KingCrowns")
 
 local rankRequirementId = "RANK_REQUIREMENT"
 
-local CROWN_SPEED_BOOST = 1.5
-local CROWN_JUMP_BOOST = 1.5
-
 type CrownEntry = {
 	itemPrefab: Instance,
 	item: Instance?,
