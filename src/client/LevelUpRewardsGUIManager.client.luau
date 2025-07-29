@@ -69,8 +69,9 @@ local function setStars(starChildren: { Frame }, locked: boolean)
 	return foundStar
 end
 
-function setForState(element: Frame, state)
-	local bg = element:FindFirstChild("bg") :: Frame
+function setForState(elementParent: Frame, state)
+	local element = elementParent:FindFirstChildOfClass("Frame")
+	local bg = element:FindFirstChild("bg") :: ImageLabel
 	local bgGradient = bg:FindFirstChildOfClass("UIGradient") :: UIGradient
 	local bgBackGlow = bg:FindFirstChild("backglow") :: ImageLabel
 	local bgGlow = bg:FindFirstChild("glow") :: ImageLabel
@@ -101,17 +102,17 @@ function setForState(element: Frame, state)
 		claimButton.Visible = true
 
 		claimButton.MouseButton1Click:Once(function()
+			local grow, shrink = createTweenFunctions.Pulse(element, 0.1, 0.1)
+			grow:Play()
+			grow.Completed:Connect(function()
+				shrink:Play()
+			end)
 			local response = progressRewards:InvokeServer() :: { sucess: boolean, payload: string }
 
 			if not response.success then
 				warn("Something went wrong with claim reward")
 				return
 			end
-			local grow, shrink = createTweenFunctions.Pulse(element, 0.05, 0.2)
-			grow:Play()
-			grow.Completed:Connect(function()
-				shrink:Play()
-			end)
 
 			updateGUI()
 		end)
@@ -147,9 +148,12 @@ function setForState(element: Frame, state)
 end
 
 function init()
-	for _, item in ipairs(levelUpRewardsGui:WaitForChild("BottomClip"):WaitForChild("ScrollingFrame"):GetChildren()) do
-		if item:IsA("Frame") then
+	for _, itemParent in
+		ipairs(levelUpRewardsGui:WaitForChild("BottomClip"):WaitForChild("ScrollingFrame"):GetChildren())
+	do
+		if itemParent:IsA("Frame") then
 			local rewardTable = levelUpRewards[count]
+			local item = itemParent:FindFirstChildOfClass("Frame")
 
 			local rewardIcon: ImageLabel = item:WaitForChild("Reward"):WaitForChild("RewardType")
 			local rewardAmount: TextLabel = item:WaitForChild("Reward"):WaitForChild("RewardAmount")
@@ -166,9 +170,9 @@ function init()
 			rewardIcon.Image = rewardTypeIcons[rewardTable.rewardType]
 			rewardAmount.Text = rewardTable.Amount
 
-			table.insert(levels, item)
+			table.insert(levels, itemParent)
 			count += 1
-			setForState(item, uiStates.NotClaimable)
+			setForState(itemParent, uiStates.NotClaimable)
 		end
 	end
 end
