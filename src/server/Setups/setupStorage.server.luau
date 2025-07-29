@@ -8,11 +8,11 @@ local kingZoneManagerScript = dynamicLogicFolder:WaitForChild("kingZoneManager")
 local kingCoinScript = dynamicLogicFolder:WaitForChild("kingCoinLogic")
 local bombScript = dynamicLogicFolder:WaitForChild("bombLogic")
 local slapScript = dynamicLogicFolder:WaitForChild("slaplogic")
-local abilityScripts: { Script } =
-	ServerScriptService:WaitForChild("Server"):WaitForChild("Abilities"):WaitForChild("AbilityEvents"):GetChildren()
-for _, abilityScript in ipairs(abilityScripts) do
-	abilityScript.Enabled = false
-end
+local abilityScript: Script = ServerScriptService:WaitForChild("Server")
+	:WaitForChild("Abilities")
+	:WaitForChild("AbilityEvents")
+	:WaitForChild("slappingAbility")
+abilityScript.Enabled = false
 
 local kingCoinPrefab: Part = ServerStorage:WaitForChild("Pickups"):WaitForChild("KingCoin")
 local bombPrefab: Tool = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb")
@@ -67,18 +67,8 @@ for _, slapPrefab in ipairs(slapPrefabs:GetChildren()) do
 	slapScriptClone.Enabled = true
 
 	-- Ability setup
-	local ability = slapPrefab:FindFirstChild("AbilityVals")
-	local abilityName = ability and ability:GetAttribute("ability")
-	local matchedAbility = false
-
-	for _, abilityScript in ipairs(abilityScripts) do
-		if abilityScript.Name == abilityName then
-			local abilityClone = abilityScript:Clone()
-			abilityClone.Parent = slapPrefab
-			matchedAbility = true
-			continue
-		end
-	end
+	local abilityClone = abilityScript:Clone()
+	abilityClone.Parent = slapPrefab
 
 	-- Setup handle length
 	local statVal = slapPrefab:FindFirstChild("StatVals")
@@ -90,10 +80,10 @@ for _, slapPrefab in ipairs(slapPrefabs:GetChildren()) do
 			toolToolingFuncs.changeHandleLength(slapPrefab, mapStatToLength(statVal:GetAttribute("Range")))
 		end
 	end
-
+	--[[
 	if not matchedAbility then
 		print("No ability found for slapstyle: ", slapPrefab)
-	end
+	end]]
 end
 
 for _, slipPart in ipairs(game:GetService("CollectionService"):GetTagged("Slippery")) do
