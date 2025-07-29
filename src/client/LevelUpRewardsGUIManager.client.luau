@@ -73,6 +73,7 @@ function setForState(element: Frame, state)
 	local bg = element:FindFirstChild("bg") :: Frame
 	local bgGradient = bg:FindFirstChildOfClass("UIGradient") :: UIGradient
 	local bgBackGlow = bg:FindFirstChild("backglow") :: ImageLabel
+	local bgGlow = bg:FindFirstChild("glow") :: ImageLabel
 
 	local stars = element:FindFirstChild("Stars") :: Frame
 	local starChildren = stars:GetChildren() :: { Frame }
@@ -83,32 +84,35 @@ function setForState(element: Frame, state)
 	if state == uiStates.Claimable and curUiState ~= uiStates.Claimable then
 		local starChild = setStars(starChildren, false)
 
-		bgGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, enums.Colors.RewardsColors.Claimed),
-			ColorSequenceKeypoint.new(1, enums.Colors.RewardsColors.Claimable),
-		})
+		bgGradient.Color = ColorSequence.new(enums.Colors.RewardsColors.Claimable)
 		bgBackGlow.Visible = true
+		bgGlow.Visible = true
+		bgGlow.BackgroundColor3 = enums.Colors.RewardsColors.Claimable
+		bgGlow.ImageTransparency = 0.35
 
 		for _, starImg: ImageLabel in starChild:GetChildren() do
 			local starGradient = starImg:FindFirstChildOfClass("UIGradient")
 			local backGlow = starImg:FindFirstChildOfClass("ImageLabel")
 
-			starGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, enums.Colors.RewardsColors.Claimed),
-				ColorSequenceKeypoint.new(1, enums.Colors.RewardsColors.Claimable),
-			})
+			starGradient.Color = ColorSequence.new(enums.Colors.RewardsColors.Claimable)
 			backGlow.Visible = true
 		end
 
 		claimButton.Visible = true
+
 		claimButton.MouseButton1Click:Once(function()
-			print("Claiming levelupreward!!")
 			local response = progressRewards:InvokeServer() :: { sucess: boolean, payload: string }
 
 			if not response.success then
 				warn("Something went wrong with claim reward")
 				return
 			end
+			local grow, shrink = createTweenFunctions.Pulse(element, 0.05, 0.2)
+			grow:Play()
+			grow.Completed:Connect(function()
+				shrink:Play()
+			end)
+
 			updateGUI()
 		end)
 		element:SetAttribute("UiState", uiStates.Claimable)
@@ -118,6 +122,7 @@ function setForState(element: Frame, state)
 
 		bgGradient.Color = ColorSequence.new(enums.Colors.RewardsColors.Claimed)
 		bgBackGlow.Visible = false
+		bgGlow.Visible = false
 
 		for _, starImg: ImageLabel in starChild:GetChildren() do
 			local starGradient = starImg:FindFirstChildOfClass("UIGradient")
@@ -131,6 +136,7 @@ function setForState(element: Frame, state)
 		setStars(starChildren, true)
 		claimButton.Visible = false
 		bgBackGlow.Visible = false
+		bgGlow.Visible = false
 
 		bgGradient.Color = ColorSequence.new({
 			ColorSequenceKeypoint.new(0, enums.Colors.RewardsColors.NotClaimableGradient.Start),

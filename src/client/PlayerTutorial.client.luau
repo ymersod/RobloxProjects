@@ -132,8 +132,10 @@ local function Step6RollForSlapStyle()
 	local fullText = "Seems you have 1 slap-ticket left! Every roll costs 1 ticket, let's try to get something cool!"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.9, 0), UDim2.new(0.5, 0, 1, 0))
 
-	raiseZIndex(rollFrame, 50)
 	label.ZIndex = 51
+	animateText(fullText, label, TEXT_SPEED)
+
+	raiseZIndex(rollFrame, 50)
 
 	local glow = createGlow(rollFrame)
 	local pulseTweenIn, pulseTweenOut = createTweenFunctions.PulseTransparency(glow, 0.3, 0, 0.6)
@@ -152,8 +154,6 @@ local function Step6RollForSlapStyle()
 			pulseTweenOut.Completed:Wait()
 		end
 	end
-
-	animateText(fullText, label, TEXT_SPEED)
 
 	task.spawn(pulse)
 
@@ -176,8 +176,10 @@ local function Step5PickRollSlot()
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.9, 0), UDim2.new(0.5, 0, 1, 0))
 
 	local slotGachaUi2 = slotSpace2Gacha:FindFirstChildOfClass("Frame")
-	raiseZIndex(slotGachaUi2, 50)
 	label.ZIndex = 51
+	animateText(fullText, label, TEXT_SPEED)
+
+	raiseZIndex(slotGachaUi2, 50)
 
 	local glow = createGlow(slotGachaUi2)
 	local pulseTweenIn, pulseTweenOut = createTweenFunctions.PulseTransparency(glow, 0.3, 0, 0.6)
@@ -198,8 +200,6 @@ local function Step5PickRollSlot()
 		end
 	end
 
-	animateText(fullText, label, TEXT_SPEED)
-
 	task.spawn(pulse)
 
 	--Cleanup when clicked
@@ -219,8 +219,10 @@ local function Step4OpenGacha()
 		"Over here is the menu! From here you can find many rewards and start rolling for better slap-styles. Lets press it!"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.75, 0), UDim2.new(0.5, 0, 1, 0))
 
-	raiseZIndex(rollAccessGui, 50)
 	label.ZIndex = 51
+
+	animateText(fullText, label, TEXT_SPEED)
+	raiseZIndex(rollAccessGui, 50)
 
 	local glow = createGlow(rollAccessGui)
 	local pulseTweenIn, pulseTweenOut = createTweenFunctions.PulseTransparency(glow, 0.3, 0, 0.6)
@@ -240,8 +242,6 @@ local function Step4OpenGacha()
 		end
 	end
 
-	animateText(fullText, label, TEXT_SPEED)
-
 	task.spawn(pulse)
 
 	--Cleanup when clicked
@@ -257,8 +257,10 @@ local function Step3OpenAccessBar()
 	local fullText = "Very nice! Let's try to get a new slap-style - open the menu to the left"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.75, 0), UDim2.new(0.5, 0, 1, 0))
 
-	raiseZIndex(accessGuiOpenClose, 50)
 	label.ZIndex = 51
+
+	animateText(fullText, label, TEXT_SPEED)
+	raiseZIndex(accessGuiOpenClose, 50)
 
 	local glow = createGlow(accessGuiOpenClose)
 	local pulseTweenIn, pulseTweenOut = createTweenFunctions.PulseTransparency(glow, 0.3, 0, 0.6)
@@ -278,8 +280,6 @@ local function Step3OpenAccessBar()
 		end
 	end
 
-	animateText(fullText, label, TEXT_SPEED)
-
 	task.spawn(pulse)
 
 	--Cleanup when clicked
@@ -297,8 +297,10 @@ local function Step2EquipSlapStyle()
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.75, 0), UDim2.new(0.5, 0, 1, 0))
 
 	local slotUi1 = slotSpace1:FindFirstChildOfClass("Frame")
-	raiseZIndex(slotUi1, 50)
 	label.ZIndex = 51
+
+	animateText(fullText, label, TEXT_SPEED)
+	raiseZIndex(slotUi1, 50)
 
 	local glow = createGlow(slotUi1)
 	local pulseTweenIn, pulseTweenOut = createTweenFunctions.PulseTransparency(glow, 0.3, 0, 0.6)
@@ -318,8 +320,6 @@ local function Step2EquipSlapStyle()
 			pulseTweenOut.Completed:Wait()
 		end
 	end
-
-	animateText(fullText, label, TEXT_SPEED)
 
 	task.spawn(pulse)
 
@@ -347,6 +347,13 @@ local function Step1SetupOverlay()
 	overlay.Parent = screenGui
 	overlay.ZIndex = 50
 
+	local overLayButton = Instance.new("ImageButton")
+	overLayButton.ImageTransparency = 1
+	overLayButton.Transparency = 1
+	overLayButton.Size = UDim2.new(1, 0, 1, 0)
+	overLayButton.ZIndex = 50
+	overLayButton.Parent = overlay
+
 	-- Tutorial label
 	local fullText = "Welcome Slapper! Since you're a first timer let me show you around"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.75, 0), UDim2.new(0.5, 0, 1, 0))
@@ -363,12 +370,12 @@ end
 function start()
 	local loginData: StringValue = player:WaitForChild("LocalStats"):WaitForChild("FirstTimeLogin")
 
-	if loginData.Value == enums.Login.FirstTimeLogin then
+	if loginData.Value == enums.Login.ConcurrentLogin then
 		Step1SetupOverlay()
 	end
 	loginData.Changed:Once(function(val)
 		print(val)
-		if val == enums.Login.FirstTimeLogin then
+		if val == enums.Login.ConcurrentLogin then
 			Step1SetupOverlay()
 		end
 	end)
