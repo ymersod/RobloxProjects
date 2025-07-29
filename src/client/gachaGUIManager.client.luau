@@ -31,7 +31,7 @@ local defaultActiveClone = defaultActive:Clone()
 local abiltiy = rightClip:WaitForChild("TopFrame"):WaitForChild("AbilityRef") :: Frame
 local abilityImage = abiltiy:WaitForChild("ImageLabel") :: ImageLabel
 local abilityText = abiltiy:WaitForChild("AbilityName") :: TextLabel
-local rollButton: ImageButton = rightClip:WaitForChild("Buttons"):WaitForChild("BuyFrame"):WaitForChild("RollButton")
+local rollButton: ImageButton = rightClip:WaitForChild("Buttons"):WaitForChild("RollFrame"):WaitForChild("RollButton")
 local rollText = rollButton:WaitForChild("RollsLeft") :: TextLabel
 
 local defaultAbility = abilityImage.Image

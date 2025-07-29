@@ -46,7 +46,10 @@ if not slotSpace1 then
 	return
 end
 
+local kingZoneHighlihgt: Frame = screenGui:WaitForChild("KingZoneHighlightTestFrame")
+
 local overlay: Frame? = nil
+local TEXT_SPEED = 0.04
 
 local function raiseZIndex(root, amount)
 	if root:IsA("GuiObject") then
@@ -67,12 +70,25 @@ local function createText(parent, text: string, position: UDim2, size: UDim2): T
 	label.BackgroundTransparency = 1
 	label.TextColor3 = Color3.new(1, 1, 1)
 	label.TextWrapped = true
-	label.Font = Enum.Font.SourceSansBold
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Font = Enum.Font.FredokaOne
 	label.TextSize = 28
 	label.Text = text
 	label.Parent = parent
 
+	local uiStroke = Instance.new("UIStroke")
+	uiStroke.Color = Color3.new(0, 0, 0)
+	uiStroke.Thickness = 2
+	uiStroke.Parent = label
+
 	return label
+end
+
+local function animateText(fullText: string, label: TextLabel, speed: number)
+	for i = 1, #fullText do
+		label.Text = string.sub(fullText, 1, i)
+		task.wait(speed)
+	end
 end
 
 local function createGlow(parent): UIStroke
@@ -86,28 +102,35 @@ local function createGlow(parent): UIStroke
 	return glow
 end
 
-local function Step7()
-	local label = createText(
-		screenGui,
-		"That's it for now! Climb the tower, become KING OF THE SLAP and flex on others",
-		UDim2.new(0.5, 0, 0.9, 0),
-		UDim2.new(0.5, 0, 1, 0)
-	)
+local function Step8()
+	local fullText = "That's it for now! Climb the tower, become KING OF THE SLAP and flex on others"
+	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.9, 0), UDim2.new(0.5, 0, 1, 0))
 
 	label.ZIndex = 51
 
-	task.wait(5)
+	animateText(fullText, label, TEXT_SPEED)
+
+	task.wait(3)
 
 	label:Destroy()
 end
 
+local function Step7ShowKingzone()
+	local fullText =
+		"Now you're ready to play! The best way to get stronger is to stand in the king-zone, look for the beam to find it - since it likes to move around"
+	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.9, 0), UDim2.new(0.5, 0, 1, 0))
+	label.ZIndex = 51
+
+	animateText(fullText, label, TEXT_SPEED)
+	task.wait(3)
+
+	label:Destroy()
+	Step8()
+end
+
 local function Step6RollForSlapStyle()
-	local label = createText(
-		screenGui,
-		"Seems you have 1 slap-ticket left! Every roll costs 1 ticket, let's try to get something cool!",
-		UDim2.new(0.5, 0, 0.9, 0),
-		UDim2.new(0.5, 0, 1, 0)
-	)
+	local fullText = "Seems you have 1 slap-ticket left! Every roll costs 1 ticket, let's try to get something cool!"
+	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.9, 0), UDim2.new(0.5, 0, 1, 0))
 
 	raiseZIndex(rollFrame, 50)
 	label.ZIndex = 51
@@ -130,6 +153,8 @@ local function Step6RollForSlapStyle()
 		end
 	end
 
+	animateText(fullText, label, TEXT_SPEED)
+
 	task.spawn(pulse)
 
 	--Cleanup when clicked
@@ -141,17 +166,14 @@ local function Step6RollForSlapStyle()
 		label:Destroy()
 		glow:Destroy()
 		raiseZIndex(rollButton, -50)
-		Step7()
+		Step7ShowKingzone()
 	end)
 end
 
 local function Step5PickRollSlot()
-	local label = createText(
-		screenGui,
-		"In king of the slap - when you roll you lose your current slap-style in that inventory slot... lets roll slot2!",
-		UDim2.new(0.5, 0, 0.9, 0),
-		UDim2.new(0.5, 0, 1, 0)
-	)
+	local fullText =
+		"In king of the slap - when you roll you lose your current slap-style in that inventory slot... lets roll slot2!"
+	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.9, 0), UDim2.new(0.5, 0, 1, 0))
 
 	local slotGachaUi2 = slotSpace2Gacha:FindFirstChildOfClass("Frame")
 	raiseZIndex(slotGachaUi2, 50)
@@ -176,6 +198,8 @@ local function Step5PickRollSlot()
 		end
 	end
 
+	animateText(fullText, label, TEXT_SPEED)
+
 	task.spawn(pulse)
 
 	--Cleanup when clicked
@@ -191,12 +215,9 @@ local function Step5PickRollSlot()
 end
 
 local function Step4OpenGacha()
-	local label = createText(
-		screenGui,
-		"Over here is the menu! From here you can find many rewards and start rolling for better slap-styles. Lets press it!",
-		UDim2.new(0.5, 0, 0.75, 0),
-		UDim2.new(0.5, 0, 1, 0)
-	)
+	local fullText =
+		"Over here is the menu! From here you can find many rewards and start rolling for better slap-styles. Lets press it!"
+	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.75, 0), UDim2.new(0.5, 0, 1, 0))
 
 	raiseZIndex(rollAccessGui, 50)
 	label.ZIndex = 51
@@ -219,6 +240,8 @@ local function Step4OpenGacha()
 		end
 	end
 
+	animateText(fullText, label, TEXT_SPEED)
+
 	task.spawn(pulse)
 
 	--Cleanup when clicked
@@ -231,12 +254,8 @@ local function Step4OpenGacha()
 	end)
 end
 local function Step3OpenAccessBar()
-	local label = createText(
-		screenGui,
-		"Very nice! Let's try to get a new slap-style - open the menu to the left",
-		UDim2.new(0.5, 0, 0.75, 0),
-		UDim2.new(0.5, 0, 1, 0)
-	)
+	local fullText = "Very nice! Let's try to get a new slap-style - open the menu to the left"
+	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.75, 0), UDim2.new(0.5, 0, 1, 0))
 
 	raiseZIndex(accessGuiOpenClose, 50)
 	label.ZIndex = 51
@@ -259,6 +278,8 @@ local function Step3OpenAccessBar()
 		end
 	end
 
+	animateText(fullText, label, TEXT_SPEED)
+
 	task.spawn(pulse)
 
 	--Cleanup when clicked
@@ -272,12 +293,8 @@ local function Step3OpenAccessBar()
 end
 
 local function Step2EquipSlapStyle()
-	local label = createText(
-		screenGui,
-		"To become king of the slap you must use slap-styles, start by equipping your first slap-style!",
-		UDim2.new(0.5, 0, 0.75, 0),
-		UDim2.new(0.5, 0, 1, 0)
-	)
+	local fullText = "To become king of the slap you must use slap-styles, start by equipping your first slap-style!"
+	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.75, 0), UDim2.new(0.5, 0, 1, 0))
 
 	local slotUi1 = slotSpace1:FindFirstChildOfClass("Frame")
 	raiseZIndex(slotUi1, 50)
@@ -301,6 +318,8 @@ local function Step2EquipSlapStyle()
 			pulseTweenOut.Completed:Wait()
 		end
 	end
+
+	animateText(fullText, label, TEXT_SPEED)
 
 	task.spawn(pulse)
 
@@ -329,15 +348,13 @@ local function Step1SetupOverlay()
 	overlay.ZIndex = 50
 
 	-- Tutorial label
-	local label = createText(
-		screenGui,
-		"Welcome Slapper! Since you're a first timer let me show you around",
-		UDim2.new(0.5, 0, 0.75, 0),
-		UDim2.new(0.5, 0, 1, 0)
-	)
+	local fullText = "Welcome Slapper! Since you're a first timer let me show you around"
+	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.75, 0), UDim2.new(0.5, 0, 1, 0))
 	label.ZIndex = 51
 
-	task.delay(4, function()
+	animateText(fullText, label, TEXT_SPEED)
+
+	task.delay(3, function()
 		label:Destroy()
 		Step2EquipSlapStyle()
 	end)
