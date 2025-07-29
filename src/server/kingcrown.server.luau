@@ -128,7 +128,7 @@ end
 
 local function positionCrownOverPlayer(crown, char: Model)
 	local hrp = char:WaitForChild("HumanoidRootPart")
-	crown.Position = hrp.Position + Vector3.yAxis * 5
+	crown.Position = hrp.Position + Vector3.yAxis * 6
 	crown.Rotation = hrp.Rotation
 end
 
