@@ -10,7 +10,7 @@ local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModul
 local inventoryFunctions = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 local rollTickets = require(ServerScriptService.Server.ServerModuleScripts.rollTickets)
 
-local tool1 = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonStyle0")
+local tool1 = ServerStorage:WaitForChild("Tools"):WaitForChild("Slapstyles"):WaitForChild("CommonNormalHand")
 
 local HUMANOID_ROOT_PART_COLLISION_GROUP = "PlayerRootPart"
 
