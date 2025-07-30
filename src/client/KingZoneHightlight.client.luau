@@ -3,6 +3,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = game:GetService("Players").LocalPlayer
 
 local kingZoneActivateClient = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("KingZoneActivateClient")
+local createTweenFunctionsScript = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("ClientServerModuleScripts"):WaitForChild("createTweenFunctions")
+local createTweenFunctions = require(createTweenFunctionsScript)
 
 local rootFrame: Frame = player
 	:WaitForChild("PlayerGui")
@@ -19,14 +21,20 @@ local backglowImage: ImageLabel = player
 	:WaitForChild("KingZoneHighlightTestFrame")
 	:WaitForChild("Backglow")
 
+local spinnerTween = createTweenFunctions.Pulse2(spinnerFrame, 0.05, -1, 1)
+local glowTween = createTweenFunctions.Pulse2(backglowImage, 0.1, -1, 1)
+
+spinnerTween:Play()
+glowTween:Play()
+
 -- TODO change it to work for more than one kingzone, when/if ever needed
 local zonePos: Vector3 = Vector3.zero
 
-kingZoneActivateClient.OnClientEvent:Connect(function(pos:Vector3)
+kingZoneActivateClient.OnClientEvent:Connect(function(pos:Vector3, dur:number)
 	zonePos = pos
 	spinnerFrame.Visible = true
 	
-	task.delay(3, function()
+	task.delay(dur, function()
 		spinnerFrame.Visible = false
 		backglowImage.Visible = false
 	end)

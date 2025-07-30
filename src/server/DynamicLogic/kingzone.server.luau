@@ -42,7 +42,7 @@ local function kingZoneSwitch()
 		if partModel.Transparency ~= normalTransparency then
 			partModel.Transparency = normalTransparency
 		end
-		kingZoneActivateClient:FireAllClients((partModel :: Part).Position)
+		kingZoneActivateClient:FireAllClients((partModel :: Part).Position, 5)
 	elseif partModel.Transparency == normalTransparency then
 		partModel.Transparency = 1
 	end
