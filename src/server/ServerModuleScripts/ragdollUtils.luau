@@ -10,7 +10,7 @@ local ragdollUtils = {}
 
 function ragdollUtils.EnableMotor6D(character: Model, enabled: boolean)
 	for _, v in pairs(character:GetDescendants()) do
-		if v.Name == "Handle" or v.Name == "RootJoint" or v.Name == "Neck" then
+		if v.Name == "Handle" or v.Name == "RootJoint" or v.Name == "Neck" or v:HasTag("KingCrown") then
 			continue
 		end
 		if v:IsA("Motor6D") then
@@ -65,8 +65,6 @@ function ragdollUtils.BuildJoints(character: Model)
 		socket.Parent = v
 		socket.Attachment0 = a0
 		socket.Attachment1 = a1
-
-		v.Massless = true
 	end
 end
 
@@ -92,7 +90,7 @@ end
 
 function ragdollUtils.EnableCollisionParts(character: Model, enabled: boolean)
 	for _, v in pairs(character:GetChildren()) do
-		if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then
+		if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" and not v:HasTag("KingCrown") then
 			v.CanCollide = not enabled
 			local collide = v:FindFirstChild("Collide")
 			if collide then
