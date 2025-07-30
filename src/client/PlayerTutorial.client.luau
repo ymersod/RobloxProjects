@@ -51,7 +51,7 @@ local spinnerFrame: Frame = screenGui:WaitForChild("KingZoneHighlightTestFrame")
 local backglowImage: ImageLabel = screenGui:WaitForChild("KingZoneHighlightTestFrame"):WaitForChild("Backglow")
 
 local overlay: Frame? = nil
-local TEXT_SPEED = 0.04
+local TEXT_SPEED = 0.06
 local KINGZONE_HIGHLIGHT_DUR = 4
 
 local function raiseZIndex(root, amount)
@@ -120,7 +120,7 @@ end
 
 local function Step7ShowKingzone()
 	local fullText =
-		"Now you're ready to play! The best way to get stronger is to stand in the king-zone, look for the beam to find it - since it likes to move around"
+		"Now you're ready to play! The best way to get stronger is to stand in the king-zone. You can allways find it by looking for the beam"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.9, 0), UDim2.new(0.5, 0, 1, 0))
 	label.ZIndex = 51
 
@@ -178,7 +178,7 @@ end
 
 local function Step5PickRollSlot()
 	local fullText =
-		"In king of the slap - when you roll you lose your current slap-style in that inventory slot... lets roll slot2!"
+		"In king of the slap - when you roll you lose your current slap-style in that inventory slot... Lets pick slot 1"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.9, 0), UDim2.new(0.5, 0, 1, 0))
 
 	local slotGachaUi2 = slotSpace2Gacha:FindFirstChildOfClass("Frame")
@@ -376,13 +376,13 @@ end
 function start()
 	local loginData: StringValue = player:WaitForChild("LocalStats"):WaitForChild("FirstTimeLogin")
 
-	if loginData.Value == enums.Login.ConcurrentLogin then
-		Step6RollForSlapStyle()
+	if loginData.Value == enums.Login.FirstTimeLogin then
+		Step1SetupOverlay()
 	end
 	loginData.Changed:Once(function(val)
 		print(val)
-		if val == enums.Login.ConcurrentLogin then
-			Step6RollForSlapStyle()
+		if val == enums.Login.FirstTimeLogin then
+			Step1SetupOverlay()
 		end
 	end)
 end
