@@ -192,8 +192,13 @@ function inventoryFunctions.EquipBomb(player: Player, bomb: Tool, cd: number)
 		bomb.Parent = player.Character
 
 		bomb.AncestryChanged:Once(function()
-			print("Re-equip")
-			Equip(playerChar, equippedClone)
+			local char = player.Character
+			local hum = char and char:FindFirstChildOfClass("Humanoid")
+			if hum.Health > 0 then
+				Equip(char, equippedClone)
+			else
+				print("player is dead")
+			end
 		end)
 	else
 		bomb.Parent = playerChar
