@@ -32,9 +32,6 @@ glowTween:Play()
 -- TODO: change it to work for more than one kingzone, when/if ever needed
 local zonePos: Vector3 = Vector3.zero
 
-local tagged = CollectionService:GetTagged("KingZoneManager")
-local kingZoneManager: Part = tagged[1]
-
 local function setupKingZone(kingzone: Instance)
 	if kingzone:IsA("Part") then
 		local initIsActive = kingzone:GetAttribute("isActive")
@@ -54,18 +51,31 @@ local function setupKingZone(kingzone: Instance)
 	end
 end
 function setup()
-	for _, kingzone in ipairs(kingZoneManager:GetChildren()) do
-		setupKingZone(kingzone)
+	local function onFound(kingZoneManager: Part)
+		for _, kingzone in ipairs(kingZoneManager:GetChildren()) do
+			setupKingZone(kingzone)
+		end
+
+		kingZoneManager.ChildAdded:Connect(setupKingZone)
+
+		kingZoneActivateClient.OnClientEvent:Connect(function(dur: number)
+			KingZoneHighligt.Highlight(spinnerFrame, backglowImage, dur)
+			print("Zonepos is: ", zonePos)
+		end)
 	end
 
-	kingZoneManager.ChildAdded:Connect(function(child)
-		setupKingZone(child)
-	end)
-
-	kingZoneActivateClient.OnClientEvent:Connect(function(dur: number)
-		KingZoneHighligt.Highlight(spinnerFrame, backglowImage, dur)
-		print("Zonepos is: ", zonePos)
-	end)
+	local tagged = CollectionService:GetTagged("KingZoneManager")
+	if #tagged > 0 then
+		onFound(tagged[1])
+	else
+		CollectionService:GetInstanceAddedSignal("KingZoneManager"):Wait()
+		local newTagged = CollectionService:GetTagged("KingZoneManager")
+		if #newTagged > 0 then
+			onFound(newTagged[1])
+		else
+			warn("Failed to find KingZoneManager after tag added!")
+		end
+	end
 end
 setup()
 
