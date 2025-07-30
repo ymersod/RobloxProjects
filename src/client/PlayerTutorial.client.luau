@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local KingZoneHighligt = require(ReplicatedStorage.Shared.ClientServerModuleScripts.KingZoneHighligt)
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local player = Players.LocalPlayer
@@ -46,10 +47,12 @@ if not slotSpace1 then
 	return
 end
 
-local kingZoneHighlihgt: Frame = screenGui:WaitForChild("KingZoneHighlightTestFrame")
+local spinnerFrame: Frame = screenGui:WaitForChild("KingZoneHighlightTestFrame"):WaitForChild("Spinner")
+local backglowImage: ImageLabel = screenGui:WaitForChild("KingZoneHighlightTestFrame"):WaitForChild("Backglow")
 
 local overlay: Frame? = nil
 local TEXT_SPEED = 0.04
+local KINGZONE_HIGHLIGHT_DUR = 4
 
 local function raiseZIndex(root, amount)
 	if root:IsA("GuiObject") then
@@ -122,7 +125,9 @@ local function Step7ShowKingzone()
 	label.ZIndex = 51
 
 	animateText(fullText, label, TEXT_SPEED)
-	task.wait(3)
+
+	KingZoneHighligt.Highlight(spinnerFrame, backglowImage, KINGZONE_HIGHLIGHT_DUR)
+	task.wait(KINGZONE_HIGHLIGHT_DUR)
 
 	label:Destroy()
 	Step8()
@@ -160,6 +165,7 @@ local function Step6RollForSlapStyle()
 	--Cleanup when clicked
 	local rollButton = rollFrame:FindFirstChildOfClass("ImageButton")
 	rollButton.MouseButton1Click:Once(function()
+		task.wait(3)
 		if overlay then
 			overlay:Destroy()
 		end
@@ -370,13 +376,13 @@ end
 function start()
 	local loginData: StringValue = player:WaitForChild("LocalStats"):WaitForChild("FirstTimeLogin")
 
-	if loginData.Value == enums.Login.FirstTimeLogin then
-		Step1SetupOverlay()
+	if loginData.Value == enums.Login.ConcurrentLogin then
+		Step6RollForSlapStyle()
 	end
 	loginData.Changed:Once(function(val)
 		print(val)
-		if val == enums.Login.FirstTimeLogin then
-			Step1SetupOverlay()
+		if val == enums.Login.ConcurrentLogin then
+			Step6RollForSlapStyle()
 		end
 	end)
 end

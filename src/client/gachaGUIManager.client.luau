@@ -500,6 +500,7 @@ local function RollAnimation(callback)
 	local bgImgClone = bgClone:FindFirstChild("bgimg") :: ImageLabel
 
 	local statsClone = activeClone:FindFirstChild("Stats")
+	statsClone.Visible = true
 	local nameClone = statsClone:FindFirstChild("Name") :: Frame
 	local nameLabelClone = nameClone:FindFirstChildOfClass("TextLabel")
 
