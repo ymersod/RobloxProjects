@@ -56,5 +56,6 @@ expLevelClient.OnClientEvent:Connect(function(level: { lvl: number, lvlProgress:
 
 	levelText.Text = "LVL : " .. level.lvl
 
-	progressText.Text = level.lvlProgress.progress .. " / " .. level.lvlProgress.goal
+	local flooredProgress = math.floor(level.lvlProgress.progress)
+	progressText.Text = flooredProgress .. " / " .. level.lvlProgress.goal
 end)
