@@ -10,12 +10,25 @@ local hatsFolder = serverStorage:WaitForChild("Hats"):WaitForChild("KingCrowns")
 
 local rankRequirementId = "RANK_REQUIREMENT"
 
+suffixBoostExpId = "ExpBoost"
+suffixBoostSpeedId = "SpeedValue"
+suffixBoostJumpId = "JumpValue"
+
+prefixCrownSpeedBoostName = "KingSpeedBoost"
+prefixCrownJumpBoostName = "KingJumpBoost"
+prefixCrownExpBoosName = "KingExpBoost"
+
+type Boost = {
+	Name: string,
+	Value: number,
+}
+
 type CrownEntry = {
 	itemPrefab: Instance,
 	item: Instance?,
-	speedBoost: number,
-	jumpBoost: number,
-	expBoost: number,
+	speedBoost: Boost,
+	jumpBoost: Boost,
+	expBoost: Boost,
 	currentPlayer: Player?,
 	enabled: boolean,
 }
@@ -53,9 +66,9 @@ for _, item in ipairs(hatsFolder:GetChildren()) do
 		crowns[rank] = {
 			itemPrefab = item,
 			item = item:Clone(),
-			speedBoost = speedBoost,
-			jumpBoost = jumpBoost,
-			expBoost = expBoost,
+			speedBoost = { Name = prefixCrownSpeedBoostName .. rank .. item.Name, Value = speedBoost },
+			jumpBoost = { Name = prefixCrownJumpBoostName .. rank .. item.Name, Value = jumpBoost },
+			expBoost = { Name = prefixCrownExpBoosName .. rank .. item.Name, Value = expBoost },
 			currentPlayer = nil,
 			enabled = true,
 		}
@@ -88,20 +101,18 @@ local function applyModifier(crownEntry: CrownEntry)
 	if not crownEntry.currentPlayer then
 		return
 	end
-	local expCompIntValue =
-		compositeIntValueMultiton.getCompositeIntValue(crownEntry.currentPlayer.UserId .. "ExpBoost")
-	if not expCompIntValue.containsMod("KingExpBoost") then
-		expCompIntValue += { Name = "KingExpBoost", Value = crownEntry.expBoost }
+	local userId = crownEntry.currentPlayer.UserId
+	local expCompIntValue = compositeIntValueMultiton.getCompositeIntValue(userId .. suffixBoostExpId)
+	if not expCompIntValue.containsMod(crownEntry.expBoost.Name) then
+		expCompIntValue += crownEntry.expBoost
 	end
-	local speedCompIntValue =
-		compositeIntValueMultiton.getCompositeIntValue(crownEntry.currentPlayer.UserId .. "SpeedValue")
-	if not speedCompIntValue.containsMod("KingSpeedBoost") then
-		speedCompIntValue += { Name = "KingSpeedBoost", Value = crownEntry.speedBoost }
+	local speedCompIntValue = compositeIntValueMultiton.getCompositeIntValue(userId .. suffixBoostSpeedId)
+	if not speedCompIntValue.containsMod(crownEntry.speedBoost.Name) then
+		speedCompIntValue += crownEntry.speedBoost
 	end
-	local jumpCompIntValue =
-		compositeIntValueMultiton.getCompositeIntValue(crownEntry.currentPlayer.UserId .. "JumpValue")
-	if not jumpCompIntValue.containsMod("KingJumpBoost") then
-		jumpCompIntValue += { Name = "KingJumpBoost", Value = crownEntry.jumpBoost }
+	local jumpCompIntValue = compositeIntValueMultiton.getCompositeIntValue(userId .. suffixBoostJumpId)
+	if not jumpCompIntValue.containsMod(crownEntry.jumpBoost.Name) then
+		jumpCompIntValue += crownEntry.jumpBoost
 	end
 end
 
@@ -109,20 +120,18 @@ local function removeModifier(crownEntry: CrownEntry)
 	if not crownEntry.currentPlayer then
 		return
 	end
-	local expCompIntValue =
-		compositeIntValueMultiton.getCompositeIntValue(crownEntry.currentPlayer.UserId .. "ExpBoost")
-	if expCompIntValue.containsMod("KingExpBoost") then
-		expCompIntValue.removeModifier("KingExpBoost")
+	local userId = crownEntry.currentPlayer.UserId
+	local expCompIntValue = compositeIntValueMultiton.getCompositeIntValue(userId .. suffixBoostExpId)
+	if expCompIntValue.containsMod(crownEntry.expBoost.Name) then
+		expCompIntValue.removeModifier(crownEntry.expBoost.Name)
 	end
-	local speedCompIntValue =
-		compositeIntValueMultiton.getCompositeIntValue(crownEntry.currentPlayer.UserId .. "SpeedValue")
-	if speedCompIntValue.containsMod("KingSpeedBoost") then
-		speedCompIntValue.removeModifier("KingSpeedBoost")
+	local speedCompIntValue = compositeIntValueMultiton.getCompositeIntValue(userId .. suffixBoostSpeedId)
+	if speedCompIntValue.containsMod(crownEntry.speedBoost.Name) then
+		speedCompIntValue.removeModifier(crownEntry.speedBoost.Name)
 	end
-	local jumpCompIntValue =
-		compositeIntValueMultiton.getCompositeIntValue(crownEntry.currentPlayer.UserId .. "JumpValue")
-	if jumpCompIntValue.containsMod("KingJumpBoost") then
-		jumpCompIntValue.removeModifier("KingJumpBoost")
+	local jumpCompIntValue = compositeIntValueMultiton.getCompositeIntValue(userId .. suffixBoostJumpId)
+	if jumpCompIntValue.containsMod(crownEntry.jumpBoost.Name) then
+		jumpCompIntValue.removeModifier(crownEntry.jumpBoost.Name)
 	end
 end
 
