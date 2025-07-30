@@ -96,7 +96,14 @@ for _, slipPart in ipairs(game:GetService("CollectionService"):GetTagged("Slippe
 	)
 	slipPart.Touched:Connect(function(hit)
 		local character = hit:FindFirstAncestorOfClass("Model")
+		if not character then
+			return
+		end
+
 		local rootPart = character:FindFirstChild("HumanoidRootPart")
+		if not rootPart then
+			return
+		end
 
 		local rayParams = RaycastParams.new()
 		rayParams.FilterDescendantsInstances = { character }

@@ -1,10 +1,10 @@
-local itemSphere = workspace:FindFirstChild("ItemSphere")
 local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 local inventoryFuncs = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 local CollectionService = game:GetService("CollectionService")
 local ServerStorage = game:GetService("ServerStorage")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
+local itemSphere = ServerStorage:WaitForChild("Pickups"):WaitForChild("ItemSphere")
 local BOMB_SPAWNER_TAG = "BombSpawner"
 local bombSpawners = CollectionService:GetTagged(BOMB_SPAWNER_TAG)
 local bombCds: { { bombSpawner: Instance, cooldown: number, lastSpawnTime: number, bombReady: boolean, bomb: Tool? } } =
@@ -13,49 +13,6 @@ local bombCds: { { bombSpawner: Instance, cooldown: number, lastSpawnTime: numbe
 local BOMB_FALL_ZONE_TAG = "BombFallZone"
 local bombFallZones = CollectionService:GetTagged(BOMB_FALL_ZONE_TAG)
 local rng = Random.new()
-local TweenService = game:GetService("TweenService")
-
-local function applyAntiGravity(tool) --Thank you gpt
-	local handle = tool:FindFirstChild("Handle")
-	if not handle then
-		warn("Tool missing Handle")
-		return function() end
-	end
-
-	-- Create anti-gravity VectorForce
-	local attachment = Instance.new("Attachment")
-	attachment.Name = "AntiGravityAttachment"
-	attachment.Parent = handle
-
-	local vectorForce = Instance.new("VectorForce")
-	vectorForce.Name = "AntiGravityForce"
-	vectorForce.Force = Vector3.new(0, handle.AssemblyMass * workspace.Gravity, 0)
-	vectorForce.ApplyAtCenterOfMass = true
-	vectorForce.Attachment0 = attachment
-	vectorForce.RelativeTo = Enum.ActuatorRelativeTo.World
-	vectorForce.Parent = handle
-
-	-- Optional: Zero out velocity each frame
-	--[[local heartbeatConn = RunService.Heartbeat:Connect(function()
-		if tool.Parent == workspace then
-			handle.AssemblyLinearVelocity = Vector3.zero
-			handle.AssemblyAngularVelocity = Vector3.zero
-		end
-	end)]]
-
-	-- Return a cleanup function to disable/remove the effect
-	return function()
-		--[[if heartbeatConn then
-			heartbeatConn:Disconnect()
-		end]]
-		if vectorForce and vectorForce.Parent then
-			vectorForce:Destroy()
-		end
-		if attachment and attachment.Parent then
-			attachment:Destroy()
-		end
-	end
-end
 
 for _, bombSpawner in ipairs(bombSpawners) do
 	local entry = {
@@ -73,11 +30,8 @@ local bombFallData: {
 		zone: Instance,
 		radius: number,
 		height: number,
-		floorWorldHeight: number,
 		capacityDependedCooldown: number,
 		bombCapacity: number,
-		fallTime: number,
-		itemHoverHeight: number,
 		lastCallTime: number,
 	}
 } =
@@ -88,20 +42,13 @@ for _, bombFallZone in ipairs(bombFallZones) do
 		zone = bombFallZone,
 		radius = bombFallZone.Size.y / 2,
 		height = bombFallZone.Size.x,
-		floorWorldHeight = bombFallZone.position.y - (bombFallZone.Size.x / 2),
 		capacityDependedCooldown = bombFallZone:GetAttribute("CapacityDependedCooldown"),
 		bombCapacity = bombFallZone:GetAttribute("BombCapacity"),
-		fallTime = bombFallZone:GetAttribute("FallTime"),
-		itemHoverHeight = bombFallZone:GetAttribute("ItemHoverHeight"),
 		lastCallTime = os.time(),
 	}
 	print(entry)
 	table.insert(bombFallData, entry)
 end
-
--- //////////////////////////////////////////////////////////////
--- LOGIC FOR GIVING TO RANDOM PLAYER MIGHT BE USEFUL LATER
--- //////////////////////////////////////////////////////////////
 
 function findRandomPlayer(players)
 	if #players == 0 then
@@ -119,35 +66,6 @@ function findRandomPlayer(players)
 
 	return randomPlayer
 end
---FOR TEST
--- task.wait(5)
-
---TODO: Remove func if no use later
---[[task.spawn(function()
-	while true do
-		local players = game:GetService("Players"):GetPlayers()
-		if #players >= 0 then
-			--Filter for if players are in safeZone
-			local unsafePlayers = {}
-			for _, player in ipairs(players) do
-				if not player.States.Safe.Value then
-					table.insert(unsafePlayers, player)
-				end
-			end
-			if #unsafePlayers == 0 then
-				print("All players are in a safezone!")
-			end
-
-			local randomPlayer = findRandomPlayer(unsafePlayers)
-			if randomPlayer then
-				giveBombToPlayer(randomPlayer)
-			end
-		else
-			warn("Need 5 players, only have:", #players)
-		end
-		task.wait(BOMB_TIMER)
-	end
-end)--]]
 
 function giveBombToPlayer(player: Player, bomb: Tool)
 	if player and player.Character then
@@ -176,8 +94,6 @@ function createBombItem(bomb: Tool, startingPosition: Vector3, parent)
 	bomb:PivotTo(CFrame.new(startingPosition))
 	bomb.Parent = item
 
-	local removeAntiGravity = applyAntiGravity(bomb)
-
 	local hitArea = primary:FindFirstChild("HitBox")
 	hitArea.CanTouch = false
 
@@ -204,18 +120,44 @@ function createBombItem(bomb: Tool, startingPosition: Vector3, parent)
 	else
 		primary.Size = primary.Size * scaleFactor
 	end
+
+	-- Attach bomb to RigidConstraint
+	local rigidConstraint = item:FindFirstChildOfClass("RigidConstraint")
+	local bombAttachment = Instance.new("Attachment")
+	bombAttachment.Name = "BombAttachment"
+	bombAttachment.Parent = primary
+
+	if rigidConstraint then
+		rigidConstraint.Attachment1 = bombAttachment
+	end
+
+	--trying to stop bombs going though mesh
+	local att = Instance.new("Attachment")
+	att.Parent = item
+	local vectorForce = Instance.new("VectorForce")
+	vectorForce.Attachment0 = att
+	vectorForce.Force = Vector3.new(0, item:GetMass() * workspace.Gravity * 0.90, 0)
+	vectorForce.RelativeTo = Enum.ActuatorRelativeTo.World
+	vectorForce.ApplyAtCenterOfMass = true
+	vectorForce.Parent = item
+
 	local touch_key = nil
 	item.Touched:Connect(function(hit)
 		if touch_key then
 			return
 		end
+		local playerChar = hit:FindFirstAncestorOfClass("Model")
+		local player = playerChar and Players:GetPlayerFromCharacter(playerChar)
+
+		if not player then
+			return
+		end
+
 		touch_key = hit
 		task.defer(function()
 			if touch_key ~= hit then
 				return
 			end
-			local playerChar = hit:FindFirstAncestorOfClass("Model")
-			local player = playerChar and Players:GetPlayerFromCharacter(playerChar)
 
 			local hasBomb = playerChar:FindFirstChild("Bomb")
 			if player and not hasBomb then
@@ -227,7 +169,6 @@ function createBombItem(bomb: Tool, startingPosition: Vector3, parent)
 	end)
 
 	item.Destroying:Connect(function()
-		removeAntiGravity()
 		if not bomb then
 			return
 		end
@@ -270,7 +211,7 @@ function spawnBomb(bomb: {
 
 		local bombItem = createBombItem(bombTool, basePos, bomb.bombSpawner)
 		bomb.bomb = bombTool
-
+		bombItem.Anchored = true
 		bombTool.Destroying:Connect(function()
 			if bomb.bomb == bombTool then
 				bombItem:Destroy()
@@ -283,16 +224,6 @@ function spawnBomb(bomb: {
 	else
 		warn("rarrrr can set bomb")
 	end
-end
-
-local function animateToPosition(part: BasePart, targetPos: Vector3, duration: number, followingTool: Tool): Tween
-	local tweenInfo = TweenInfo.new(duration)
-	local goal = { Position = targetPos }
-	local tween = TweenService:Create(part, tweenInfo, goal)
-	part:GetPropertyChangedSignal("CFrame"):Connect(function()
-		followingTool:PivotTo(CFrame.new(part.Position))
-	end)
-	return tween
 end
 
 task.spawn(function()
@@ -353,21 +284,11 @@ task.spawn(function()
 				randomPosOnCylinderTop(data.zone.Position, data.radius, data.height),
 				data.zone
 			)
-			local animation = animateToPosition(
-				bombItem,
-				bombItem.position - Vector3.new(0, data.height - data.itemHoverHeight, 0),
-				data.fallTime,
-				bombTool
-			)
 			bombTool.Destroying:Connect(function() --TODO: Should be generalized in the createBombItem
 				if bombItem then
 					bombItem:Destroy()
 				end
 			end)
-			bombItem.Destroying:Connect(function()
-				animation:Destroy()
-			end)
-			animation:Play()
 		end
 
 		task.wait(1)
