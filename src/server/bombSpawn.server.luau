@@ -30,11 +30,8 @@ local bombFallData: {
 		zone: Instance,
 		radius: number,
 		height: number,
-		floorWorldHeight: number,
 		capacityDependedCooldown: number,
 		bombCapacity: number,
-		fallTime: number,
-		itemHoverHeight: number,
 		lastCallTime: number,
 	}
 } =
@@ -45,11 +42,8 @@ for _, bombFallZone in ipairs(bombFallZones) do
 		zone = bombFallZone,
 		radius = bombFallZone.Size.y / 2,
 		height = bombFallZone.Size.x,
-		floorWorldHeight = bombFallZone.position.y - (bombFallZone.Size.x / 2),
 		capacityDependedCooldown = bombFallZone:GetAttribute("CapacityDependedCooldown"),
 		bombCapacity = bombFallZone:GetAttribute("BombCapacity"),
-		fallTime = bombFallZone:GetAttribute("FallTime"),
-		itemHoverHeight = bombFallZone:GetAttribute("ItemHoverHeight"),
 		lastCallTime = os.time(),
 	}
 	print(entry)
