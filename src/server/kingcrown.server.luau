@@ -10,13 +10,13 @@ local hatsFolder = serverStorage:WaitForChild("Hats"):WaitForChild("KingCrowns")
 
 local rankRequirementId = "RANK_REQUIREMENT"
 
-suffixBoostExpId = "ExpBoost"
-suffixBoostSpeedId = "SpeedValue"
-suffixBoostJumpId = "JumpValue"
+local suffixBoostExpId = "ExpBoost"
+local suffixBoostSpeedId = "SpeedValue"
+local suffixBoostJumpId = "JumpValue"
 
-prefixCrownSpeedBoostName = "KingSpeedBoost"
-prefixCrownJumpBoostName = "KingJumpBoost"
-prefixCrownExpBoosName = "KingExpBoost"
+local prefixCrownSpeedBoostName = "KingSpeedBoost"
+local prefixCrownJumpBoostName = "KingJumpBoost"
+local prefixCrownExpBoosName = "KingExpBoost"
 
 type Boost = {
 	Name: string,
