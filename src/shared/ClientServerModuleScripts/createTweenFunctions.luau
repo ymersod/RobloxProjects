@@ -16,6 +16,23 @@ function tweenCreate.Pulse(gui: GuiObject, scaleFactor: number, duration: number
 	return growTween, shrinkTween
 end
 
+function tweenCreate.Pulse2(gui: GuiObject, scaleFactor: number, repeatCount:number, iterationDuration: number)
+	local originalSize = gui.Size
+	local pulseSize = UDim2.fromScale(originalSize.X.Scale + scaleFactor, originalSize.Y.Scale + scaleFactor)
+
+	local pulseInfo = TweenInfo.new(
+		iterationDuration, -- Time
+		Enum.EasingStyle.Sine, -- EasingStyle
+		Enum.EasingDirection.InOut, -- EasingDirection
+		repeatCount, -- RepeatCount (when less than zero the tween will loop indefinitely)
+		true -- Reverses (tween will reverse once reaching its goal)
+	)
+
+	local pulseTween = TweenService:Create(gui, pulseInfo, { Size = pulseSize })
+
+	return pulseTween
+end
+
 -- GoInOut: Creates "open" and "close" tweens for panels (position + size)
 function tweenCreate.GoInOut(
 	gui: Frame,
