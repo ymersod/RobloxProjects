@@ -148,7 +148,7 @@ function ragdollUtils.ragdoll(targetPlayer: Player, direction: Vector3, duration
 		local newHum = newChar and newChar:FindFirstChildOfClass("Humanoid")
 		local newHrp = newHum and newHum.RootPart
 
-		if newHrp.CollisionGroup == "RagdollCollide" then
+		if newHrp.CollisionGroup and newHrp.CollisionGroup == "RagdollCollide" then
 			ragdollUtils.UnragdollCharacter(newChar)
 		end
 	end)
@@ -156,7 +156,7 @@ end
 
 local function BuildCollisionParts(character: Model)
 	for _, v in pairs(character:GetChildren()) do
-		if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then
+		if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" and not v:HasTag("KingCrown") then
 			local p = v:Clone()
 			p.Parent = v
 			p.CanCollide = false
