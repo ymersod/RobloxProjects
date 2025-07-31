@@ -61,11 +61,32 @@ local function parseCommand(string: string): { command: string, args: { string }
 	return { command = parts[1], args = subSet(parts, 2) }
 end
 
+local COMMAND_WHITE_LIST : { number } = { 8394946161, 8591486140 }
+
+local function playerIdIsWhitelisted(no:number)
+	if no < 0 then
+		return true
+	end
+	for i = 1, #COMMAND_WHITE_LIST do
+		if COMMAND_WHITE_LIST[i] == no then
+			return true
+		end
+	end
+	return false
+end
+
 game:GetService("Players").PlayerAdded:Connect(function(player)
 	player.Chatted:Connect(function(message)
 		local command = parseCommand(message)
+
+		if command.command == "none" then
+			return
+		end
+
 		if command.command == "/kill" then
 			killModule.killPlayer(player)
+		elseif not playerIdIsWhitelisted(player.UserId) then
+			warn("Player with id " .. player.UserId .. " attempted  to call command: " .. command.command)
 		elseif command.command == "/ragdoll" then
 			if #command.args > 0 then
 				ragdollUtils.ragdoll(
