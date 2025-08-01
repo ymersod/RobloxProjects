@@ -68,6 +68,11 @@ enums.Colors = {
 		Active = Color3.fromRGB(174, 32, 18),
 		Inactive = Color3.fromRGB(59, 56, 56),
 	},
+	LeaderboardColors = {
+		Opacity = 0.7,
+		Uneven = Color3.fromRGB(255, 255, 255),
+		Even = Color3.fromRGB(130, 130, 130),
+	},
 }
 
 return enums
