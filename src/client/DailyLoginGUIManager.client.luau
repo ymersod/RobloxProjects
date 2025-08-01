@@ -1,8 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SoundService = game:GetService("SoundService")
 local player = game:GetService("Players").LocalPlayer
 local Types = require(ReplicatedStorage.Shared.ClientServerModuleScripts.Types)
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
+local sounds = require(ReplicatedStorage.Shared.ClientServerModuleScripts.sounds)
+
 local getProgress = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("DailyRewardsFunctions")
@@ -106,6 +109,7 @@ function setForState(dayFrame: Frame, state)
 		backGlow.Visible = true
 
 		claimButton.MouseButton1Click:Once(function()
+			SoundService:PlayLocalSound(sounds.Claim)
 			local grow, shrink = createTweenFunctions.Pulse(dayFrame, 0.1, 0.1)
 			grow:Play()
 			grow.Completed:Connect(function()
@@ -163,6 +167,7 @@ end
 updateGUI()
 
 closeButton.MouseButton1Click:Connect(function()
+	SoundService:PlayLocalSound(sounds.CloseGUI)
 	shrinkTween:Play()
 	shrinkTween.Completed:Connect(function()
 		dailyLoginRewards.Visible = false

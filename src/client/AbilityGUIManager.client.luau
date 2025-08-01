@@ -150,9 +150,6 @@ function onCharChanges(isAdded: boolean?)
 	local playerChar = player.Character
 	local equippedTool = playerChar and playerChar:FindFirstChildOfClass("Tool")
 
-	if not equippedTool then
-	end
-
 	setAbility(equippedTool, isAdded)
 	updateGui()
 end

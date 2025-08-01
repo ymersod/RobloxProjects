@@ -1,8 +1,11 @@
 local player = game:GetService("Players").LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SoundService = game:GetService("SoundService")
+local sounds = require(ReplicatedStorage.Shared.ClientServerModuleScripts.sounds)
 local jumpEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("JumpPadClient")
 
 jumpEvent.OnClientEvent:Connect(function(pad: BasePart, isAngular: boolean, momentumFactor: number, launchSpeed: number)
+	SoundService:PlayLocalSound(sounds.Jumppads)
 	local character = player.Character
 	if not character then
 		return

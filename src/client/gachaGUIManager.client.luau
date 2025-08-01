@@ -3,9 +3,10 @@ local localStats = player:WaitForChild("LocalStats")
 local tickets: IntValue = localStats:WaitForChild("Tickets")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
+local SoundService = game:GetService("SoundService")
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
+local sounds = require(ReplicatedStorage.Shared.ClientServerModuleScripts.sounds)
 local rollEvent = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("RollFunctions")
@@ -276,6 +277,7 @@ setSetActiveButton = function(button, slotUI, growPulse, shrinkPulse)
 	button:SetAttribute("ConnectionsSet", true)
 
 	button.MouseButton1Click:Connect(function()
+		SoundService:PlayLocalSound(sounds.Click)
 		selectedSlot.Value = slotUI.Parent and slotUI.Parent:GetAttribute("SlotNumber")
 
 		updateGachaBackpackGUI()
@@ -454,6 +456,7 @@ selectedSlot.Changed:Connect(function()
 end)
 
 closeButton.MouseButton1Click:Connect(function()
+	SoundService:PlayLocalSound(sounds.CloseGUI)
 	shrinkTween:Play()
 	shrinkTween.Completed:Connect(function()
 		gachaGUIParent.Visible = false
@@ -485,7 +488,8 @@ local function getRandomRarityColor(): { End: Color3, Start: Color3 }
 	return rarities[randomKey]
 end
 
-local function RollAnimation(callback)
+local function RollAnimation(duration: number, callback: ((Instance) -> ())?)
+	SoundService:PlayLocalSound(sounds.Gacha)
 	local topFrameClone = topFrame:Clone()
 	topFrame.Visible = false
 
@@ -509,7 +513,7 @@ local function RollAnimation(callback)
 	table.insert(fillClones, statsClone:FindFirstChild("Range"):FindFirstChild("Fill"))
 	table.insert(fillClones, statsClone:FindFirstChild("Speed"):FindFirstChild("Fill"))
 
-	-- Animation logic
+	-- ANIMATION
 	task.spawn(function()
 		bgClone.Transparency = 0
 		bgBackGlowClone.Visible = true
@@ -518,15 +522,30 @@ local function RollAnimation(callback)
 		end
 		nameLabelClone.Text = "??"
 
-		local interval = 0.05
-		for _ = 1, 20 do
+		-- Slowdown setup
+		local startInterval = 0.05
+		local growth = 0.01
+		local elapsed = 0
+		local intervals = {}
+
+		-- Precompute intervals that fit within duration
+		while true do
+			local nextInterval = startInterval + #intervals * growth
+			if elapsed + nextInterval > duration then
+				break
+			end
+			table.insert(intervals, nextInterval)
+			elapsed += nextInterval
+		end
+
+		-- Animate
+		for _, interval in ipairs(intervals) do
 			local rolls = {}
 			for _ = 1, 3 do
 				table.insert(rolls, math.random(1, 4))
 			end
 			for j, fillClone in ipairs(fillClones) do
-				local rollValue = rolls[j]
-				updateStatBar(fillClone, rollValue)
+				updateStatBar(fillClone, rolls[j])
 			end
 
 			local rColor = getRandomRarityColor()
@@ -538,16 +557,15 @@ local function RollAnimation(callback)
 			bgBackGlowClone.ImageColor3 = rColor.End
 
 			task.wait(interval)
-			interval += 0.01
 		end
 
-		local rolls = {}
+		-- Final values
+		local finalRolls = {}
 		for _ = 1, 3 do
-			table.insert(rolls, math.random(1, 4))
+			table.insert(finalRolls, math.random(1, 4))
 		end
 		for j, fillClone in ipairs(fillClones) do
-			local rollValue = rolls[j]
-			updateStatBar(fillClone, rollValue)
+			updateStatBar(fillClone, finalRolls[j])
 		end
 
 		local finalColor = getRandomRarityColor()
@@ -565,6 +583,7 @@ local function RollAnimation(callback)
 		end
 	end)
 end
+
 local isRolling = false
 rollButton.MouseButton1Click:Connect(function()
 	if isRolling then
@@ -584,7 +603,7 @@ rollButton.MouseButton1Click:Connect(function()
 		shrinkRoll:Play()
 	end)
 
-	RollAnimation(function(topFrameClone)
+	RollAnimation(2, function(topFrameClone)
 		local rollResult = rollEvent:InvokeServer(selectedSlot.Value)
 		if rollResult then
 			local resultTickets = spendTicketsEvent:InvokeServer(1)

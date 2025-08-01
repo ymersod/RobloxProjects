@@ -1,7 +1,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SoundService = game:GetService("SoundService")
 local Types = require(ReplicatedStorage.Shared.ClientServerModuleScripts.Types)
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
+local sounds = require(ReplicatedStorage.Shared.ClientServerModuleScripts.sounds)
+
 local player = game:GetService("Players").LocalPlayer
 local level: IntValue = player:WaitForChild("LocalStats"):WaitForChild("Level")
 
@@ -102,6 +105,7 @@ function setForState(elementParent: Frame, state)
 		claimButton.Visible = true
 
 		claimButton.MouseButton1Click:Once(function()
+			SoundService:PlayLocalSound(sounds.Claim)
 			local grow, shrink = createTweenFunctions.Pulse(element, 0.1, 0.1)
 			grow:Play()
 			grow.Completed:Connect(function()
@@ -208,6 +212,7 @@ end
 updateGUI()
 
 closeButton.MouseButton1Click:Connect(function()
+	SoundService:PlayLocalSound(sounds.CloseGUI)
 	shrinkTween:Play()
 	shrinkTween.Completed:Connect(function()
 		levelUpRewardsGui.Visible = false

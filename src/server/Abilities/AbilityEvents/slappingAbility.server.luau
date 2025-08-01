@@ -2,7 +2,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local tool = script.Parent
 local ability = tool:FindFirstChild("AbilityVals")
 local abilityName = ability and ability:GetAttribute("ability")
-local speedBoostBind = ServerScriptService:WaitForChild("Server")
+local bind = ServerScriptService:WaitForChild("Server")
 	:WaitForChild("Abilities")
 	:WaitForChild("BindableEvents")
 	:WaitForChild(abilityName)
@@ -17,7 +17,7 @@ remote.OnServerEvent:Connect(function(player: Player, abilityVals: Instance, slo
 	local curTime = os.time()
 	local cd = abilityVals:GetAttribute("cooldown") :: number?
 	if cd and curTime - lastUse >= cd then
-		speedBoostBind:Fire(player, abilityVals, slotToolId)
+		bind:Fire(player, abilityVals, slotToolId, tool)
 	else
 		warn("Ability on cooldown or abilityvals broken")
 	end

@@ -6,10 +6,11 @@ local equipServerEvent = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("InventoryFunctions")
 	:WaitForChild("EquipServer")
 local CoreGui = game:GetService("StarterGui")
+local SoundService = game:GetService("SoundService")
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
+local sounds = require(ReplicatedStorage.Shared.ClientServerModuleScripts.sounds)
 CoreGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
-
 local equippedSlapstylePrefab = ReplicatedStorage:WaitForChild("UI")
 	:WaitForChild("DynamicGUI")
 	:WaitForChild("Inventory")
@@ -235,6 +236,7 @@ local statBarColors = {
 }
 
 function onEquip(curSlot: Frame)
+	SoundService:PlayLocalSound(sounds.Equip)
 	local id = curSlot and curSlot:GetAttribute("ToolIdRef") :: string?
 	local inventorySaveSlot = curSlot and curSlot:GetAttribute("SlotNumber") :: number?
 	if not id then

@@ -1,7 +1,9 @@
 local player = game:GetService("Players").LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SoundService = game:GetService("SoundService")
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
+local sounds = require(ReplicatedStorage.Shared.ClientServerModuleScripts.sounds)
 
 local elasticGrowDur = 0.3
 local elasticShrinkDur = 0.1
@@ -152,6 +154,7 @@ end
 playTweensAndWait(tweensClose, function() end)
 
 openCloseButton.MouseButton1Click:Connect(function()
+	SoundService:PlayLocalSound(sounds.Click)
 	growTweenOpenClose:Play()
 	growTweenOpenClose.Completed:Once(function()
 		shrinkTweenOpenClose:Play()
@@ -196,6 +199,7 @@ local function handleOpenCloseAccessGUIS(
 	closeOthers
 )
 	button.MouseButton1Click:Connect(function()
+		SoundService:PlayLocalSound(sounds.Click)
 		growTween:Play()
 		growTween.Completed:Once(function()
 			shrinkTween:Play()

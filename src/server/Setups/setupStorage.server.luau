@@ -3,7 +3,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local CollectionService = game:GetService("CollectionService")
 
 local dynamicLogicFolder = ServerScriptService:WaitForChild("Server"):WaitForChild("DynamicLogic")
-
+local abilitySounds = ServerStorage:WaitForChild("Sounds"):WaitForChild("AbilitySounds")
 local kingZoneManagerScript = dynamicLogicFolder:WaitForChild("kingZoneManager")
 local kingCoinScript = dynamicLogicFolder:WaitForChild("kingCoinLogic")
 local bombScript = dynamicLogicFolder:WaitForChild("bombLogic")
@@ -80,10 +80,24 @@ for _, slapPrefab in ipairs(slapPrefabs:GetChildren()) do
 			toolToolingFuncs.changeHandleLength(slapPrefab, mapStatToLength(statVal:GetAttribute("Range")))
 		end
 	end
-	--[[
-	if not matchedAbility then
-		print("No ability found for slapstyle: ", slapPrefab)
-	end]]
+
+	-- Setup sounds
+	local abilityVals = slapPrefab:FindFirstChild("AbilityVals")
+	local abilitySoundStart = abilityVals and abilityVals:GetAttribute("AbilitySoundStart")
+	local abilitySoundEnd = abilityVals and abilityVals:GetAttribute("AbilitySoundEnd")
+
+	if abilitySoundStart then
+		local sound = abilitySounds:FindFirstChild(abilitySoundStart) :: Sound
+		local soundClone = sound:Clone()
+		soundClone.Parent = slapPrefab
+		soundClone:SetAttribute("PlayOnUse", true)
+	end
+	if abilitySoundEnd then
+		local sound = abilitySounds:FindFirstChild(abilitySoundEnd) :: Sound
+		local soundClone = sound:Clone()
+		soundClone.Parent = slapPrefab
+		soundClone:SetAttribute("PlayOnUse", false)
+	end
 end
 
 for _, slipPart in ipairs(game:GetService("CollectionService"):GetTagged("Slippery")) do
