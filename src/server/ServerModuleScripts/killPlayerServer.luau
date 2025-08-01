@@ -10,7 +10,7 @@ function killPlayerModule.killPlayer(player: Player)
 	local hum = char:FindFirstChildOfClass("Humanoid")
 	hum.Health = 0
 	for _, part in char:GetDescendants() do
-		if part:IsA("BasePart") and part.Parent == char then
+		if part:IsA("BasePart") and part.Parent == char and not part:HasTag("KingCrown") then
 			-- SetCollisionGroupName is a method of PhysicsService
 			part.CanCollide = true
 			PhysicsService:SetPartCollisionGroup(part, "RagdollCollide")
