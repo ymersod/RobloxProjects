@@ -5,6 +5,9 @@ local ServerStorage = game:GetService("ServerStorage")
 local killModule = require(
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("killPlayerServer")
 )
+
+local flyToggleEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("FlyToggleClient")
+
 local pushBackClientEvent =
 	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("PushBackClient")
 local ServerScriptService = game:GetService("ServerScriptService")
@@ -228,6 +231,8 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 			levelupRewards.resetPlayer(player.UserId)
 		elseif command.command == "/slotinc" then
 			inventoryFuncs.IncrementSlotSpace(player)
+		elseif command.command == "/fly" then
+			flyToggleEvent:FireClient(player)
 		end
 	end)
 end)
