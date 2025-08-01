@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
 local player = game:GetService("Players").LocalPlayer
+local NotificationManager = require(ReplicatedStorage.Shared.ClientServerModuleScripts.NotificationManager)
 local Types = require(ReplicatedStorage.Shared.ClientServerModuleScripts.Types)
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
@@ -33,6 +34,9 @@ local timeLeft: TextLabel = dailyLoginRewards
 	:WaitForChild("TopFrameClip")
 	:WaitForChild("TopRightClip")
 	:WaitForChild("NextRewardText")
+local popupCount = NotificationManager.AddNewPopuppable(
+	screenGui:WaitForChild("AccessBar"):WaitForChild("AccessParent"):WaitForChild("Daily")
+)
 
 local days: { Frame } = {}
 local count = 1
@@ -103,12 +107,14 @@ function setForState(dayFrame: Frame, state)
 		backGlow.Visible = false
 		dayFrame:SetAttribute("State", guiStates.NotClaimable)
 	elseif state == guiStates.Claimable and dayState ~= guiStates.Claimable then
+		popupCount.Value = popupCount.Value + 1
 		claimButton.Visible = true
 		colorGradient.Color = ColorSequence.new(enums.Colors.RewardsColors.Claimable)
 		glow.Visible = true
 		backGlow.Visible = true
 
 		claimButton.MouseButton1Click:Once(function()
+			popupCount.Value = popupCount.Value - 1
 			SoundService:PlayLocalSound(sounds.Claim)
 			local grow, shrink = createTweenFunctions.Pulse(dayFrame, 0.1, 0.1)
 			grow:Play()

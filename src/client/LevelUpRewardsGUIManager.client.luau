@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
+local NotificationManager = require(ReplicatedStorage.Shared.ClientServerModuleScripts.NotificationManager)
 local Types = require(ReplicatedStorage.Shared.ClientServerModuleScripts.Types)
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
@@ -34,6 +35,9 @@ local levels: { Frame } = {}
 
 local count = 1
 local lastClaimedLevelCache = 0
+local popupCount = NotificationManager.AddNewPopuppable(
+	screenGui:WaitForChild("AccessBar"):WaitForChild("AccessParent"):WaitForChild("LevelUp")
+)
 
 -- TWEENS
 local shrinkTween = createTweenFunctions.Shrink2(levelUpRewardsGui, 0.1, UDim2.new(0, 0, 0, 0))
@@ -86,6 +90,7 @@ function setForState(elementParent: Frame, state)
 	local curUiState = element:GetAttribute("UiState")
 
 	if state == uiStates.Claimable and curUiState ~= uiStates.Claimable then
+		popupCount.Value = popupCount.Value + 1
 		local starChild = setStars(starChildren, false)
 
 		bgGradient.Color = ColorSequence.new(enums.Colors.RewardsColors.Claimable)
@@ -105,6 +110,7 @@ function setForState(elementParent: Frame, state)
 		claimButton.Visible = true
 
 		claimButton.MouseButton1Click:Once(function()
+			popupCount.Value = popupCount.Value - 1
 			SoundService:PlayLocalSound(sounds.Claim)
 			local grow, shrink = createTweenFunctions.Pulse(element, 0.1, 0.1)
 			grow:Play()

@@ -64,9 +64,9 @@ local function parseCommand(string: string): { command: string, args: { string }
 	return { command = parts[1], args = subSet(parts, 2) }
 end
 
-local COMMAND_WHITE_LIST : { number } = { 8394946161, 8591486140 }
+local COMMAND_WHITE_LIST: { number } = { 8394946161, 8591486140, 8637529946 }
 
-local function playerIdIsWhitelisted(no:number)
+local function playerIdIsWhitelisted(no: number)
 	if no < 0 then
 		return true
 	end
