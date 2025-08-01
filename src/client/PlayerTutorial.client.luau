@@ -51,7 +51,7 @@ local spinnerFrame: Frame = screenGui:WaitForChild("KingZoneHighlightTestFrame")
 local backglowImage: ImageLabel = screenGui:WaitForChild("KingZoneHighlightTestFrame"):WaitForChild("Backglow")
 
 local overlay: Frame? = nil
-local TEXT_SPEED = 0.06
+local TEXT_SPEED = 0.03
 local KINGZONE_HIGHLIGHT_DUR = 4
 
 local function raiseZIndex(root, amount)
@@ -119,8 +119,7 @@ local function Step8()
 end
 
 local function Step7ShowKingzone()
-	local fullText =
-		"Now you're ready to play! The best way to get stronger is to stand in the king-zone. You can allways find it by looking for the beam"
+	local fullText = "To get more tickets"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.9, 0), UDim2.new(0.5, 0, 1, 0))
 	label.ZIndex = 51
 
@@ -134,7 +133,7 @@ local function Step7ShowKingzone()
 end
 
 local function Step6RollForSlapStyle()
-	local fullText = "Seems you have 1 slap-ticket left! Every roll costs 1 ticket, let's try to get something cool!"
+	local fullText = "You roll using tickets! Seems you have 1 left... good luck skibidi slapster"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.9, 0), UDim2.new(0.5, 0, 1, 0))
 
 	label.ZIndex = 51
@@ -177,8 +176,7 @@ local function Step6RollForSlapStyle()
 end
 
 local function Step5PickRollSlot()
-	local fullText =
-		"In king of the slap - when you roll you lose your current slap-style in that inventory slot... Lets pick slot 1"
+	local fullText = "Press the inventory slot you want to roll with!"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.9, 0), UDim2.new(0.5, 0, 1, 0))
 
 	local slotGachaUi2 = slotSpace2Gacha:FindFirstChildOfClass("Frame")
@@ -221,8 +219,7 @@ local function Step5PickRollSlot()
 end
 
 local function Step4OpenGacha()
-	local fullText =
-		"Over here is the menu! From here you can find many rewards and start rolling for better slap-styles. Lets press it!"
+	local fullText = "This is the menu, From here you can find many rewards, but for now let's roll a new slap-style"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.75, 0), UDim2.new(0.5, 0, 1, 0))
 
 	label.ZIndex = 51
@@ -260,7 +257,7 @@ local function Step4OpenGacha()
 	end)
 end
 local function Step3OpenAccessBar()
-	local fullText = "Very nice! Let's try to get a new slap-style - open the menu to the left"
+	local fullText = "Let's try to get a better slap-style - open the menu to the left"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.75, 0), UDim2.new(0.5, 0, 1, 0))
 
 	label.ZIndex = 51
@@ -299,7 +296,7 @@ local function Step3OpenAccessBar()
 end
 
 local function Step2EquipSlapStyle()
-	local fullText = "To become king of the slap you must use slap-styles, start by equipping your first slap-style!"
+	local fullText = "Start out by equipping your first slap-style!"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.75, 0), UDim2.new(0.5, 0, 1, 0))
 
 	local slotUi1 = slotSpace1:FindFirstChildOfClass("Frame")
@@ -361,7 +358,7 @@ local function Step1SetupOverlay()
 	overLayButton.Parent = overlay
 
 	-- Tutorial label
-	local fullText = "Welcome Slapper! Since you're a first timer let me show you around"
+	local fullText = "Welcome Slapper! Let me show you around"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.75, 0), UDim2.new(0.5, 0, 1, 0))
 	label.ZIndex = 51
 

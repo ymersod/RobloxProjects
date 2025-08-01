@@ -3,7 +3,9 @@ local ServerStorage = game:GetService("ServerStorage")
 local CollectionService = game:GetService("CollectionService")
 
 local dynamicLogicFolder = ServerScriptService:WaitForChild("Server"):WaitForChild("DynamicLogic")
-local abilitySounds = ServerStorage:WaitForChild("Sounds"):WaitForChild("AbilitySounds")
+local sounds = ServerStorage:WaitForChild("Sounds")
+local abilitySounds = sounds:WaitForChild("AbilitySounds")
+local slapSound = sounds:WaitForChild("Slap"):WaitForChild("Slap Sound Effect")
 local kingZoneManagerScript = dynamicLogicFolder:WaitForChild("kingZoneManager")
 local kingCoinScript = dynamicLogicFolder:WaitForChild("kingCoinLogic")
 local bombScript = dynamicLogicFolder:WaitForChild("bombLogic")
@@ -82,22 +84,29 @@ for _, slapPrefab in ipairs(slapPrefabs:GetChildren()) do
 	end
 
 	-- Setup sounds
+	local handle = slapPrefab.Handle
 	local abilityVals = slapPrefab:FindFirstChild("AbilityVals")
 	local abilitySoundStart = abilityVals and abilityVals:GetAttribute("AbilitySoundStart")
 	local abilitySoundEnd = abilityVals and abilityVals:GetAttribute("AbilitySoundEnd")
 
+	if not handle then
+		warn("Cant find handle something went wrong in setup")
+		continue
+	end
 	if abilitySoundStart then
 		local sound = abilitySounds:FindFirstChild(abilitySoundStart) :: Sound
 		local soundClone = sound:Clone()
-		soundClone.Parent = slapPrefab
+		soundClone.Parent = handle
 		soundClone:SetAttribute("PlayOnUse", true)
 	end
 	if abilitySoundEnd then
 		local sound = abilitySounds:FindFirstChild(abilitySoundEnd) :: Sound
 		local soundClone = sound:Clone()
-		soundClone.Parent = slapPrefab
+		soundClone.Parent = handle
 		soundClone:SetAttribute("PlayOnUse", false)
 	end
+	local slapSoundClone = slapSound:Clone()
+	slapSoundClone.Parent = handle
 end
 
 for _, slipPart in ipairs(game:GetService("CollectionService"):GetTagged("Slippery")) do

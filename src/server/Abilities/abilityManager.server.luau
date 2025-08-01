@@ -58,7 +58,7 @@ local function getStartEndSound(tool, char: Model)
 		return
 	end
 
-	for _, child in ipairs(tool:GetChildren()) do
+	for _, child in ipairs(tool.Handle:GetChildren()) do
 		if child:IsA("Sound") then
 			table.insert(sounds, child)
 		end
@@ -69,12 +69,12 @@ local function getStartEndSound(tool, char: Model)
 
 		if playOnUse == true then
 			local soundClone = sound:Clone()
-			soundClone.Parent = char
+			soundClone.Parent = char.PrimaryPart
 			startSound = soundClone
 		end
 		if playOnUse == false then
 			local soundClone = sound:Clone()
-			soundClone.Parent = char
+			soundClone.Parent = char.PrimaryPart
 			endSound = soundClone
 		end
 	end

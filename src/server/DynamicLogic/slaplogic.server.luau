@@ -40,7 +40,7 @@ tool.Activated:Connect(function()
 	end
 
 	if tool.PrimaryPart then
-		local sound = tool.PrimaryPart:FindFirstChildOfClass("Sound")
+		local sound = tool.PrimaryPart:FindFirstChild("Slap Sound Effect")
 		if sound then
 			sound:Play()
 		end
