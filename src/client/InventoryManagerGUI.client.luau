@@ -319,6 +319,7 @@ end
 function setStateOfSlotUI(state, slotUI: Frame, tool)
 	local bg = slotUI:FindFirstChild("Bg") :: Frame
 	local stats = slotUI:FindFirstChild("Stats") :: Frame
+	local SlotNrGUI = stats:FindFirstChild("Name"):FindFirstChild("SlotNr"):FindFirstChildOfClass("TextLabel")
 	local img = slotUI:FindFirstChild("Img") :: ImageLabel
 	local button = bg:FindFirstChild("EquipButton") :: ImageButton
 	local gradient = bg:FindFirstChildOfClass("UIGradient")
@@ -346,6 +347,8 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 	stats.Visible = config.visible.stats
 	button.Visible = config.visible.button
 	img.Visible = config.visible.img
+
+	SlotNrGUI.Text = slotNumber
 
 	-- Apply gradient
 	if config.useRarityGradient and rarity and rarityColors[rarity] then
