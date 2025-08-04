@@ -1,5 +1,6 @@
 local Player = game:GetService("Players").LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local createTweenFunctions = require(script.Parent.createTweenFunctions)
 local popupPrefab = ReplicatedStorage:WaitForChild("UI"):WaitForChild("Popup")
 local outerPopupHolder = Player:WaitForChild("PlayerGui")
 	:WaitForChild("ScreenGui")
@@ -16,6 +17,8 @@ local function InitPopups()
 	local popupCloneText = popupClone:FindFirstChildOfClass("TextLabel")
 
 	popupClone.Parent = outerPopupHolder
+	local elasticGrow, elasticShrink =
+		createTweenFunctions.Elastic(popupClone, 0.2, 0.2, popupClone.Size, UDim2.new(0, 0, 0, 0), true)
 	popupClone.Visible = false
 
 	popupParent.Parent = popupClone
@@ -23,9 +26,13 @@ local function InitPopups()
 	popupParent.Changed:Connect(function()
 		if popupParent.Value > 0 then
 			popupClone.Visible = true
+			elasticGrow:Play()
 			popupCloneText.Text = popupParent.Value
 		else
-			popupClone.Visible = false
+			elasticShrink:Play()
+			elasticShrink.Completed:Connect(function()
+				popupClone.Visible = false
+			end)
 		end
 	end)
 end
@@ -36,6 +43,8 @@ function popups.AddNewPopuppable(frameToHavePopup: Frame): IntValue
 	local popupCloneText = popupClone:FindFirstChildOfClass("TextLabel")
 
 	popupClone.Parent = frameToHavePopup
+	local elasticGrow, elasticShrink =
+		createTweenFunctions.Elastic(popupClone, 0.2, 0.2, popupClone.Size, UDim2.new(0, 0, 0, 0), true)
 	popupClone.Visible = false
 	local popupCount = Instance.new("IntValue")
 	popupCount.Parent = popupClone
@@ -44,9 +53,13 @@ function popups.AddNewPopuppable(frameToHavePopup: Frame): IntValue
 	popupCount.Changed:Connect(function()
 		if popupCount.Value > 0 then
 			popupClone.Visible = true
+			elasticGrow:Play()
 			popupCloneText.Text = popupCount.Value
 		else
-			popupClone.Visible = false
+			elasticShrink:Play()
+			elasticShrink.Completed:Connect(function()
+				popupClone.Visible = false
+			end)
 		end
 
 		local acc = 0
