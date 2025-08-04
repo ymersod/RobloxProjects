@@ -17,6 +17,7 @@ local gachaGUI: Frame = screenGui:WaitForChild("Gacha")
 local dailyLoginRewards: Frame = screenGui:WaitForChild("DailyLoginRewards")
 local levelUpRewards: Frame = screenGui:WaitForChild("LevelUpRewards")
 local shopGUI: Frame = screenGui:WaitForChild("Shop")
+local settingsGUI: Frame = screenGui:WaitForChild("Settings")
 
 local accessParentGui: Frame = accessBarGui:WaitForChild("AccessParent")
 local accessOpenCloseParent: Frame = accessBarGui:WaitForChild("ParentOpenClose")
@@ -82,6 +83,23 @@ table.insert(accessGuisKvPs, {
 	AccessGuiGlow = openCloseShopGUI:WaitForChild("backglow"),
 })
 
+local openCloseSettingsGUI: Frame = accessParentGui:WaitForChild("Settings") :: Frame
+local openCloseSettingsButton = openCloseSettingsGUI:WaitForChild("OpenCloseButton") :: ImageButton
+local growRealSettingsGUI, shrinkRealSettingsGUI = createTweenFunctions.Elastic(
+	settingsGUI,
+	elasticGrowDur,
+	elasticShrinkDur,
+	settingsGUI.Size,
+	UDim2.new(0, 0, 0, 0),
+	true
+)
+table.insert(accessGuisKvPs, {
+	ToOpenGui = settingsGUI,
+	Shrink = shrinkRealSettingsGUI,
+	AccessGuiBg = openCloseSettingsGUI:WaitForChild("bg"),
+	AccessGuiGlow = openCloseSettingsGUI:WaitForChild("backglow"),
+})
+
 -- TWEEN SETUPS
 -- Pulses
 local scaleFactor = 0.05 -- 5% increase
@@ -92,6 +110,7 @@ local growTweenDaily, shrinkTweenDaily = createTweenFunctions.Pulse(openCloseDai
 local growTweenGacha, shrinkTweenGacha = createTweenFunctions.Pulse(openCloseGachaGUI, scaleFactor, duration)
 local growTweenLevelUp, shrinkTweenLevelUp = createTweenFunctions.Pulse(openCloseLevelUpGUI, scaleFactor, duration)
 local growTweenShop, shrinkTweenShop = createTweenFunctions.Pulse(openCloseShopGUI, scaleFactor, duration)
+local growTweenSettings, shrinkTweenSettings = createTweenFunctions.Pulse(openCloseSettingsGUI, scaleFactor, duration)
 
 -- Go in out
 local shopIn, shopOut =
@@ -114,6 +133,11 @@ local rollIn, rollOut =
 local shrinkRoll = createTweenFunctions.Shrink2(openCloseGachaGUI, 0.2, UDim2.new(0, 0, 0, 0))
 local growRoll = createTweenFunctions.Grow2(openCloseGachaGUI, 0.2, openCloseGachaGUI.Size)
 
+local settingsIn, settingsOut =
+	createTweenFunctions.MoveInOut(openCloseSettingsGUI, 0.2, openCloseSettingsGUI.Position, openCloseGui.Position)
+local shrinkSettings = createTweenFunctions.Shrink2(openCloseSettingsGUI, 0.2, UDim2.new(0, 0, 0, 0))
+local growSettings = createTweenFunctions.Grow2(openCloseSettingsGUI, 0.2, openCloseSettingsGUI.Size)
+
 local tweensOpen = {
 	shopOut,
 	growShop,
@@ -123,6 +147,8 @@ local tweensOpen = {
 	growLevel,
 	rollOut,
 	growRoll,
+	settingsOut,
+	growSettings,
 }
 local tweensClose = {
 	shopIn,
@@ -133,6 +159,8 @@ local tweensClose = {
 	shrinkLevel,
 	rollIn,
 	shrinkRoll,
+	settingsIn,
+	shrinkSettings,
 }
 
 local function playTweensAndWait(tweens: { Tween }, onComplete: () -> ())
@@ -256,6 +284,16 @@ handleOpenCloseAccessGUIS(
 	growTweenShop,
 	shrinkTweenShop,
 	shopGUI,
+	true
+)
+
+handleOpenCloseAccessGUIS(
+	openCloseSettingsButton,
+	growRealSettingsGUI,
+	shrinkRealSettingsGUI,
+	growTweenSettings,
+	shrinkTweenSettings,
+	settingsGUI,
 	true
 )
 
