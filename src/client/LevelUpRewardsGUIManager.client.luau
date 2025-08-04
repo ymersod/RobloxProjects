@@ -165,6 +165,7 @@ function init()
 			local rewardTable = levelUpRewards[count]
 			local item = itemParent:FindFirstChildOfClass("Frame")
 
+			local rewardLevel: TextLabel = item:WaitForChild("RewardLevel")
 			local rewardIcon: ImageLabel = item:WaitForChild("Reward"):WaitForChild("RewardType")
 			local rewardAmount: TextLabel = item:WaitForChild("Reward"):WaitForChild("RewardAmount")
 			local stars: { Frame } = item:WaitForChild("Stars"):GetChildren()
@@ -177,6 +178,7 @@ function init()
 				end
 			end
 
+			rewardLevel.Text = "LVL: " .. rewardTable.level
 			rewardIcon.Image = rewardTypeIcons[rewardTable.rewardType]
 			rewardAmount.Text = rewardTable.Amount
 
