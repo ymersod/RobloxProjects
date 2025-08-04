@@ -1,5 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
+
+local VolumePersistenceExchangeEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("VolumePersistenceExchange")
+
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local sounds = require(ReplicatedStorage.Shared.ClientServerModuleScripts.sounds)
 local volumeMixerFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.volumeMixerFunctions)
@@ -72,6 +75,8 @@ local function SetupSlider(SliderParent: Frame, slider: Frame, handle: ImageButt
 	handle.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = false
+			print("saving volume setting")
+			VolumePersistenceExchangeEvent:FireServer(volumeMixer.GetVolumeSettingsPersistenceString())
 		end
 	end)
 
@@ -88,12 +93,14 @@ local function SetupSlider(SliderParent: Frame, slider: Frame, handle: ImageButt
 	end)
 end
 
+local sliders: {{parent:Frame,slider:ImageButton}} = {}
 for _, sliderParent in ipairs(SliderParents) do
 	if not sliderParent:IsA("Frame") then
 		continue
 	end
 	local sliderFill = sliderParent:WaitForChild("SliderBg") :: Frame
 	local sliderButton = sliderFill:WaitForChild("SliderHandle") :: ImageButton
+	table.insert(sliders,{ parent = sliderFill, slider = sliderButton})
 
 	SetupSlider(sliderParent, sliderFill, sliderButton)
 end
@@ -104,4 +111,19 @@ closeButton.MouseButton1Click:Connect(function()
 	shrinkTween.Completed:Connect(function()
 		settings.Visible = false
 	end)
+end)
+
+VolumePersistenceExchangeEvent.OnClientEvent:Connect(function(volumeSettingsPersistenceString)
+	volumeMixer.LoadVolumeSettings(volumeSettingsPersistenceString)
+	for i, slider in ipairs(sliders) do
+		if slider.parent.Parent:GetAttribute("Volumes") == volumes.General then
+			slider.slider.Position = UDim2.new(volumeMixer.GeneralVolume, 0, 0.5, 0)
+		elseif slider.parent.Parent:GetAttribute("Volumes") == volumes.Music then
+			slider.slider.Position = UDim2.new(volumeMixer.MusicVolume, 0, 0.5, 0)
+		elseif slider.parent.Parent:GetAttribute("Volumes") == volumes.UI then
+			slider.slider.Position = UDim2.new(volumeMixer.UIVolume, 0, 0.5, 0)
+		elseif slider.parent.Parent:GetAttribute("Volumes") == volumes.SFX then
+			slider.slider.Position = UDim2.new(volumeMixer.FXVolume, 0, 0.5, 0)
+		end
+	end
 end)

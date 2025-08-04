@@ -34,6 +34,10 @@ type VolumeMixer = {
 	SetUIVolume: (number) -> (),
 	--- Sets the volume of world sound effects, the value should always be between 0 and 1
 	SetFXVolume: (number) -> (),
+	--- Returns the volume settings a CSV string
+	GetVolumeSettingsPersistenceString: () -> string,
+	--- Sets the volume of all types according to the provided CSV string
+	LoadVolumeSettings: (string) -> ()
 }
 
 --- Returns a mixer for setting volume values, should only be called from a client script
@@ -134,6 +138,20 @@ function volumeMixerFunction.new(): VolumeMixer
 		obj.FXVolume = number
 		for sound, baseVol in pairs(obj.sounds.fxSoundBaseVolume) do
 			sound.Volume = baseVol * obj.FXVolume * obj.GeneralVolume
+		end
+	end
+
+	function obj.GetVolumeSettingsPersistenceString()
+		return string.format("%.2f;%.2f;%.2f;%.2f", obj.GeneralVolume, obj.MusicVolume, obj.UIVolume, obj.FXVolume)
+	end
+
+	function obj.LoadVolumeSettings(persistenceString:string)
+		local values = persistenceString:split(";")
+		if #values == 4 then
+			obj.SetGeneralVolume(tonumber(values[1]) or obj.GeneralVolume)
+			obj.SetMusicVolume(tonumber(values[2]) or obj.MusicVolume)
+			obj.SetUIVolume(tonumber(values[3]) or obj.UIVolume)
+			obj.SetFXVolume(tonumber(values[4]) or obj.FXVolume)
 		end
 	end
 
