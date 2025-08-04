@@ -2,6 +2,9 @@ local players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
+
+local bombSpawnScript = ServerScriptService:WaitForChild("Server"):WaitForChild("bombSpawn")
+
 local killModule = require(
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("killPlayerServer")
 )
@@ -11,7 +14,6 @@ local hideUIEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Event
 
 local pushBackClientEvent =
 	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("PushBackClient")
-local ServerScriptService = game:GetService("ServerScriptService")
 local dailyRewardScript =
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("dailyReward")
 
@@ -236,6 +238,8 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 			inventoryFuncs.IncrementSlotSpace(player)
 		elseif command.command == "/fly" then
 			flyToggleEvent:FireClient(player)
+		elseif command.command == "/togglebombspawn" then
+			bombSpawnScript:SetAttribute("disabled",not bombSpawnScript:GetAttribute("disabled"))
 		end
 	end)
 end)
