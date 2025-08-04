@@ -230,6 +230,12 @@ task.spawn(function()
 	while true do
 		local curTime = os.time()
 
+		if script:GetAttribute("disabled") then
+			print("bomb spawning disabled")
+			task.wait(1)
+			continue
+		end
+
 		for _, bomb in ipairs(bombCds) do
 			local remainingTime = bomb.cooldown - (curTime - bomb.lastSpawnTime)
 			local isBombActive = bomb.bombSpawner:FindFirstChild(itemSphere.Name)
