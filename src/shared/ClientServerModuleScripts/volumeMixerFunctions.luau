@@ -18,6 +18,14 @@ type internalVolumeMixer = {
 	SetFXVolume:(number)->()
 }
 type VolumeMixer = {
+	--- Volume variable for changing the volume of all sounds, DO NOT WRITE ON THIS VARIABLE
+	GeneralVolume:number,
+	--- Volume variable for music sounds, DO NOT WRITE ON THIS VARIABLE
+	MusicVolume:number,
+	--- Volume variable for UI sounds, DO NOT WRITE ON THIS VARIABLE
+	UIVolume:number,
+	--- Volume variable for in game effect sounds, DO NOT WRITE ON THIS VARIABLE
+	FXVolume:number,
 	--- Sets the general volume, the value should always be between 0 and 1
 	SetGeneralVolume:(number)->(),
 	--- Sets the volume of music, the value should always be between 0 and 1

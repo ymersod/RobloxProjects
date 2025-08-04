@@ -7,6 +7,7 @@ local killModule = require(
 )
 
 local flyToggleEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("FlyToggleClient")
+local hideUIEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("HideUIClient")
 
 local pushBackClientEvent =
 	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("PushBackClient")
@@ -88,6 +89,8 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 
 		if command.command == "/kill" then
 			killModule.killPlayer(player)
+		elseif command.command == "/hideui" then
+			hideUIEvent:FireClient(player)
 		elseif not playerIdIsWhitelisted(player.UserId) then
 			warn("Player with id " .. player.UserId .. " attempted  to call command: " .. command.command)
 		elseif command.command == "/ragdoll" then
