@@ -154,6 +154,12 @@ game.Players.PlayerAdded:Connect(function(player)
 	SetupStarterTools(player)
 end)
 
+game.Players.PlayerRemoving:Connect(function(player)
+	compositeIntValueMultiton.removeCompositeIntValue(player.UserId .. "ExpBoost")
+	compositeIntValueMultiton.removeCompositeIntValue(player.UserId .. "SpeedValue")
+	compositeIntValueMultiton.removeCompositeIntValue(player.UserId .. "JumpValue")
+end)
+
 -- SETUP SERVER SIDE PLAYER CHARACTER
 local PhysicsService = game:GetService("PhysicsService")
 game.Players.PlayerAdded:Connect(function(player: Player)
