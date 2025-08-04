@@ -1,6 +1,4 @@
-local players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
-local SoundService = game:GetService("SoundService")
 local delayUtil = require(ServerScriptService.Server.ServerModuleScripts.delayUtil)
 local bindableEvents =
 	ServerScriptService:WaitForChild("Server"):WaitForChild("Abilities"):WaitForChild("BindableEvents")
@@ -9,12 +7,16 @@ local jumpBoostBind = bindableEvents:WaitForChild("jumpBoostBind")
 local speedJumpBoostBind = bindableEvents:WaitForChild("speedJumpBoostBind")
 local slapBind = bindableEvents:WaitForChild("slapBind")
 
-local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
+local compTypes = require(ServerScriptService.Server.ServerModuleScripts.CompIntValTypes)
+local compUtils = require(ServerScriptService.Server.ServerModuleScripts.CompIntValUtils)
 local ragdollUtils = require(ServerScriptService.Server.ServerModuleScripts.ragdollUtils)
 
-local function handleBoost(player: Player, abilityVals: Instance, slotToolId: string, boostType: "Speed" | "Jump")
-	local playerUserId = player.UserId
-
+local function handleBoost(
+	player: Player,
+	abilityVals: Instance,
+	slotToolId: string,
+	boostType: compTypes.CompIntIdSuffixes
+)
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if not humanoid then
@@ -29,21 +31,19 @@ local function handleBoost(player: Player, abilityVals: Instance, slotToolId: st
 		return
 	end
 
-	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(playerUserId .. boostType .. "Value")
 	local modifierName = slotToolId .. boostType .. "Amp"
-
-	compIntVal += { Name = modifierName, Value = amp }
+	local modifier: compTypes.CompModifier = { Name = modifierName, Value = amp }
+	compUtils.applyModifier(player, boostType, modifier)
 
 	delayUtil.Delay(timer, function()
-		local newPlayer = players:GetPlayerByUserId(playerUserId)
-		local newCharacter = newPlayer and newPlayer.Character
+		local newCharacter = player and player.Character
 		local newHumanoid = newCharacter and newCharacter:FindFirstChildOfClass("Humanoid")
 
 		if newHumanoid and newHumanoid:IsDescendantOf(game) then
-			compIntVal.removeModifier(modifierName)
+			compUtils.removeModifier(player, boostType, modifier)
 		else
-			newPlayer.CharacterAdded:Once(function()
-				compIntVal.removeModifier(modifierName)
+			player.CharacterAdded:Once(function()
+				compUtils.removeModifier(player, boostType, modifier)
 			end)
 		end
 	end)
@@ -103,22 +103,22 @@ speedJumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance,
 	local timer = abilityVals:GetAttribute("boostTime") :: number?
 
 	handleSound(timer, tool, player)
-	handleBoost(player, abilityVals, slotToolId, "Speed")
-	handleBoost(player, abilityVals, slotToolId, "Jump")
+	handleBoost(player, abilityVals, slotToolId, "SpeedValue")
+	handleBoost(player, abilityVals, slotToolId, "JumpValue")
 end)
 
 speedBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slotToolId: string, tool: Tool)
 	local timer = abilityVals:GetAttribute("boostTime") :: number?
 
 	handleSound(timer, tool, player)
-	handleBoost(player, abilityVals, slotToolId, "Speed")
+	handleBoost(player, abilityVals, slotToolId, "SpeedValue")
 end)
 
 jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slotToolId: string, tool: Tool)
 	local timer = abilityVals:GetAttribute("boostTime") :: number?
 
 	handleSound(timer, tool, player)
-	handleBoost(player, abilityVals, slotToolId, "Jump")
+	handleBoost(player, abilityVals, slotToolId, "JumpValue")
 end)
 
 slapBind.Event:Connect(function(targetPlayer, direction)

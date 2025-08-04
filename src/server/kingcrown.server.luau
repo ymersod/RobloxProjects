@@ -4,15 +4,12 @@ local serverStorage = game:GetService("ServerStorage")
 local collectionService = game:GetService("CollectionService")
 
 local ServerScriptService = game:GetService("ServerScriptService")
-local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
+local types = require(ServerScriptService.Server.ServerModuleScripts.CompIntValTypes)
+local compUtils = require(ServerScriptService.Server.ServerModuleScripts.CompIntValUtils)
 
 local hatsFolder = serverStorage:WaitForChild("Hats"):WaitForChild("KingCrowns")
 
 local rankRequirementId = "RANK_REQUIREMENT"
-
-local suffixBoostExpId = "ExpBoost"
-local suffixBoostSpeedId = "SpeedValue"
-local suffixBoostJumpId = "JumpValue"
 
 local prefixCrownSpeedBoostName = "KingSpeedBoost"
 local prefixCrownJumpBoostName = "KingJumpBoost"
@@ -26,9 +23,9 @@ type Boost = {
 type CrownEntry = {
 	itemPrefab: Instance,
 	item: Instance?,
-	speedBoost: Boost,
-	jumpBoost: Boost,
-	expBoost: Boost,
+	speedBoost: types.CompModifier,
+	jumpBoost: types.CompModifier,
+	expBoost: types.CompModifier,
 	currentPlayer: Player?,
 	enabled: boolean,
 }
@@ -97,42 +94,25 @@ local function getTopPlayersWithScore()
 	return topPlayers
 end
 
-local function applyModifier(crownEntry: CrownEntry)
-	if not crownEntry.currentPlayer then
+local function applyModifiers(crownEntry: CrownEntry)
+	local player = crownEntry.currentPlayer
+	if not player then
 		return
 	end
-	local userId = crownEntry.currentPlayer.UserId
-	local expCompIntValue = compositeIntValueMultiton.getCompositeIntValue(userId .. suffixBoostExpId)
-	if not expCompIntValue.containsMod(crownEntry.expBoost.Name) then
-		expCompIntValue += crownEntry.expBoost
-	end
-	local speedCompIntValue = compositeIntValueMultiton.getCompositeIntValue(userId .. suffixBoostSpeedId)
-	if not speedCompIntValue.containsMod(crownEntry.speedBoost.Name) then
-		speedCompIntValue += crownEntry.speedBoost
-	end
-	local jumpCompIntValue = compositeIntValueMultiton.getCompositeIntValue(userId .. suffixBoostJumpId)
-	if not jumpCompIntValue.containsMod(crownEntry.jumpBoost.Name) then
-		jumpCompIntValue += crownEntry.jumpBoost
-	end
+	compUtils.applyModifier(player, "ExpBoost", crownEntry.expBoost)
+	compUtils.applyModifier(player, "SpeedValue", crownEntry.speedBoost)
+	compUtils.applyModifier(player, "JumpValue", crownEntry.jumpBoost)
 end
 
-local function removeModifier(crownEntry: CrownEntry)
+local function removeModifiers(crownEntry: CrownEntry)
+	local player = crownEntry.currentPlayer
 	if not crownEntry.currentPlayer then
 		return
 	end
-	local userId = crownEntry.currentPlayer.UserId
-	local expCompIntValue = compositeIntValueMultiton.getCompositeIntValue(userId .. suffixBoostExpId)
-	if expCompIntValue.containsMod(crownEntry.expBoost.Name) then
-		expCompIntValue.removeModifier(crownEntry.expBoost.Name)
-	end
-	local speedCompIntValue = compositeIntValueMultiton.getCompositeIntValue(userId .. suffixBoostSpeedId)
-	if speedCompIntValue.containsMod(crownEntry.speedBoost.Name) then
-		speedCompIntValue.removeModifier(crownEntry.speedBoost.Name)
-	end
-	local jumpCompIntValue = compositeIntValueMultiton.getCompositeIntValue(userId .. suffixBoostJumpId)
-	if jumpCompIntValue.containsMod(crownEntry.jumpBoost.Name) then
-		jumpCompIntValue.removeModifier(crownEntry.jumpBoost.Name)
-	end
+
+	compUtils.removeModifier(player, "ExpBoost", crownEntry.expBoost)
+	compUtils.removeModifier(player, "SpeedValue", crownEntry.speedBoost)
+	compUtils.removeModifier(player, "JumpValue", crownEntry.jumpBoost)
 end
 
 local function positionCrownOverPlayer(crown, char: Model)
@@ -211,9 +191,9 @@ runner.Heartbeat:Connect(function()
 
 		-- Skip if same player: modifier functions handle nil internally.
 		if player ~= crownEntry.currentPlayer then
-			removeModifier(crownEntry)
+			removeModifiers(crownEntry)
 			crownEntry.currentPlayer = player
-			applyModifier(crownEntry)
+			applyModifiers(crownEntry)
 		end
 
 		applyCrownToPlayer(crownEntry)

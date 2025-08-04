@@ -67,7 +67,7 @@ local function parseCommand(string: string): { command: string, args: { string }
 	return { command = parts[1], args = subSet(parts, 2) }
 end
 
-local COMMAND_WHITE_LIST: { number } = { 8394946161, 8591486140, 8637529946 }
+local COMMAND_WHITE_LIST: { number } = { 8394946161, 8591486140, 8637529946, 8468299314 }
 
 local function playerIdIsWhitelisted(no: number)
 	if no < 0 then
@@ -239,7 +239,7 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 		elseif command.command == "/fly" then
 			flyToggleEvent:FireClient(player)
 		elseif command.command == "/togglebombspawn" then
-			bombSpawnScript:SetAttribute("disabled",not bombSpawnScript:GetAttribute("disabled"))
+			bombSpawnScript:SetAttribute("disabled", not bombSpawnScript:GetAttribute("disabled"))
 		end
 	end)
 end)

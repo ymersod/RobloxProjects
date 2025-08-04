@@ -68,10 +68,14 @@ local CompositeIntValueMetaTable = {
 	end,
 }
 
+type TableEntry = { Name: string, Value: number }
+
+type TableRemove = { EntryId: string }
+
 type CompositeIntValueType = {
 	Value: number,
 	_mode: "sum" | "mul",
-	_originTable: { { Name: string, Value: number } },
+	_originTable: { TableEntry },
 	_boundTarget: IntValue,
 	setBoundTarget: (IntValue) -> (),
 	containsMod: (string) -> boolean,
@@ -80,31 +84,26 @@ type CompositeIntValueType = {
 	__sub: (CompositeIntValueType, { Name: string, Value: number }) -> CompositeIntValueType,
 }
 
+export type QueueEntry = {
+	type: "add" | "remove",
+	data: TableEntry,
+}
+
 function CompositeIntValue.new(mode: "sum" | "mul", value: number?, boundTarget: IntValue?): CompositeIntValueType
 	local obj = {}
 	obj._mode = mode
+	obj._isProcessing = false
+	obj._isAdding = false
+	obj._originTable = {}
 
 	local removeQueue = {}
-	local function removeFromQueue()
-		if obj._isRemoving or #removeQueue == 0 then
-			return
-		end
-		obj._isRemoving = true
+	local processQueue: { QueueEntry } = {}
 
-		while #removeQueue > 0 do
-			local key = table.remove(removeQueue, 1)
-
-			for i, v in ipairs(obj._originTable) do
-				if v.Name == key then
-					table.remove(obj._originTable, i)
-					break
-				end
+	local function getIndexOnTable(name: string)
+		for i, v in ipairs(obj._originTable) do
+			if v.Name == name then
+				return i
 			end
-		end
-
-		obj._isRemoving = false
-		if obj._boundTarget then
-			(obj._boundTarget :: IntValue).Value = obj.Value
 		end
 	end
 
@@ -112,7 +111,6 @@ function CompositeIntValue.new(mode: "sum" | "mul", value: number?, boundTarget:
 		error("mul mode requires an initial value")
 	end
 
-	obj._originTable = {}
 	setmetatable(obj, CompositeIntValueMetaTable)
 	if value and (value > 0 or value < 0) then
 		obj._originTable[1] = { Name = "init", Value = value }
@@ -134,9 +132,42 @@ function CompositeIntValue.new(mode: "sum" | "mul", value: number?, boundTarget:
 		return false
 	end
 
-	function obj.removeModifier(key)
-		table.insert(removeQueue, key)
-		removeFromQueue()
+	local function processQueueEntries()
+		if obj._isProcessing or #processQueue == 0 then
+			return
+		end
+		obj._isProcessing = true
+
+		while #processQueue > 0 do
+			local entry = table.remove(processQueue, 1)
+			local index = getIndexOnTable(entry.data.Name)
+			if entry.type == "add" then
+				if not index then
+					table.insert(obj._originTable, entry.data)
+				end
+			elseif entry.type == "remove" then
+				if index then
+					table.remove(obj._originTable, index)
+				end
+			end
+		end
+		obj._isProcessing = false
+
+		if obj._boundTarget then
+			(obj._boundTarget :: IntValue).Value = obj.Value
+		end
+	end
+
+	function obj.removeModifier(key: string)
+		local entry: QueueEntry = { type = "remove", data = { Name = key, Value = 0 } }
+		table.insert(processQueue, entry)
+		processQueueEntries()
+	end
+
+	function obj.addModifier(modifier: TableEntry)
+		local entry: QueueEntry = { type = "add", data = modifier }
+		table.insert(processQueue, entry)
+		processQueueEntries()
 	end
 
 	function obj.resetModifiers()

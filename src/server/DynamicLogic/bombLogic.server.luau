@@ -74,35 +74,26 @@ countdownText.Text = FUSE_TIME_SECOND
 countdownText.Parent = billboardGui
 
 local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
+local types = require(ServerScriptService.Server.ServerModuleScripts.CompIntValTypes)
+local compUtils = require(ServerScriptService.Server.ServerModuleScripts.CompIntValUtils)
 
-local jumpAmp = {
+local jumpAmp: types.CompModifier = {
 	Name = "BombJumpAmp",
 	Value = AMP_JUMP_PERCENT,
 }
-local speedAmp = {
+local speedAmp: types.CompModifier = {
 	Name = "BombSpeedAmp",
 	Value = AMP_SPEED_PERCENT,
 }
 
-local jumpValueKey = "JumpValue"
-local speedValueKey = "SpeedValue"
-
-local function getCompValues(player: Player)
-	local compIntValJump = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. jumpValueKey)
-	local compIntValSpeed = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. speedValueKey)
-	return { jump = compIntValJump, speed = compIntValSpeed }
-end
-
 local function removeBombBoosts(player: Player)
-	local compVals = getCompValues(player)
-	compVals.jump.removeModifier(jumpAmp.Name)
-	compVals.speed.removeModifier(speedAmp.Name)
+	compUtils.removeModifier(player, "JumpValue", jumpAmp)
+	compUtils.removeModifier(player, "SpeedValue", speedAmp)
 end
 
 local function setBombBoosts(player: Player)
-	local compVals = getCompValues(player)
-	compVals.jump += jumpAmp
-	compVals.speed += speedAmp
+	compUtils.applyModifier(player, "JumpValue", jumpAmp)
+	compUtils.applyModifier(player, "SpeedValue", speedAmp)
 end
 
 local function playExplosion(position: Vector3)
