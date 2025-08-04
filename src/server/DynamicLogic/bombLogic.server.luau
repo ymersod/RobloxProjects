@@ -73,7 +73,6 @@ countdownText.Font = Enum.Font.FredokaOne
 countdownText.Text = FUSE_TIME_SECOND
 countdownText.Parent = billboardGui
 
-local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
 local types = require(ServerScriptService.Server.ServerModuleScripts.CompIntValTypes)
 local compUtils = require(ServerScriptService.Server.ServerModuleScripts.CompIntValUtils)
 
