@@ -20,6 +20,12 @@ enums.Login = {
 	ConcurrentLogin = "ConcurrentLogin",
 }
 
+enums.abilityTypes = {
+	slimy = "slimy",
+	spawnPoop = "spawnPoop",
+	hell = "hell",
+}
+
 enums.Colors = {
 	ActiveToolBgGradient = {
 		Start = Color3.fromRGB(10, 147, 150),

@@ -18,6 +18,7 @@ end
 
 function Utils.applyModifier(player, suffix: types.CompIntIdSuffixes, boost: types.CompModifier)
 	local compIntValue = compositeIntValueMultiton.getCompositeIntValue(Utils.makeKey(player, suffix))
+	print(compIntValue)
 	if compIntValue and not compIntValue.containsMod(boost.Name) then
 		compIntValue.addModifier(boost)
 	end

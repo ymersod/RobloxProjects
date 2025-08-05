@@ -15,6 +15,7 @@ local uiButton: ImageButton = abilityGUI:WaitForChild("Center"):WaitForChild("Ac
 local titleText: TextLabel = abilityGUI:WaitForChild("Center"):WaitForChild("AbilityName")
 local backGlow: ImageLabel = abilityGUI:WaitForChild("Center"):WaitForChild("Backglow")
 local icon: ImageLabel = abilityGUI:WaitForChild("Center"):WaitForChild("ImageLabel")
+local defaultImg = icon.Image
 local glow = uiButton:WaitForChild("glow") :: ImageLabel
 local center = abilityGUI:WaitForChild("Center") :: Frame
 local pressE: Frame = center:WaitForChild("PressIndicator")
@@ -23,8 +24,6 @@ local individualCdsFrame: Frame = abilityGUI:WaitForChild("IndividualCds")
 local defaultCd = individualCdsFrame:WaitForChild("cd") :: Frame
 local defaultCdClone = defaultCd:Clone()
 defaultCd:Destroy()
-
--- TODO: SHOULD USE ICONS PUT IN ABILITYVALS
 
 -- Tweens
 local SCALE_FACTOR = 0.75
@@ -46,6 +45,10 @@ local function createLocalCooldown(cd: number)
 	local coolDownGUI = newCd:WaitForChild("Cooldown")
 	local tweenGrowCD = coolDownGUI and createTweenFunctions.Grow(coolDownGUI, cd)
 	local text = newCd:WaitForChild("cdText") :: TextLabel
+	local localIcon = newCd:WaitForChild("Icon") :: ImageLabel
+	local iconRef = abilityValsT and abilityValsT:GetAttribute("AbilityIcon")
+
+	localIcon.Image = iconRef
 
 	newCd.BackgroundColor3 = enums.Colors.abilitiy.Inactive
 	newCd.Parent = individualCdsFrame
@@ -79,10 +82,23 @@ function setAbility(equippedTool: Tool?, isAdded: boolean?)
 	if equippedTool then
 		local abilityValsRef = equippedTool:FindFirstChild("AbilityVals")
 		local abilityEventRef = equippedTool:FindFirstChildOfClass("RemoteEvent")
+		local isPassive = abilityValsRef:GetAttribute("passiveType")
+
 		abilityValsT = abilityValsRef
 		abilityEvent = abilityEventRef
 		if isAdded and abilityValsT then
+			local iconRef = abilityValsT:GetAttribute("AbilityIcon")
+			icon.Image = iconRef
 			local chargeTime = abilityValsT:GetAttribute("chargeTimeSeconds")
+
+			if isPassive and abilityEvent then
+				local curSaveSlot = equippedTool:GetAttribute("SaveSlot")
+				local toolId = equippedTool:GetAttribute("ToolId")
+				if toolId and curSaveSlot then
+					abilityEvent:FireServer(abilityValsT, curSaveSlot .. "" .. toolId)
+				end
+			end
+
 			if chargeTime and chargeTime > 0 then
 				local entry = {
 					canActivate = true,
@@ -96,6 +112,7 @@ function setAbility(equippedTool: Tool?, isAdded: boolean?)
 	else
 		abilityValsT = nil
 		abilityEvent = nil
+		icon.Image = defaultImg
 	end
 	-- canActivate = true
 end
@@ -170,6 +187,12 @@ end)
 
 local function activateAbility(actionName, inputState, inputObject)
 	if abilityValsT and abilityEvent then
+		local isPassive = abilityValsT:GetAttribute("passiveType")
+
+		if isPassive then
+			return
+		end
+
 		local curSaveSlot = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("SaveSlot")
 		if not curSaveSlot then
 			curSaveSlot = " "

@@ -2,6 +2,9 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local tool = script.Parent
 local ability = tool:FindFirstChild("AbilityVals")
 local abilityName = ability and ability:GetAttribute("ability")
+if not abilityName then
+	return
+end
 local bind = ServerScriptService:WaitForChild("Server")
 	:WaitForChild("Abilities")
 	:WaitForChild("BindableEvents")

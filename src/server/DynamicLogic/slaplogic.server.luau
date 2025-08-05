@@ -113,7 +113,8 @@ tool.Activated:Connect(function()
 			end
 			local attackerHRP = tool.Parent:FindFirstChild("HumanoidRootPart")
 			local hitDirection = (shapeCastResults.Instance.Position - attackerHRP.Position).Unit * POWER_MULT
-			slapBind:Fire(targetPlayer, hitDirection)
+			local ownerAbilitVals = tool:FindFirstChild("AbilityVals") :: StringValue?
+			slapBind:Fire(targetPlayer, hitDirection, ownerAbilitVals)
 		end
 	end
 end)
