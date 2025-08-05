@@ -6,6 +6,7 @@ local ticketStore = DataStoreService:GetDataStore("PlayerTickets")
 local dailyRewardStore = DataStoreService:GetDataStore("DailyRewards")
 local levelUpRewardStore = DataStoreService:GetDataStore("LevelupRewards")
 local firstTimePlayerStore = DataStoreService:GetDataStore("FirstTimeLogin")
+local volumeSettingsStore = DataStoreService:GetDataStore("VolumeSettings")
 
 dataStoreManagementFunctions = {}
 
@@ -77,6 +78,179 @@ function dataStoreManagementFunctions.removePlayerFirstTimeLoginStore(playerId)
 		return { success = true, payload = "player " .. playerId .. " removed from firstTimePlayer" }
 	end
 	return { success = false, payload = err }
+end
+
+function dataStoreManagementFunctions.removePlayerVolumeSettingsStore(playerId)
+	local success, err = pcall(function()
+		return volumeSettingsStore:RemoveAsync(playerId)
+	end)
+	if success then
+		return { success = true, payload = "player " .. playerId .. " removed from VolumeSettings" }
+	end
+	return { success = false, payload = err }
+end
+
+function dataStoreManagementFunctions.clearExpStore()
+	local success, keys = pcall(function()
+		return expStore:ListKeysAsync()
+	end)
+	if success then
+		for i, k in ipairs(keys:GetCurrentPage()) do
+			local success2, err = pcall(function()
+				return expStore:RemoveAsync(k.KeyName)
+			end)
+			if not success2 then
+				return { success = false, payload = err }
+			end
+		end
+		return { success = true, payload = "expStore was cleared of keys" }
+	end
+	return { success = false, payload = "Something when wrong while searching for keys in ExpStore" }
+end
+
+function dataStoreManagementFunctions.clearInventoryStore()
+	local success, keys = pcall(function()
+		return inventoryStore:ListKeysAsync()
+	end)
+	if success then
+		for i, k in ipairs(keys:GetCurrentPage()) do
+			local success2, err = pcall(function()
+				return inventoryStore:RemoveAsync(k.KeyName)
+			end)
+			if not success2 then
+				return { success = false, payload = err }
+			end
+		end
+		return { success = true, payload = "InventoryStore was cleared of keys" }
+	end
+	return { success = false, payload = "Something when wrong while searching for keys in InventoryStore" }
+end
+
+function dataStoreManagementFunctions.clearTicketStore()
+	local success, keys = pcall(function()
+		return ticketStore:ListKeysAsync()
+	end)
+	if success then
+		for i, k in ipairs(keys:GetCurrentPage()) do
+			local success2, err = pcall(function()
+				return ticketStore:RemoveAsync(k.KeyName)
+			end)
+			if not success2 then
+				return { success = false, payload = err }
+			end
+		end
+		return { success = true, payload = "TicketStore was cleared of keys" }
+	end
+	return { success = false, payload = "Something when wrong while searching for keys in TicketStore" }
+end
+
+function dataStoreManagementFunctions.clearDailyRewardStore()
+	local success, keys = pcall(function()
+		return dailyRewardStore:ListKeysAsync()
+	end)
+	if success then
+		for i, k in ipairs(keys:GetCurrentPage()) do
+			local success2, err = pcall(function()
+				return dailyRewardStore:RemoveAsync(k.KeyName)
+			end)
+			if not success2 then
+				return { success = false, payload = err }
+			end
+		end
+		return { success = true, payload = "DailyRewardStore was cleared of keys" }
+	end
+	return { success = false, payload = "Something when wrong while searching for keys in DailyRewardStore" }
+end
+
+function dataStoreManagementFunctions.clearLevelupRewardStore()
+	local success, keys = pcall(function()
+		return levelUpRewardStore:ListKeysAsync()
+	end)
+	if success then
+		for i, k in ipairs(keys:GetCurrentPage()) do
+			local success2, err = pcall(function()
+				return levelUpRewardStore:RemoveAsync(k.KeyName)
+			end)
+			if not success2 then
+				return { success = false, payload = err }
+			end
+		end
+		return { success = true, payload = "LevelupRewardStore was cleared of keys" }
+	end
+	return { success = false, payload = "Something when wrong while searching for keys in LevelupRewardStore" }
+end
+
+function dataStoreManagementFunctions.clearFirstTimeLoginStore()
+	local success, keys = pcall(function()
+		return firstTimePlayerStore:ListKeysAsync()
+	end)
+	if success then
+		for i, k in ipairs(keys:GetCurrentPage()) do
+			local success2, err = pcall(function()
+				return firstTimePlayerStore:RemoveAsync(k.KeyName)
+			end)
+			if not success2 then
+				return { success = false, payload = err }
+			end
+		end
+		return { success = true, payload = "FirstTimeLoginStore was cleared of keys" }
+	end
+	return { success = false, payload = "Something when wrong while searching for keys in FirstTimeLoginStore" }
+end
+
+function dataStoreManagementFunctions.clearVolumeSettingsStore()
+	local success, keys = pcall(function()
+		return volumeSettingsStore:ListKeysAsync()
+	end)
+	if success then
+		for i, k in ipairs(keys:GetCurrentPage()) do
+			local success2, err = pcall(function()
+				return firstTimePlayerStore:RemoveAsync(k.KeyName)
+			end)
+			if not success2 then
+				return { success = false, payload = err }
+			end
+		end
+		return { success = true, payload = "VolumeSettingsStore was cleared of keys" }
+	end
+	return { success = false, payload = "Something when wrong while searching for keys in VolumeSettingsStore" }
+end
+
+function dataStoreManagementFunctions.clearAllKeysInDataStores()
+	local clearSuccessObj = dataStoreManagementFunctions.clearDailyRewardStore()
+	if not clearSuccessObj.success then
+		warn(clearSuccessObj.payload)
+	end
+
+	clearSuccessObj = dataStoreManagementFunctions.clearExpStore()
+	if not clearSuccessObj.success then
+		warn(clearSuccessObj.payload)
+	end
+
+	clearSuccessObj = dataStoreManagementFunctions.clearFirstTimeLoginStore()
+	if not clearSuccessObj.success then
+		warn(clearSuccessObj.payload)
+	end
+
+	clearSuccessObj = dataStoreManagementFunctions.clearInventoryStore()
+	if not clearSuccessObj.success then
+		warn(clearSuccessObj.payload)
+	end
+
+	clearSuccessObj = dataStoreManagementFunctions.clearLevelupRewardStore()
+	if not clearSuccessObj.success then
+		warn(clearSuccessObj.payload)
+	end
+
+	clearSuccessObj = dataStoreManagementFunctions.clearTicketStore()
+	if not clearSuccessObj.success then
+		warn(clearSuccessObj.payload)
+	end
+
+	clearSuccessObj = dataStoreManagementFunctions.clearVolumeSettingsStore()
+	if not clearSuccessObj.success then
+		warn(clearSuccessObj.payload)
+	end
 end
 
 return dataStoreManagementFunctions

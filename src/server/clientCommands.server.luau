@@ -184,7 +184,13 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 					local response = dataStoreDevManagementFunctions.removePlayerFirstTimeLoginStore(command.args[1])
 					print(response)
 				end
+				if #command.args == 1 or #command.args == 2 and command.args[2] == "volume" then
+					local response = dataStoreDevManagementFunctions.removePlayerVolumeSettingsStore(command.args[1])
+					print(response)
+				end
 			end
+		elseif command.command == "/cleardatastores" then
+			dataStoreDevManagementFunctions.clearAllKeysInDataStores()
 		elseif command.command == "/settickets" then
 			if #command.args >= 0 then
 				rollTickets.SetTickets(player.UserId, command.args[1])
