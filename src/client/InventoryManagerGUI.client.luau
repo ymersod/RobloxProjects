@@ -21,7 +21,7 @@ local nameTargetPrefab: Frame = statsTargetPrefab:WaitForChild("Name")
 local powerTargetPrefab: Frame = statsTargetPrefab:WaitForChild("Power")
 local rangeTargetPrefab: Frame = statsTargetPrefab:WaitForChild("Range")
 local speedTargetPrefab: Frame = statsTargetPrefab:WaitForChild("Speed")
-local iconTargetPrefab: ImageLabel = equippedSlapstylePrefab:WaitForChild("Img")
+local iconTargetPrefab = equippedSlapstylePrefab:WaitForChild("IconParent")
 
 local slotStateEnums = {
 	Locked = 0,
@@ -83,7 +83,7 @@ for _, child in ipairs(inventorySlotsParent:GetChildren()) do
 		local power: Frame = statsFrame:FindFirstChild("Power")
 		local range: Frame = statsFrame:FindFirstChild("Range")
 		local speed: Frame = statsFrame:FindFirstChild("Speed")
-		local icon: ImageLabel = slotUI:FindFirstChild("Img")
+		local icon: Frame = slotUI:FindFirstChild("IconParent")
 
 		local growBgTween = createTweenFunctions.Grow2(bg, 0.1, bgTargetPrefab.Size)
 		local shrinkBgTween = createTweenFunctions.Shrink2(bg, 0.1, bg.Size)
@@ -320,7 +320,7 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 	local bg = slotUI:FindFirstChild("Bg") :: Frame
 	local stats = slotUI:FindFirstChild("Stats") :: Frame
 	local SlotNrGUI = stats:FindFirstChild("Name"):FindFirstChild("SlotNr"):FindFirstChildOfClass("TextLabel")
-	local img = slotUI:FindFirstChild("Img") :: ImageLabel
+	local iconP = slotUI:FindFirstChild("IconParent") :: Frame
 	local button = bg:FindFirstChild("EquipButton") :: ImageButton
 	local gradient = bg:FindFirstChildOfClass("UIGradient")
 	local nameFrame = stats:WaitForChild("Name") :: Frame
@@ -346,7 +346,7 @@ function setStateOfSlotUI(state, slotUI: Frame, tool)
 	bg.Visible = config.visible.bg
 	stats.Visible = config.visible.stats
 	button.Visible = config.visible.button
-	img.Visible = config.visible.img
+	iconP.Visible = config.visible.img
 
 	SlotNrGUI.Text = slotNumber
 
@@ -403,13 +403,12 @@ function updateBackpackGUI()
 				end
 			end
 		end
-		if foundTool then
-			if not foundTool then
-				warn("No slot for tool found")
-				return
-			end
-
+		local invetoryIcon: Frame? = foundTool:FindFirstChildOfClass("ObjectValue").Value
+		if foundTool and invetoryIcon then
 			local equipButton = slotUI:FindFirstChild("Bg"):FindFirstChildOfClass("ImageButton")
+			local iconParent = slotUI:FindFirstChild("IconParent")
+			local iconClone = invetoryIcon:Clone()
+			iconClone.Parent = iconParent
 
 			local data = extractDataFromTool(foundTool)
 			local stats = slotUI:FindFirstChild("Stats") :: Frame
