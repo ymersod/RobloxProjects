@@ -403,12 +403,18 @@ function updateBackpackGUI()
 				end
 			end
 		end
-		local invetoryIcon: Frame? = foundTool:FindFirstChildOfClass("ObjectValue").Value
+		local invetoryIcon: Frame? = foundTool:FindFirstChild("InventoryIcon").Value
 		if foundTool and invetoryIcon then
 			local equipButton = slotUI:FindFirstChild("Bg"):FindFirstChildOfClass("ImageButton")
 			local iconParent = slotUI:FindFirstChild("IconParent")
-			local iconClone = invetoryIcon:Clone()
-			iconClone.Parent = iconParent
+
+			local curChild = iconParent:FindFirstChildOfClass("Frame")
+
+			if not curChild or curChild.Name ~= invetoryIcon.Name then
+				iconParent:ClearAllChildren()
+				local iconClone = invetoryIcon:Clone()
+				iconClone.Parent = iconParent
+			end
 
 			local data = extractDataFromTool(foundTool)
 			local stats = slotUI:FindFirstChild("Stats") :: Frame
