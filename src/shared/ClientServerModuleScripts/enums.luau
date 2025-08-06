@@ -21,9 +21,11 @@ enums.Login = {
 }
 
 enums.abilityTypes = {
+	gyat = "gyat",
 	slimy = "slimy",
 	spawnPoop = "spawnPoop",
 	hell = "hell",
+	bat = "bat",
 }
 
 enums.Colors = {

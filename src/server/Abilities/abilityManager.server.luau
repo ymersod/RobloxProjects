@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
@@ -13,8 +14,12 @@ local slapLogicPassiveBind = bindableEvents:WaitForChild("slapLogicPassiveBind")
 
 local compTypes = require(ServerScriptService.Server.ServerModuleScripts.CompIntValTypes)
 local compUtils = require(ServerScriptService.Server.ServerModuleScripts.CompIntValUtils)
+local abilityUtils = require(ServerScriptService.Server.ServerModuleScripts.abilityUtils)
 local killPlayerServer = require(ServerScriptService.Server.ServerModuleScripts.killPlayerServer)
 local ragdollUtils = require(ServerScriptService.Server.ServerModuleScripts.ragdollUtils)
+
+local emoteClientEvent =
+	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("playEmoteEventClient")
 
 local function handleBoost(
 	player: Player,
@@ -92,26 +97,36 @@ local function handleSoundAndDelays(
 	startsound: Sound,
 	endsound: Sound?,
 	player: Player,
-	spawnableToDestroy: Instance?
+	cleanupFunction: (() -> ())?
 )
 	startsound:Play()
 	startsound.Ended:Connect(function()
 		startsound:Destroy()
 	end)
+
+	if timer == 0 then
+		return
+	end
+
 	delayUtil.Delay(timer, function()
 		if not player.Character then
 			warn("Player died before sound could end")
 			return
 		end
-
+		if startsound and startsound.Playing then
+			startsound:Stop()
+			startsound:Destroy()
+		end
 		if endsound then
 			endsound:Play()
 			endsound.Ended:Connect(function()
 				endsound:Destroy()
-				if spawnableToDestroy then
-					spawnableToDestroy:Destroy()
+				if cleanupFunction then
+					cleanupFunction()
 				end
 			end)
+		elseif cleanupFunction then
+			cleanupFunction()
 		end
 	end)
 end
@@ -159,52 +174,99 @@ end)
 
 spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _: string, tool: Tool)
 	local abilityType = abilityVals:GetAttribute("abilityType")
-	local duration = abilityVals:GetAttribute("duration")
+	local duration = tonumber(abilityVals:GetAttribute("duration"))
+	local char = player.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
 
-	if abilityType and duration and abilityType == enums.abilityTypes.spawnPoop then
-		local spawnableRef = tool:FindFirstChildOfClass("ObjectValue")
-		local poop = spawnableRef and spawnableRef.Value
-
-		if not poop then
-			warn("Couldn't find spawnable ref")
-			return
-		end
-
-		local character = player.Character
-		if not character then
-			return
-		end
-
-		local startSound = getStartEndSound(tool, character)
-		local hrp = character:FindFirstChild("HumanoidRootPart")
-		if not hrp then
-			return
-		end
-
-		local poopClone = poop:Clone()
-
-		local verticalLift = 0
-		local backOffset = -2
-		local spawnPosition = hrp.Position + (hrp.CFrame.LookVector * backOffset) + Vector3.new(0, verticalLift, 0)
-		local spawnCFrame = CFrame.new(spawnPosition, spawnPosition + hrp.CFrame.LookVector)
-
-		poopClone:PivotTo(spawnCFrame)
-		poopClone.Parent = workspace
-
-		local backwardDirection = -hrp.CFrame.LookVector
-		local pushStrength = 50
-		local poopRootPart = poopClone.PrimaryPart or poopClone:FindFirstChildWhichIsA("BasePart")
-
-		if poopRootPart then
-			poopRootPart.AssemblyLinearVelocity = backwardDirection * pushStrength
-		end
-
-		local poopFlush = poopClone:FindFirstChildOfClass("Model")
-			and poopClone:FindFirstChildOfClass("Model"):FindFirstChild("PoopTop")
-			and poopClone:FindFirstChildOfClass("Model"):FindFirstChild("PoopTop"):FindFirstChildOfClass("Sound")
-
-		handleSoundAndDelays(duration, startSound, poopFlush, player, poopClone)
+	if not char or not hum or not hrp then
+		warn("model and/or humanoid not found")
+		return
 	end
+	-- [[[ POOP ]]]
+	if abilityType and duration and abilityType == enums.abilityTypes.spawnPoop then
+		local startSound = getStartEndSound(tool, char)
+		local poopFlush, poopClone = abilityUtils.SpawnPoop(char, tool)
+		handleSoundAndDelays(duration, startSound, poopFlush, player, function()
+			poopClone:Destroy()
+		end)
+		return
+	end
+
+	-- [[[ GYAT ]]]
+	if abilityType and duration and abilityType == enums.abilityTypes.gyat then
+		local danceTrack = abilityVals:GetAttribute("danceTrack")
+		local aoeRadius = abilityVals:GetAttribute("aoeRadius")
+		local startSound = getStartEndSound(tool, char)
+		local origin = char:FindFirstChild("HumanoidRootPart")
+
+		if not origin then
+			return
+		end
+		if not aoeRadius or not danceTrack then
+			warn("missing attributes")
+			return
+		end
+
+		local pList: { Player } = {}
+		for _, otherPlayer in pairs(Players:GetPlayers()) do
+			local otherChar = otherPlayer.Character
+			local hrp = otherChar and otherChar:FindFirstChild("HumanoidRootPart")
+			if hrp and (hrp.Position - origin.Position).Magnitude <= aoeRadius then
+				emoteClientEvent:InvokeClient(otherPlayer, danceTrack, true, 1)
+				handleBoost(otherPlayer, abilityVals, "dance", "SpeedValue")
+				table.insert(pList, otherPlayer)
+			elseif not hrp then
+				warn("cant find hrp")
+			else
+				warn("Gyat broke")
+			end
+		end
+
+		-- abilityUtils.createAOEVisualization(origin.Position, aoeRadius, duration)
+
+		handleSoundAndDelays(duration, startSound, nil, player, function()
+			for _, otherPlayer in ipairs(pList) do
+				emoteClientEvent:InvokeClient(otherPlayer, danceTrack, false, 1)
+			end
+		end)
+		return
+	end
+
+	-- [[[ BASEBALL BAT ]]]
+	if abilityType and duration and abilityType == enums.abilityTypes.bat then
+		local range = abilityVals:GetAttribute("range")
+		local angle = abilityVals:GetAttribute("angle")
+		local power = abilityVals:GetAttribute("power")
+		local upAngle = abilityVals:GetAttribute("upAngle")
+
+		local animationId = abilityVals:GetAttribute("animationId")
+		if not animationId or not char then
+			warn("Missing animationId or character")
+			return
+		end
+
+		local humanoid = char:FindFirstChildOfClass("Humanoid")
+		if not humanoid then
+			warn("No humanoid found")
+			return
+		end
+
+		local startSound = getStartEndSound(tool, char)
+
+		local trackLength: number? = emoteClientEvent:InvokeClient(player, animationId, true, 2)
+		task.delay(trackLength, function()
+			handleSoundAndDelays(duration, startSound, nil, player)
+			local players = abilityUtils.getPlayersInCone(player, hrp.Position, hrp.CFrame.LookVector, angle, range)
+
+			for _, playerHit in ipairs(players) do
+				ragdollUtils.ragdoll(playerHit, (hrp.CFrame.LookVector + Vector3.new(0, upAngle, 0)) * power, 3)
+			end
+		end)
+		return
+	end
+
+	warn("No ability logic happened")
 end)
 
 slapLogicPassiveBind.Event:Connect(function(player: Player, abilityVals: Instance)
@@ -213,6 +275,8 @@ slapLogicPassiveBind.Event:Connect(function(player: Player, abilityVals: Instanc
 
 	if abilityType == enums.abilityTypes.slimy then
 		print("slimy :>")
+	elseif abilityType == enums.abilityTypes.hell then
+		print("What the helly :o")
 	else
 		warn("no passive types")
 	end
