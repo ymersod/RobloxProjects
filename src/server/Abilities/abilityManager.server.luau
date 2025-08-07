@@ -29,7 +29,8 @@ local function handleBoost(
 	player: Player,
 	abilityVals: Instance,
 	slotToolId: string,
-	boostType: compTypes.CompIntIdSuffixes
+	boostType: compTypes.CompIntIdSuffixes,
+	postMul: true?
 )
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -46,7 +47,7 @@ local function handleBoost(
 	end
 
 	local modifierName = slotToolId .. boostType .. "Amp"
-	local modifier: compTypes.CompModifier = { Name = modifierName, Value = amp }
+	local modifier: compTypes.CompModifier = { Name = modifierName, Value = amp, PostMul = postMul }
 	compUtils.applyModifier(player, boostType, modifier)
 
 	delayUtil.Delay(timer, function()
@@ -167,7 +168,7 @@ slapBind.Event:Connect(function(targetPlayer, direction, abilityVals: StringValu
 	local passiveValue = abilityVals and abilityVals:GetAttribute("abilityType")
 	print(passiveValue)
 	if abilityVals and passiveValue and passiveValue == enums.abilityTypes.slimy then
-		handleBoost(targetPlayer, abilityVals, "slimy", "SpeedValue")
+		handleBoost(targetPlayer, abilityVals, "slimy", "SpeedValue", true)
 		ragdollUtils.ragdoll(targetPlayer, direction, 2)
 	elseif abilityVals and passiveValue and passiveValue == enums.abilityTypes.hell then
 		killPlayerServer.killPlayer(targetPlayer)
@@ -215,13 +216,13 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 		local pList: { Player } = {}
 		for _, otherPlayer in pairs(Players:GetPlayers()) do
 			local otherChar = otherPlayer.Character
-			local hrp = otherChar and otherChar:FindFirstChild("HumanoidRootPart")
-			if hrp and (hrp.Position - origin.Position).Magnitude <= aoeRadius then
+			local otherHrp = otherChar and otherChar:FindFirstChild("HumanoidRootPart")
+			if otherHrp and (otherHrp.Position - origin.Position).Magnitude <= aoeRadius then
 				emoteClientEvent:InvokeClient(otherPlayer, danceTrack, true, 1)
-				handleBoost(otherPlayer, abilityVals, "dance", "SpeedValue")
+				handleBoost(otherPlayer, abilityVals, "dance", "SpeedValue", true)
 				table.insert(pList, otherPlayer)
-			elseif not hrp then
-				warn("cant find hrp")
+			elseif not otherHrp then
+				warn("cant find other players hrp")
 			else
 				warn("Gyat broke")
 			end

@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local KingZoneHighligt = require(ReplicatedStorage.Shared.ClientServerModuleScripts.KingZoneHighligt)
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
+local uiUtils = require(ReplicatedStorage.Shared.ClientServerModuleScripts.uiUtils)
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local screenGui = playerGui:WaitForChild("ScreenGui")
@@ -53,17 +54,6 @@ local backglowImage: ImageLabel = screenGui:WaitForChild("KingZoneHighlightTestF
 local overlay: Frame? = nil
 local TEXT_SPEED = 0.03
 local KINGZONE_HIGHLIGHT_DUR = 4
-
-local function raiseZIndex(root, amount)
-	if root:IsA("GuiObject") then
-		root.ZIndex += amount
-	end
-	for _, child in pairs(root:GetDescendants()) do
-		if child:IsA("GuiObject") then
-			child.ZIndex += amount
-		end
-	end
-end
 
 local function createText(parent, text: string, position: UDim2, size: UDim2): TextLabel
 	local label = Instance.new("TextLabel")
@@ -139,7 +129,7 @@ local function Step6RollForSlapStyle()
 	label.ZIndex = 51
 	animateText(fullText, label, TEXT_SPEED)
 
-	raiseZIndex(rollFrame, 50)
+	uiUtils.raiseZIndex(rollFrame, 50)
 
 	local glow = createGlow(rollFrame)
 	local pulseTweenIn, pulseTweenOut = createTweenFunctions.PulseTransparency(glow, 0.3, 0, 0.6)
@@ -170,7 +160,7 @@ local function Step6RollForSlapStyle()
 		end
 		label:Destroy()
 		glow:Destroy()
-		raiseZIndex(rollButton, -50)
+		uiUtils.raiseZIndex(rollButton, -50)
 		Step7ShowKingzone()
 	end)
 end
@@ -183,7 +173,7 @@ local function Step5PickRollSlot()
 	label.ZIndex = 51
 	animateText(fullText, label, TEXT_SPEED)
 
-	raiseZIndex(slotGachaUi2, 50)
+	uiUtils.raiseZIndex(slotGachaUi2, 50)
 
 	local glow = createGlow(slotGachaUi2)
 	local pulseTweenIn, pulseTweenOut = createTweenFunctions.PulseTransparency(glow, 0.3, 0, 0.6)
@@ -212,7 +202,7 @@ local function Step5PickRollSlot()
 	button.MouseButton1Click:Once(function()
 		label:Destroy()
 		glow:Destroy()
-		raiseZIndex(slotGachaUi2, -50)
+		uiUtils.raiseZIndex(slotGachaUi2, -50)
 
 		Step6RollForSlapStyle()
 	end)
@@ -225,7 +215,7 @@ local function Step4OpenGacha()
 	label.ZIndex = 51
 
 	animateText(fullText, label, TEXT_SPEED)
-	raiseZIndex(rollAccessGui, 50)
+	uiUtils.raiseZIndex(rollAccessGui, 50)
 
 	local glow = createGlow(rollAccessGui)
 	local pulseTweenIn, pulseTweenOut = createTweenFunctions.PulseTransparency(glow, 0.3, 0, 0.6)
@@ -252,7 +242,7 @@ local function Step4OpenGacha()
 	button.MouseButton1Click:Once(function()
 		label:Destroy()
 		glow:Destroy()
-		raiseZIndex(rollAccessGui, -50)
+		uiUtils.raiseZIndex(rollAccessGui, -50)
 		Step5PickRollSlot()
 	end)
 end
@@ -263,7 +253,7 @@ local function Step3OpenAccessBar()
 	label.ZIndex = 51
 
 	animateText(fullText, label, TEXT_SPEED)
-	raiseZIndex(accessGuiOpenClose, 50)
+	uiUtils.raiseZIndex(accessGuiOpenClose, 50)
 
 	local glow = createGlow(accessGuiOpenClose)
 	local pulseTweenIn, pulseTweenOut = createTweenFunctions.PulseTransparency(glow, 0.3, 0, 0.6)
@@ -290,7 +280,7 @@ local function Step3OpenAccessBar()
 	button.MouseButton1Click:Once(function()
 		label:Destroy()
 		glow:Destroy()
-		raiseZIndex(accessGuiOpenClose, -50)
+		uiUtils.raiseZIndex(accessGuiOpenClose, -50)
 		Step4OpenGacha()
 	end)
 end
@@ -303,7 +293,7 @@ local function Step2EquipSlapStyle()
 	label.ZIndex = 51
 
 	animateText(fullText, label, TEXT_SPEED)
-	raiseZIndex(slotUi1, 50)
+	uiUtils.raiseZIndex(slotUi1, 50)
 
 	local glow = createGlow(slotUi1)
 	local pulseTweenIn, pulseTweenOut = createTweenFunctions.PulseTransparency(glow, 0.3, 0, 0.6)
@@ -331,7 +321,7 @@ local function Step2EquipSlapStyle()
 	button.MouseButton1Click:Once(function()
 		label:Destroy()
 		glow:Destroy()
-		raiseZIndex(slotUi1, -50)
+		uiUtils.raiseZIndex(slotUi1, -50)
 
 		Step3OpenAccessBar()
 	end)
