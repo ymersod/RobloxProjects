@@ -27,6 +27,7 @@ enums.abilityTypes = {
 	hell = "hell",
 	bat = "bat",
 	bomb = "bomb",
+	godmode = "godmode",
 }
 
 enums.Colors = {

@@ -92,7 +92,7 @@ function bombUtils.createBombItem(bomb: Tool, startingPosition: Vector3, parent)
 			return
 		end
 
-		if IsSafeUtil.IsSafe(player) then
+		if IsSafeUtil.IsSafeFromBombPickup(player) or IsSafeUtil.IsSafeFromAll(player) then
 			return
 		end
 

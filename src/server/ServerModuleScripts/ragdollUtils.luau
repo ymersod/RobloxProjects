@@ -125,7 +125,7 @@ function ragdollUtils.UnragdollCharacter(character: Model, getUpState: number?)
 end
 
 function ragdollUtils.ragdoll(targetPlayer: Player, direction: Vector3, duration: number)
-	if IsSafeUtil.IsSafe(targetPlayer) then
+	if IsSafeUtil.IsSafeFromAll(targetPlayer) then
 		return
 	end
 	local char = targetPlayer and targetPlayer.Character

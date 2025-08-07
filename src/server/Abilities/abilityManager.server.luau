@@ -295,17 +295,40 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 
 		task.delay(trackLength, function()
 			local states = player:FindFirstChild("States")
-			local externalSafeVal = states and states:FindFirstChild("ExternalSafe") :: BoolValue?
-			externalSafeVal.Value = true
+			local ExternalBombSafe = states and states:FindFirstChild("ExternalBombSafe") :: BoolValue?
+			ExternalBombSafe.Value = true
 			handleSoundAndDelays(duration, startSound, nil, player, function()
-				externalSafeVal.Value = false
+				ExternalBombSafe.Value = false
 			end)
 
 			local item = bombUtils.createBombItem(bombPrefab:Clone(), pos, workspace)
 			velocityUtils.applyKnockback(item, (hrp.CFrame.LookVector + Vector3.new(0, upAngle, 0)) * power)
 		end)
+		return
 	end
 
+	-- [[[ GODMODE ]]]
+	if abilityType and duration and abilityType == enums.abilityTypes.godmode then
+		local spawnableRef = tool:FindFirstChild("SpawnableRef") :: ObjectValue
+		local humanoidPart = abilityVals:GetAttribute("HumanoidPartApplyParticles") :: string
+
+		local states = player:FindFirstChild("States")
+		local externalSafe = states and states:FindFirstChild("ExternalSafe") :: BoolValue?
+		externalSafe.Value = true
+
+		local godparticlesClone = spawnableRef.Value:Clone()
+		godparticlesClone.Parent = char:FindFirstChild(humanoidPart)
+
+		local startSound = getStartEndSound(tool, char)
+		handleSoundAndDelays(duration, startSound, nil, player, function()
+			externalSafe.Value = false
+
+			if godparticlesClone then
+				godparticlesClone:Destroy()
+			end
+		end)
+		return
+	end
 	warn("No ability logic happened")
 end)
 

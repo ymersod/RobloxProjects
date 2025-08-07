@@ -113,7 +113,7 @@ function explode()
 	local playersHit = {}
 	for _, player in pairs(Players:GetPlayers()) do
 		local char = player.Character
-		if not char or (curOwnerPlayer ~= player and player.States.Safe.Value) then
+		if IsSafeUtil.IsSafeFromAll(player) then
 			continue
 		end
 
@@ -220,7 +220,7 @@ function BombTouched(hit: BasePart)
 		return
 	end
 
-	if IsSafeUtil.IsSafe(playerHit) then
+	if IsSafeUtil.IsSafeFromBombPickup(playerHit) or IsSafeUtil.IsSafeFromAll(playerHit) then
 		return
 	end
 
