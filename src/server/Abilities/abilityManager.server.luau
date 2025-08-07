@@ -1,7 +1,9 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ServerStorage = game:GetService("ServerStorage")
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
+local velocityUtils = require(ReplicatedStorage.Shared.ClientServerModuleScripts.velocityUtils)
 local delayUtil = require(ServerScriptService.Server.ServerModuleScripts.delayUtil)
 local bindableEvents =
 	ServerScriptService:WaitForChild("Server"):WaitForChild("Abilities"):WaitForChild("BindableEvents")
@@ -11,10 +13,12 @@ local speedJumpBoostBind = bindableEvents:WaitForChild("speedJumpBoostBind")
 local slapBind = bindableEvents:WaitForChild("slapBind")
 local spawnAbilityBind = bindableEvents:WaitForChild("spawnAbilityBind")
 local slapLogicPassiveBind = bindableEvents:WaitForChild("slapLogicPassiveBind")
+local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
 
 local compTypes = require(ServerScriptService.Server.ServerModuleScripts.CompIntValTypes)
 local compUtils = require(ServerScriptService.Server.ServerModuleScripts.CompIntValUtils)
 local abilityUtils = require(ServerScriptService.Server.ServerModuleScripts.abilityUtils)
+local bombUtils = require(ServerScriptService.Server.ServerModuleScripts.bombUtils)
 local killPlayerServer = require(ServerScriptService.Server.ServerModuleScripts.killPlayerServer)
 local ragdollUtils = require(ServerScriptService.Server.ServerModuleScripts.ragdollUtils)
 
@@ -264,6 +268,42 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 			end
 		end)
 		return
+	end
+
+	-- [[[ BOMB ]]]
+	if abilityType and duration and abilityType == enums.abilityTypes.bomb then
+		local animationId = abilityVals:GetAttribute("animationId")
+		local power = abilityVals:GetAttribute("power")
+		local upAngle = abilityVals:GetAttribute("upAngle")
+		local trackLength: number? = emoteClientEvent:InvokeClient(player, animationId, true, 2)
+
+		if not animationId or not char then
+			warn("Missing animationId or character")
+			return
+		end
+
+		local humanoid = char:FindFirstChildOfClass("Humanoid")
+		if not humanoid then
+			warn("No humanoid found")
+			return
+		end
+
+		local startSound = getStartEndSound(tool, char)
+
+		local bombVisual = tool:FindFirstChild("Meshes/dynamite") :: MeshPart?
+		local pos = bombVisual and bombVisual.CFrame.Position or hrp.Position
+
+		task.delay(trackLength, function()
+			local states = player:FindFirstChild("States")
+			local externalSafeVal = states and states:FindFirstChild("ExternalSafe") :: BoolValue?
+			externalSafeVal.Value = true
+			handleSoundAndDelays(duration, startSound, nil, player, function()
+				externalSafeVal.Value = false
+			end)
+
+			local item = bombUtils.createBombItem(bombPrefab:Clone(), pos, workspace)
+			velocityUtils.applyKnockback(item, (hrp.CFrame.LookVector + Vector3.new(0, upAngle, 0)) * power)
+		end)
 	end
 
 	warn("No ability logic happened")

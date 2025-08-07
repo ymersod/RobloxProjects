@@ -26,6 +26,7 @@ enums.abilityTypes = {
 	spawnPoop = "spawnPoop",
 	hell = "hell",
 	bat = "bat",
+	bomb = "bomb",
 }
 
 enums.Colors = {
