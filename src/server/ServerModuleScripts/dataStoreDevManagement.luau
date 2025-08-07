@@ -244,7 +244,7 @@ function dataStoreManagementFunctions.clearVolumeSettingsStore()
 	if success then
 		for i, k in ipairs(keys:GetCurrentPage()) do
 			local success2, err = pcall(function()
-				return firstTimePlayerStore:RemoveAsync(k.KeyName)
+				return volumeSettingsStore:RemoveAsync(k.KeyName)
 			end)
 			if not success2 then
 				return { success = false, payload = err }

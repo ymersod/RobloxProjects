@@ -6,16 +6,23 @@ local CompositeIntValueMetaTable = {
 		if key == "Value" then
 			print(#t._originTable)
 			local sum = 0
+			local postMul = 1
 			for i, v in ipairs(t._originTable) do
-				if v.Value and not (t._mode == "mul" and v.Name == "init") then
+				if v.Value and not (t._mode == "mul" and v.Name == "init") and not t.PostMul then
 					sum += v.Value
+				end
+				if t.PostMul then
+					if postMul == 1 then
+						postMul = 0
+					end
+					postMul += v.Value
 				end
 			end
 			if t._mode == "mul" then
 				if sum == 0 then
 					sum = 1
 				end
-				return t._originTable[1].Value * sum
+				return t._originTable[1].Value * sum * postMul
 			end
 			return sum
 		end
@@ -68,7 +75,7 @@ local CompositeIntValueMetaTable = {
 	end,
 }
 
-type TableEntry = { Name: string, Value: number }
+type TableEntry = { Name: string, Value: number, PostMul:true? }
 
 type TableRemove = { EntryId: string }
 
@@ -80,7 +87,7 @@ type CompositeIntValueType = {
 	setBoundTarget: (IntValue) -> (),
 	containsMod: (string) -> boolean,
 	removeModifier: (string) -> (),
-	__add: (CompositeIntValueType, { Name: string, Value: number }) -> CompositeIntValueType,
+	__add: (CompositeIntValueType, { Name: string, Value: number, PostMul:boolean? }) -> CompositeIntValueType,
 	__sub: (CompositeIntValueType, { Name: string, Value: number }) -> CompositeIntValueType,
 }
 
