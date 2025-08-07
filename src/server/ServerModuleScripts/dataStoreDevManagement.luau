@@ -7,6 +7,9 @@ local dailyRewardStore = DataStoreService:GetDataStore("DailyRewards")
 local levelUpRewardStore = DataStoreService:GetDataStore("LevelupRewards")
 local firstTimePlayerStore = DataStoreService:GetDataStore("FirstTimeLogin")
 local volumeSettingsStore = DataStoreService:GetDataStore("VolumeSettings")
+local MemoryStoreService = game:GetService("MemoryStoreService")
+local orderedExpMemoryStore = MemoryStoreService:GetSortedMap("OrderedPlayerExp")
+
 
 dataStoreManagementFunctions = {}
 
@@ -106,6 +109,42 @@ function dataStoreManagementFunctions.clearExpStore()
 		return { success = true, payload = "expStore was cleared of keys" }
 	end
 	return { success = false, payload = "Something when wrong while searching for keys in ExpStore" }
+end
+
+function dataStoreManagementFunctions.clearOrderedExpStore()
+	local success, keys = pcall(function()
+		return orderedExpStore:GetSortedAsync(true, 100)
+	end)
+	if success then
+		for i, k in ipairs(keys:GetCurrentPage()) do
+			local success2, err = pcall(function()
+				return orderedExpStore:RemoveAsync(k.key)
+			end)
+			if not success2 then
+				return { success = false, payload = err }
+			end
+		end
+		return { success = true, payload = "orderedExpStore was cleared of keys" }
+	end
+	return { success = false, payload = "Something when wrong while searching for keys in orderedExpStore" }
+end
+
+function dataStoreManagementFunctions.clearOrderedExpMemoryStore()
+	local success, keys = pcall(function()
+		return orderedExpMemoryStore:GetRangeAsync(Enum.SortDirection.Ascending, 100)
+	end)
+	if success then
+		for i, k in ipairs(keys) do
+			local success2, err = pcall(function()
+				return orderedExpMemoryStore:RemoveAsync(k.key)
+			end)
+			if not success2 then
+				return { success = false, payload = err }
+			end
+		end
+		return { success = true, payload = "orderedExpMemoryStore was cleared of keys" }
+	end
+	return { success = false, payload = "Something when wrong while searching for keys in orderedExpMemoryStore" }
 end
 
 function dataStoreManagementFunctions.clearInventoryStore()
@@ -223,6 +262,16 @@ function dataStoreManagementFunctions.clearAllKeysInDataStores()
 	end
 
 	clearSuccessObj = dataStoreManagementFunctions.clearExpStore()
+	if not clearSuccessObj.success then
+		warn(clearSuccessObj.payload)
+	end
+
+	clearSuccessObj = dataStoreManagementFunctions.clearOrderedExpStore()
+	if not clearSuccessObj.success then
+		warn(clearSuccessObj.payload)
+	end
+
+	clearSuccessObj = dataStoreManagementFunctions.clearOrderedExpMemoryStore()
 	if not clearSuccessObj.success then
 		warn(clearSuccessObj.payload)
 	end
