@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
@@ -329,6 +330,29 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 			end
 		end)
 		return
+	end
+
+	-- [[[ TELEPORT ]]]
+	if abilityType and duration and abilityType == enums.abilityTypes.teleport then
+		local range = abilityVals:GetAttribute("range") or 50
+		local breakChance = abilityVals:GetAttribute("breakChance") or 0
+		local breakLocations = CollectionService:GetTagged("BreakRoom")
+		local firstBreakLocation = breakLocations and breakLocations[1]
+
+		local startSound = getStartEndSound(tool, char)
+		handleSoundAndDelays(duration, startSound, nil, player)
+
+		if char and hrp then
+			local destinationCFrame
+
+			if math.random() <= breakChance and firstBreakLocation then
+				destinationCFrame = CFrame.new(firstBreakLocation.Position)
+			else
+				destinationCFrame = hrp.CFrame * CFrame.new(0, 0, range)
+			end
+
+			char:SetPrimaryPartCFrame(destinationCFrame)
+		end
 	end
 	warn("No ability logic happened")
 end)
