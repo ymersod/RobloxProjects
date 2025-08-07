@@ -1,8 +1,13 @@
 local PhysicsService = game:GetService("PhysicsService")
+local IsSafeUtil = require(script.Parent.IsSafeUtil)
 
 local killPlayerModule = {}
 
 function killPlayerModule.killPlayer(player: Player)
+	if IsSafeUtil.IsSafeFromAll(player) then
+		return
+	end
+
 	local char = player.Character
 	if not char then
 		return
