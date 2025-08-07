@@ -12,6 +12,10 @@ local expManagerFuncsScript =
 	ServerScripService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("expManagerFunctions")
 local expManagerFuncs = require(expManagerFuncsScript)
 
+local ShapeCastGismosScript =
+	ServerScripService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("ShapeCastGismos")
+local shapeCastGismo = require(ShapeCastGismosScript)
+
 local slapAnimation = ServerStorage:WaitForChild("Animations"):WaitForChild("SlapAni")
 local part = script:FindFirstAncestorOfClass("Tool"):FindFirstChildOfClass("MeshPart") :: MeshPart
 local tool = part.Parent :: Tool
@@ -80,6 +84,8 @@ tool.Activated:Connect(function()
 			directionV3 * (statVals:GetAttribute("Range") + 6),
 			castParams
 		)
+
+		shapeCastGismo.drawBlockCast(tool.Parent.PrimaryPart.CFrame, Vector3.new(30, 10, 1), directionV3 * (statVals:GetAttribute("Range") + 6))
 
 		if
 			shapeCastResults

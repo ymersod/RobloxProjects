@@ -9,6 +9,9 @@ local killModule = require(
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("killPlayerServer")
 )
 
+local shapeCastGismoScript = ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("ShapeCastGismos")
+local shapeCastGismo = require(shapeCastGismoScript)
+
 local flyToggleEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("FlyToggleClient")
 local hideUIEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("HideUIClient")
 
@@ -246,6 +249,8 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 			flyToggleEvent:FireClient(player)
 		elseif command.command == "/togglebombspawn" then
 			bombSpawnScript:SetAttribute("disabled", not bombSpawnScript:GetAttribute("disabled"))
+		elseif command.command == "/toggleCastGismos" then
+			shapeCastGismo.enabled = not shapeCastGismo.enabled
 		end
 	end)
 end)
