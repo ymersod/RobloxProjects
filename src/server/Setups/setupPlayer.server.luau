@@ -99,6 +99,11 @@ game.Players.PlayerAdded:Connect(function(player)
 	safeState.Value = false
 	safeState.Parent = playerState
 
+	local externalSafeState = Instance.new("BoolValue")
+	externalSafeState.Name = "ExternalSafe"
+	externalSafeState.Value = false
+	externalSafeState.Parent = playerState
+
 	local jumpState = Instance.new("BoolValue")
 	jumpState.Name = "CanJump"
 	jumpState.Value = true

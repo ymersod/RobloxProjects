@@ -75,6 +75,7 @@ countdownText.Parent = billboardGui
 
 local types = require(ServerScriptService.Server.ServerModuleScripts.CompIntValTypes)
 local compUtils = require(ServerScriptService.Server.ServerModuleScripts.CompIntValUtils)
+local IsSafeUtil = require(ServerScriptService.Server.ServerModuleScripts.IsSafeUtil)
 
 local jumpAmp: types.CompModifier = {
 	Name = "BombJumpAmp",
@@ -216,6 +217,10 @@ function BombTouched(hit: BasePart)
 
 	local playerHit = Players:GetPlayerFromCharacter(hitPlayerChar)
 	if not playerHit then
+		return
+	end
+
+	if IsSafeUtil.IsSafe(playerHit) then
 		return
 	end
 

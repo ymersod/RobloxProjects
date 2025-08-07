@@ -5,6 +5,7 @@ local RagdollData = require(ServerScriptService.Server.DataModules.RagdollData)
 local velocityUtils = require(ReplicatedStorage.Shared.ClientServerModuleScripts.velocityUtils)
 local ragdollClientEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("RagdollClient")
 local PhysicsService = game:GetService("PhysicsService")
+local IsSafeUtil = require(script.Parent.IsSafeUtil)
 
 local ragdollUtils = {}
 
@@ -124,6 +125,9 @@ function ragdollUtils.UnragdollCharacter(character: Model, getUpState: number?)
 end
 
 function ragdollUtils.ragdoll(targetPlayer: Player, direction: Vector3, duration: number)
+	if IsSafeUtil.IsSafe(targetPlayer) then
+		return
+	end
 	local char = targetPlayer and targetPlayer.Character
 	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 	local hrp = humanoid and humanoid.RootPart
