@@ -3,6 +3,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local inventoryFuncs = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 local CollectionService = game:GetService("CollectionService")
 local ServerStorage = game:GetService("ServerStorage")
+local bombUtils = require(ServerScriptService.Server.ServerModuleScripts.bombUtils)
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
 local itemSphere = ServerStorage:WaitForChild("Pickups"):WaitForChild("ItemSphere")
 local BOMB_SPAWNER_TAG = "BombSpawner"
@@ -67,120 +68,6 @@ function findRandomPlayer(players)
 	return randomPlayer
 end
 
-function giveBombToPlayer(player: Player, bomb: Tool)
-	if player and player.Character then
-		inventoryFuncs.EquipBomb(player, bomb, 0)
-	end
-end
-
-function createBombItem(bomb: Tool, startingPosition: Vector3, parent)
-	local item = itemSphere:Clone()
-	item.Position = startingPosition
-	item.Parent = parent
-
-	local primary = bomb.PrimaryPart or bomb:FindFirstChild("Handle") --TODO: find out which one it is
-	if not primary then
-		warn("Bomb tool has no PrimaryPart or Handle to position")
-		return
-	end
-
-	local bombLogic: Script? = primary:FindFirstChildOfClass("Script")
-	if not bombLogic then
-		warn("Can't find bomb logic script")
-		return
-	end
-
-	bombLogic.Enabled = true
-	bomb:PivotTo(CFrame.new(startingPosition))
-	bomb.Parent = item
-
-	local hitArea = primary:FindFirstChild("HitBox")
-	hitArea.CanTouch = false
-
-	-- Making the mesh of the item fit within the itemSphere
-	local mesh = primary:FindFirstChildOfClass("MeshPart")
-	local worldSize
-	local normalSize
-	if mesh then -- now assuming mesh is a MeshPart child
-		worldSize = Vector3.new(
-			primary.Size.X * mesh.Size.X / primary.Size.X, -- mesh.Size.X scaled relative to primary
-			primary.Size.Y * mesh.Size.Y / primary.Size.Y,
-			primary.Size.Z * mesh.Size.Z / primary.Size.Z
-		)
-		normalSize = mesh.Size
-	else
-		worldSize = primary.Size
-	end
-
-	local boundingRadius = (worldSize / 2).Magnitude
-	local scaleFactor = (itemSphere.Size.Y / 2) / boundingRadius
-
-	if mesh then
-		mesh.Size = mesh.Size * scaleFactor
-	else
-		primary.Size = primary.Size * scaleFactor
-	end
-
-	-- Attach bomb to RigidConstraint
-	local rigidConstraint = item:FindFirstChildOfClass("RigidConstraint")
-	local bombAttachment = Instance.new("Attachment")
-	bombAttachment.Name = "BombAttachment"
-	bombAttachment.Parent = primary
-
-	if rigidConstraint then
-		rigidConstraint.Attachment1 = bombAttachment
-	end
-
-	--trying to stop bombs going though mesh
-	local att = Instance.new("Attachment")
-	att.Parent = item
-	local vectorForce = Instance.new("VectorForce")
-	vectorForce.Attachment0 = att
-	vectorForce.Force = Vector3.new(0, item:GetMass() * workspace.Gravity * 0.90, 0)
-	vectorForce.RelativeTo = Enum.ActuatorRelativeTo.World
-	vectorForce.ApplyAtCenterOfMass = true
-	vectorForce.Parent = item
-
-	local touch_key = nil
-	item.Touched:Connect(function(hit)
-		if touch_key then
-			return
-		end
-		local playerChar = hit:FindFirstAncestorOfClass("Model")
-		local player = playerChar and Players:GetPlayerFromCharacter(playerChar)
-
-		if not player then
-			return
-		end
-
-		touch_key = hit
-		task.defer(function()
-			if touch_key ~= hit then
-				return
-			end
-
-			local hasBomb = playerChar:FindFirstChild("Bomb")
-			if player and not hasBomb then
-				hitArea.CanTouch = true
-				giveBombToPlayer(player, bomb)
-				item:Destroy()
-			end
-		end)
-	end)
-
-	item.Destroying:Connect(function()
-		if not bomb then
-			return
-		end
-		if mesh then
-			mesh.Size = normalSize
-		else
-			primary.Size = normalSize
-		end
-	end)
-	return item
-end
-
 local function randomPosOnCylinderTop(origin: Vector3, radius: number, height: number): Vector3
 	local topCenter = origin + Vector3.new(0, height / 2, 0) --This could be done in the setup phase now that i think about it
 
@@ -209,7 +96,8 @@ function spawnBomb(bomb: {
 		local bombTool = bombPrefab:Clone()
 		bombTool.Parent = bomb.bombSpawner
 
-		local bombItem = createBombItem(bombTool, basePos, bomb.bombSpawner)
+		local bombItem = bombUtils.createBombItem(bombTool, basePos, bomb.bombSpawner)
+
 		bomb.bomb = bombTool
 		bombItem.Anchored = true
 		bombTool.Destroying:Connect(function()
@@ -285,7 +173,7 @@ task.spawn(function()
 			end
 
 			local bombTool = bombPrefab:Clone()
-			local bombItem = createBombItem(
+			local bombItem = bombUtils.createBombItem(
 				bombTool,
 				randomPosOnCylinderTop(data.zone.Position, data.radius, data.height),
 				data.zone
