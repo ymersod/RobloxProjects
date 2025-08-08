@@ -9,7 +9,8 @@ local killModule = require(
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("killPlayerServer")
 )
 
-local shapeCastGismoScript = ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("ShapeCastGismos")
+local shapeCastGismoScript =
+	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("ShapeCastGismos")
 local shapeCastGismo = require(shapeCastGismoScript)
 
 local flyToggleEvent = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("FlyToggleClient")
@@ -70,7 +71,7 @@ local function parseCommand(string: string): { command: string, args: { string }
 	return { command = parts[1], args = subSet(parts, 2) }
 end
 
-local COMMAND_WHITE_LIST: { number } = { 8394946161, 8591486140, 8637529946, 8468299314 }
+local COMMAND_WHITE_LIST: { number } = { 8394946161, 8591486140, 8637529946, 8468299314, 8383239814, 1199035078 }
 
 local function playerIdIsWhitelisted(no: number)
 	if no < 0 then
