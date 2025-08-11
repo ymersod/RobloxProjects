@@ -70,8 +70,9 @@ local function parseCommand(string: string): { command: string, args: { string }
 
 	return { command = parts[1], args = subSet(parts, 2) }
 end
-
-local COMMAND_WHITE_LIST: { number } = { 8394946161, 8591486140, 8637529946, 8468299314, 8383239814, 1199035078 }
+--                                                                            cindy         kuwrl
+local COMMAND_WHITE_LIST: { number } =
+	{ 8394946161, 8591486140, 8637529946, 8468299314, 8383239814, 1199035078, 1314955009, 2534809727 }
 
 local function playerIdIsWhitelisted(no: number)
 	if no < 0 then
@@ -93,12 +94,23 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 			return
 		end
 
+		if not playerIdIsWhitelisted(player.UserId) then
+			if player.UserId > 0 then
+				warn(
+					"Player with id "
+						.. player.UserId
+						.. " attempted  to call command: "
+						.. command.command
+						.. " without proper permissions"
+				)
+				return
+			end
+		end
+
 		if command.command == "/kill" then
 			killModule.killPlayer(player)
 		elseif command.command == "/hideui" then
 			hideUIEvent:FireClient(player)
-		elseif not playerIdIsWhitelisted(player.UserId) then
-			warn("Player with id " .. player.UserId .. " attempted  to call command: " .. command.command)
 		elseif command.command == "/ragdoll" then
 			if #command.args > 0 then
 				ragdollUtils.ragdoll(

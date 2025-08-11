@@ -61,7 +61,7 @@ function inventoryFunctions.AddToInventory(player: Player, tool: Tool, slot: num
 	local inventory = player:FindFirstChild("Inventory") :: Folder?
 	local playerChar = getCharacter(player)
 
-	if inventory and playerChar then
+	if inventory and playerChar and slot then
 		removeToolsInSlot(playerChar, inventory, slot)
 		local slotsAvailable = inventory:FindFirstChildOfClass("IntValue").Value
 		local invetoryCount = #inventory:GetChildren()

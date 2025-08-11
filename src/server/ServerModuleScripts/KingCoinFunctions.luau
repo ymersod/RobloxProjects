@@ -1,4 +1,5 @@
 local ServerStorage = game:GetService("ServerStorage")
+local expManagerFunctions = require(script.Parent.expManagerFunctions)
 
 local kingCoin = ServerStorage:WaitForChild("Pickups"):WaitForChild("KingCoin") :: Part
 if not kingCoin then
@@ -110,6 +111,36 @@ function funcs.spawnMultipleKingCoinOfSizeRangesFromPlayers(
 		constraints.valueMax,
 		spawnRadius
 	)
+end
+
+function funcs.StealKingScore(playerHit: Player, self: Player, drainPercent: number, giveXp: true?)
+	local playerHitLeaderStats = playerHit:FindFirstChild("leaderstats")
+	local playerHitkingScore: IntValue = playerHitLeaderStats and playerHitLeaderStats:FindFirstChild("King Score")
+
+	if playerHitkingScore.Value <= 0 then
+		print("cant steal from 0 points")
+		return
+	end
+
+	local selfLeaderStats = self:FindFirstChild("leaderstats")
+	local selfKingScore: IntValue = selfLeaderStats and selfLeaderStats:FindFirstChild("King Score")
+
+	local drainAmount = playerHitkingScore.Value * drainPercent
+	local flooredDrainAmount = math.floor(drainAmount)
+
+	playerHitkingScore.Value = playerHitkingScore.Value - flooredDrainAmount * 2
+	selfKingScore.Value = selfKingScore.Value + flooredDrainAmount
+
+	if giveXp then
+		local xpBoost = 1
+		local xpBoostIntValue = self and self:WaitForChild("LocalStats"):WaitForChild("ExpBoost") :: IntValue
+		if xpBoostIntValue then
+			xpBoost = xpBoostIntValue.Value / 100
+		end
+
+		local xpAccordingToPlayerHitKingScore = math.floor(playerHitkingScore.Value / 100) + 2
+		expManagerFunctions.incrementExp(self.UserId, xpAccordingToPlayerHitKingScore * xpBoost)
+	end
 end
 
 return funcs

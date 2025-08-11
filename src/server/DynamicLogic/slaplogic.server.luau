@@ -30,9 +30,9 @@ local POWER_MULT = 50 * abilityVals:GetAttribute("Damage")
 local COOLDOWN = 3 / abilityVals:GetAttribute("Speed")
 local canActivate = true
 
-local COIN_VALUE_MIN = 7
-local COIN_VALUE_MAX = 15
-local COIN_SPAWN_RADIUS = 10
+-- local COIN_VALUE_MIN = 7
+-- local COIN_VALUE_MAX = 15
+-- local COIN_SPAWN_RADIUS = 10
 local KING_SCORE_DRAIN_PERCENT = 0.05
 
 tool.Activated:Connect(function()
@@ -85,7 +85,11 @@ tool.Activated:Connect(function()
 			castParams
 		)
 
-		shapeCastGismo.drawBlockCast(tool.Parent.PrimaryPart.CFrame, Vector3.new(30, 10, 1), directionV3 * (statVals:GetAttribute("Range") + 6))
+		shapeCastGismo.drawBlockCast(
+			tool.Parent.PrimaryPart.CFrame,
+			Vector3.new(30, 10, 1),
+			directionV3 * (statVals:GetAttribute("Range") + 6)
+		)
 
 		if
 			shapeCastResults
@@ -99,28 +103,13 @@ tool.Activated:Connect(function()
 				return
 			end
 
-			kingCoinFuncs.spawnMultipleKingCoinOfSizeRangesFromPlayer(
-				targetPlayer,
-				COIN_SPAWN_RADIUS,
-				KING_SCORE_DRAIN_PERCENT,
-				COIN_VALUE_MIN,
-				COIN_VALUE_MAX
-			)
+			local player = Players:GetPlayerFromCharacter(tool.Parent)
+			local _ = player and kingCoinFuncs.StealKingScore(targetPlayer, player, KING_SCORE_DRAIN_PERCENT, true)
 
-			local xpBoost = 1
-			local xpBoostIntValue: IntValue = targetPlayer
-				and targetPlayer:WaitForChild("LocalStats"):WaitForChild("ExpBoost")
-			if xpBoostIntValue then
-				xpBoost = xpBoostIntValue.Value / 100
-			end
-
-			if Players:GetPlayerFromCharacter(tool.Parent) then
-				expManagerFuncs.incrementExp(Players:GetPlayerFromCharacter(tool.Parent).UserId, 2 * xpBoost)
-			end
 			local attackerHRP = tool.Parent:FindFirstChild("HumanoidRootPart")
 			local hitDirection = (shapeCastResults.Instance.Position - attackerHRP.Position).Unit * POWER_MULT
 			local ownerAbilitVals = tool:FindFirstChild("AbilityVals") :: StringValue?
-			slapBind:Fire(targetPlayer, hitDirection, ownerAbilitVals)
+			slapBind:Fire(targetPlayer, player, hitDirection, ownerAbilitVals)
 		end
 	end
 end)

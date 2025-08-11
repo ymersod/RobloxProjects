@@ -152,7 +152,7 @@ function ragdollUtils.ragdoll(targetPlayer: Player, direction: Vector3, duration
 		local newHum = newChar and newChar:FindFirstChildOfClass("Humanoid")
 		local newHrp = newHum and newHum.RootPart
 
-		if newHrp.CollisionGroup and newHrp.CollisionGroup == "RagdollCollide" then
+		if newHrp and newHrp.CollisionGroup and newHrp.CollisionGroup == "RagdollCollide" then
 			ragdollUtils.UnragdollCharacter(newChar)
 		end
 	end)
