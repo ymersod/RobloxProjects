@@ -52,7 +52,7 @@ local spinnerFrame: Frame = screenGui:WaitForChild("KingZoneHighlightTestFrame")
 local backglowImage: ImageLabel = screenGui:WaitForChild("KingZoneHighlightTestFrame"):WaitForChild("Backglow")
 
 local overlay: Frame? = nil
-local TEXT_SPEED = 0.03
+local TEXT_SPEED = 0.01
 local KINGZONE_HIGHLIGHT_DUR = 4
 
 local function createText(parent, text: string, position: UDim2, size: UDim2): TextLabel
@@ -348,7 +348,7 @@ local function Step1SetupOverlay()
 	overLayButton.Parent = overlay
 
 	-- Tutorial label
-	local fullText = "Welcome Slapper! Let me show you around"
+	local fullText = "Welcome Slapper! Since you're new here let me show you around"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.75, 0), UDim2.new(0.5, 0, 1, 0))
 	label.ZIndex = 51
 

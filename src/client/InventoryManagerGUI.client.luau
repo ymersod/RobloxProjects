@@ -10,6 +10,7 @@ local SoundService = game:GetService("SoundService")
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local sounds = require(ReplicatedStorage.Shared.ClientServerModuleScripts.sounds)
+local uiUtils = require(ReplicatedStorage.Shared.ClientServerModuleScripts.uiUtils)
 CoreGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
 local equippedSlapstylePrefab = ReplicatedStorage:WaitForChild("UI")
 	:WaitForChild("DynamicGUI")
@@ -408,15 +409,15 @@ function updateBackpackGUI()
 		if foundTool and inventoryIcon then
 			local equipButton = slotUI:FindFirstChild("Bg"):FindFirstChildOfClass("ImageButton")
 			local iconParent = slotUI:FindFirstChild("IconParent")
-
-			local curChild = iconParent:FindFirstChildOfClass("Frame")
+			local iconHolder = iconParent:FindFirstChildOfClass("Frame")
+			local curChild = iconHolder:FindFirstChildOfClass("Frame")
 
 			if not curChild or curChild.Name ~= inventoryIcon.Name then
-				iconParent:ClearAllChildren()
+				iconHolder:ClearAllChildren()
 				local iconClone = inventoryIcon:Clone()
-				iconClone.Parent = iconParent
+				iconClone.Parent = iconHolder
+				uiUtils.raiseZIndex(iconHolder, 11)
 			end
-
 			local data = extractDataFromTool(foundTool)
 			local stats = slotUI:FindFirstChild("Stats") :: Frame
 			updateStatBar(stats:FindFirstChild("Power"):WaitForChild("Fill"), data.Damage)

@@ -16,17 +16,58 @@ local OpenFunctions = {}
 -- store repeatedly.
 local playerExp = {}
 
+local function expForLevel(n: number)
+	-- original inverse formula's forward equivalent (goal XP to reach level n)
+	return math.floor(math.exp((n + 95.04) / 20.25)) - 109
+end
+
 local function calcLevelAndExpWindow(exp: number): { lvl: number, lvlProgress: { progress: number, goal: number } }
-	local lvl = math.max(0, math.floor(-95.04 + 20.25 * math.log(exp + 109)))
-	local oldGoal = math.floor(math.exp((lvl + 95.04) / 20.25)) - 109
-	local goal = math.floor(math.exp(((lvl + 1) + 95.04) / 20.25)) - 109
+	local capLevel = 60
 
-	-- print("lvl: " .. lvl)
-	-- print("lvl goal: " .. oldGoal)
-	-- print("next lvl goal: " .. goal)
-	-- print("progress: " .. (exp-oldGoal)/(goal-oldGoal))
+	-- XP at level 60 and 61 (these are absolute XP thresholds)
+	local expAtCap = expForLevel(capLevel)
+	local expAtCapPlus = expForLevel(capLevel + 1)
 
-	return { lvl = lvl, lvlProgress = { progress = exp - oldGoal, goal = goal - oldGoal } }
+	-- XP required per level after cap (use the 60 -> 61 delta)
+	local xpPerLevelAfterCap = expAtCapPlus - expAtCap
+	if xpPerLevelAfterCap <= 0 then
+		-- sanity fallback (shouldn't happen with your formula)
+		xpPerLevelAfterCap = 1
+	end
+
+	-- If the player's total XP is less than the XP required to reach level 60,
+	-- use the original formula (invertible form) to get level and goals.
+	if exp < expAtCap then
+		local lvl = math.max(0, math.floor(-95.04 + 20.25 * math.log(exp + 109)))
+		local oldGoal = expForLevel(lvl)
+		local goal = expForLevel(lvl + 1)
+
+		return {
+			lvl = lvl,
+			lvlProgress = {
+				progress = exp - oldGoal,
+				goal = goal - oldGoal,
+			},
+		}
+	end
+
+	-- Otherwise: player is at-or-beyond level 60.
+	-- Calculate how many extra whole constant-XP levels they've gained past level 60.
+	local overflow = exp - expAtCap
+	local extraLevels = math.floor(overflow / xpPerLevelAfterCap)
+	local lvl = capLevel + extraLevels
+
+	-- oldGoal is the absolute XP at the start of this level
+	local oldGoal = expAtCap + extraLevels * xpPerLevelAfterCap
+	local goal = oldGoal + xpPerLevelAfterCap
+
+	return {
+		lvl = lvl,
+		lvlProgress = {
+			progress = exp - oldGoal,
+			goal = xpPerLevelAfterCap,
+		},
+	}
 end
 
 function OpenFunctions.GetLevel(playerId)

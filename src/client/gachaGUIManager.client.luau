@@ -7,6 +7,7 @@ local SoundService = game:GetService("SoundService")
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local sounds = require(ReplicatedStorage.Shared.ClientServerModuleScripts.sounds)
+local uiUtils = require(ReplicatedStorage.Shared.ClientServerModuleScripts.uiUtils)
 local rollEvent = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("RollFunctions")
@@ -291,7 +292,7 @@ setSetActiveButton = function(button, slotUI, growPulse, shrinkPulse)
 end
 
 function setStateOfSlotUI(state, slotUI: Frame, tool)
-	local slapIcon = slotUI:FindFirstChildOfClass("ImageLabel") :: ImageLabel
+	local slapIcon = slotUI:FindFirstChild("IconParent")
 	local setActiveButton = slotUI:FindFirstChild("SetRoll") :: ImageButton
 	local buyButton = slotUI:FindFirstChild("Buy") :: ImageButton
 	local statsFrame = slotUI:FindFirstChild("Stats") :: Frame
@@ -382,10 +383,18 @@ function updateGachaBackpackGUI()
 			end
 		end
 
-		if foundTool then
-			if not foundTool then
-				warn("No slot for tool found")
-				return
+		local inventoryIconRef: ObjectValue? = foundTool and foundTool:FindFirstChild("InventoryIcon")
+		local inventoryIcon = inventoryIconRef and inventoryIconRef.Value :: Frame?
+		if foundTool and inventoryIcon then
+			local iconParent = slotUI:FindFirstChild("IconParent")
+
+			local iconHolder = iconParent:FindFirstChildOfClass("Frame")
+			local curChild = iconHolder:FindFirstChildOfClass("Frame")
+			if not curChild or curChild.Name ~= inventoryIcon.Name then
+				iconHolder:ClearAllChildren()
+				local iconClone = inventoryIcon:Clone()
+				iconClone.Parent = iconHolder
+				uiUtils.raiseZIndex(iconHolder, 11)
 			end
 
 			local data = extractDataFromTool(foundTool)
