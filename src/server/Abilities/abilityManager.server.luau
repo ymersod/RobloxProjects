@@ -18,6 +18,7 @@ local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):Wai
 
 local compTypes = require(ServerScriptService.Server.ServerModuleScripts.CompIntValTypes)
 local compUtils = require(ServerScriptService.Server.ServerModuleScripts.CompIntValUtils)
+local KingCoinFunctions = require(ServerScriptService.Server.ServerModuleScripts.KingCoinFunctions)
 local abilityUtils = require(ServerScriptService.Server.ServerModuleScripts.abilityUtils)
 local bombUtils = require(ServerScriptService.Server.ServerModuleScripts.bombUtils)
 local killPlayerServer = require(ServerScriptService.Server.ServerModuleScripts.killPlayerServer)
@@ -165,7 +166,7 @@ jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slot
 	handleBoost(player, abilityVals, slotToolId, "JumpValue")
 end)
 
-slapBind.Event:Connect(function(targetPlayer, direction, abilityVals: StringValue?)
+slapBind.Event:Connect(function(targetPlayer, self, direction, abilityVals: StringValue?)
 	local passiveValue = abilityVals and abilityVals:GetAttribute("abilityType")
 	print(passiveValue)
 	if abilityVals and passiveValue and passiveValue == enums.abilityTypes.slimy then
@@ -173,6 +174,10 @@ slapBind.Event:Connect(function(targetPlayer, direction, abilityVals: StringValu
 		ragdollUtils.ragdoll(targetPlayer, direction, 2)
 	elseif abilityVals and passiveValue and passiveValue == enums.abilityTypes.hell then
 		killPlayerServer.killPlayer(targetPlayer)
+	elseif abilityVals and passiveValue and passiveValue == enums.abilityTypes.steal then
+		local stealAmount = abilityVals and abilityVals:GetAttribute("StealAmount")
+		KingCoinFunctions.StealKingScore(targetPlayer, self, stealAmount)
+		ragdollUtils.ragdoll(targetPlayer, direction, 2)
 	else
 		ragdollUtils.ragdoll(targetPlayer, direction, 2)
 	end

@@ -29,6 +29,7 @@ enums.abilityTypes = {
 	bomb = "bomb",
 	godmode = "godmode",
 	teleport = "teleport",
+	steal = "steal",
 }
 
 enums.Colors = {
