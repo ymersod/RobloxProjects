@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
+local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local velocityUtils = require(ReplicatedStorage.Shared.ClientServerModuleScripts.velocityUtils)
 local delayUtil = require(ServerScriptService.Server.ServerModuleScripts.delayUtil)
@@ -26,6 +27,8 @@ local ragdollUtils = require(ServerScriptService.Server.ServerModuleScripts.ragd
 
 local emoteClientEvent =
 	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("playEmoteEventClient")
+local AbilityUIClientEvent =
+	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("AbilityUIClientEvent")
 
 local function handleBoost(
 	player: Player,
@@ -166,17 +169,34 @@ jumpBoostBind.Event:Connect(function(player: Player, abilityVals: Instance, slot
 	handleBoost(player, abilityVals, slotToolId, "JumpValue")
 end)
 
-slapBind.Event:Connect(function(targetPlayer, self, direction, abilityVals: StringValue?)
+slapBind.Event:Connect(function(targetPlayer: Player, self: Player, direction, abilityVals: StringValue?, tool: Tool)
+	local selfChar = self.Character
 	local passiveValue = abilityVals and abilityVals:GetAttribute("abilityType")
-	print(passiveValue)
+
 	if abilityVals and passiveValue and passiveValue == enums.abilityTypes.slimy then
 		handleBoost(targetPlayer, abilityVals, "slimy", "SpeedValue", true)
 		ragdollUtils.ragdoll(targetPlayer, direction, 2)
 	elseif abilityVals and passiveValue and passiveValue == enums.abilityTypes.hell then
 		killPlayerServer.killPlayer(targetPlayer)
+		local startsound, _ = getStartEndSound(tool, selfChar)
+		handleSoundAndDelays(0, startsound, nil, self)
 	elseif abilityVals and passiveValue and passiveValue == enums.abilityTypes.steal then
 		local stealAmount = abilityVals and abilityVals:GetAttribute("StealAmount")
 		KingCoinFunctions.StealKingScore(targetPlayer, self, stealAmount)
+		ragdollUtils.ragdoll(targetPlayer, direction, 2)
+		local startsound, _ = getStartEndSound(tool, selfChar)
+		handleSoundAndDelays(0, startsound, nil, self)
+	elseif abilityVals and passiveValue and passiveValue == enums.abilityTypes.brainrot then
+		local duration = abilityVals:GetAttribute("duration")
+		print(duration)
+		local targetChar = targetPlayer and targetPlayer.Character
+		if not targetChar then
+			return
+		end
+
+		AbilityUIClientEvent:InvokeClient(targetPlayer, enums.abilityTypes.brainrot, duration)
+		local startsound, _ = getStartEndSound(tool, targetChar)
+		handleSoundAndDelays(duration, startsound, nil, targetPlayer)
 		ragdollUtils.ragdoll(targetPlayer, direction, 2)
 	else
 		ragdollUtils.ragdoll(targetPlayer, direction, 2)
@@ -250,6 +270,7 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 		local angle = abilityVals:GetAttribute("angle")
 		local power = abilityVals:GetAttribute("power")
 		local upAngle = abilityVals:GetAttribute("upAngle")
+		local drainPercent = abilityVals:GetAttribute("drainpercent")
 
 		local animationId = abilityVals:GetAttribute("animationId")
 		if not animationId or not char then
@@ -271,6 +292,7 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 			local players = abilityUtils.getPlayersInCone(player, hrp.Position, hrp.CFrame.LookVector, angle, range)
 
 			for _, playerHit in ipairs(players) do
+				KingCoinFunctions.StealKingScore(playerHit, player, drainPercent)
 				ragdollUtils.ragdoll(playerHit, (hrp.CFrame.LookVector + Vector3.new(0, upAngle, 0)) * power, 3)
 			end
 		end)
@@ -282,9 +304,10 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 		local animationId = abilityVals:GetAttribute("animationId")
 		local power = abilityVals:GetAttribute("power")
 		local upAngle = abilityVals:GetAttribute("upAngle")
-		local trackLength: number? = emoteClientEvent:InvokeClient(player, animationId, true, 2)
+		local fuseTime = abilityVals:GetAttribute("fuseTime")
+		local trackLength: number? = emoteClientEvent:InvokeClient(player, animationId, true, 3)
 
-		if not animationId or not char then
+		if not animationId or not char or not trackLength then
 			warn("Missing animationId or character")
 			return
 		end
@@ -300,17 +323,16 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 		local bombVisual = tool:FindFirstChild("Meshes/dynamite") :: MeshPart?
 		local pos = bombVisual and bombVisual.CFrame.Position or hrp.Position
 
-		task.delay(trackLength, function()
-			local states = player:FindFirstChild("States")
-			local ExternalBombSafe = states and states:FindFirstChild("ExternalBombSafe") :: BoolValue?
-			ExternalBombSafe.Value = true
-			handleSoundAndDelays(duration, startSound, nil, player, function()
-				ExternalBombSafe.Value = false
-			end)
-
-			local item = bombUtils.createBombItem(bombPrefab:Clone(), pos, workspace)
-			velocityUtils.applyKnockback(item, (hrp.CFrame.LookVector + Vector3.new(0, upAngle, 0)) * power)
+		local states = player:FindFirstChild("States")
+		local ExternalBombSafe = states and states:FindFirstChild("ExternalBombSafe") :: BoolValue?
+		ExternalBombSafe.Value = true
+		handleSoundAndDelays(duration, startSound, nil, player, function()
+			ExternalBombSafe.Value = false
 		end)
+
+		local item = bombUtils.createBombItem(bombPrefab:Clone(), pos, workspace, fuseTime)
+		velocityUtils.applyKnockback(item, (hrp.CFrame.LookVector + Vector3.new(0, upAngle, 0)) * power)
+
 		return
 	end
 
@@ -358,6 +380,113 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 
 			char:SetPrimaryPartCFrame(destinationCFrame)
 		end
+	end
+
+	-- [[[ MOTHER NATURE ]]]
+	if abilityType and duration and abilityType == enums.abilityTypes.nature then
+		local animationId = abilityVals:GetAttribute("animationId")
+		local earthquakeDur = abilityVals:GetAttribute("earthqDur")
+		local power = abilityVals:GetAttribute("power")
+		local upAngle = abilityVals:GetAttribute("upAngle")
+		local spawnableRef = tool:FindFirstChild("SpawnableRef") :: ObjectValue
+		local drainPercent = abilityVals:GetAttribute("drainPercent")
+		local slamClone: MeshPart = spawnableRef.Value:Clone()
+
+		local trackLength: number? = emoteClientEvent:InvokeClient(player, animationId, true, 1)
+		local startSound = getStartEndSound(tool, char)
+		abilityVals:SetAttribute("boostTime", trackLength)
+
+		handleBoost(player, abilityVals, "earthq", "SpeedValue", true)
+		task.delay(trackLength, function()
+			handleSoundAndDelays(duration, startSound, nil, player)
+
+			slamClone.Size = Vector3.new(0.01, 0.01, 0.01)
+			slamClone.Rotation = Vector3.new(0, 90, 0)
+			local fowardOffset = hrp.CFrame.LookVector * 5
+			local heightOffset = Vector3.new(0, 5, 0)
+			slamClone.Position = hrp.Position + fowardOffset + heightOffset
+			slamClone.Rotation = Vector3.new(0, 0, 180)
+			slamClone.Parent = workspace
+
+			local targetSize = Vector3.new(31.164, 21.099, 37.107)
+			local tween = createTweenFunctions.GrowMesh(slamClone, earthquakeDur, targetSize)
+
+			task.spawn(function()
+				local playersHit = abilityUtils.checkAoE(slamClone, player, targetSize)
+
+				for _, hitPlayer in ipairs(playersHit) do
+					if hitPlayer.Character and hitPlayer.Character:FindFirstChild("HumanoidRootPart") then
+						local targetHRP = hitPlayer.Character.HumanoidRootPart
+
+						local pushDir = (targetHRP.Position - hrp.Position).Unit
+
+						local finalDir = (pushDir + Vector3.new(0, upAngle, 0)).Unit
+
+						local directionVector = finalDir * power
+
+						ragdollUtils.ragdoll(hitPlayer, directionVector, 2)
+						KingCoinFunctions.StealKingScore(hitPlayer, player, drainPercent, true, nil)
+					end
+				end
+			end)
+
+			tween:Play()
+			tween.Completed:Connect(function()
+				slamClone:Destroy()
+			end)
+		end)
+
+		return
+	end
+
+	-- [[[ AIRBENDER ]]]
+	if abilityType and duration and abilityType == enums.abilityTypes.air then
+		local animationId = abilityVals:GetAttribute("animationId")
+		local speed = abilityVals:GetAttribute("speed")
+		local power = abilityVals:GetAttribute("power")
+		local aliveDur = abilityVals:GetAttribute("aliveDur")
+		local drainPercent = abilityVals:GetAttribute("drainPercent")
+		local spawnableRef = tool:FindFirstChild("SpawnableRef") :: ObjectValue
+
+		local trackLength: number? = emoteClientEvent:InvokeClient(player, animationId, true, 3)
+
+		if not trackLength then
+			warn("wtf")
+			return
+		end
+		task.delay(trackLength / 1.5, function()
+			local slashClone: Model = spawnableRef.Value:Clone()
+			local pPart = slashClone.PrimaryPart
+			slashClone.Parent = workspace
+
+			local forwardOffset = hrp.CFrame.LookVector * 5
+			local spawnPosition = hrp.Position + forwardOffset
+
+			local rotationCorrection = CFrame.Angles(math.rad(90), math.rad(180), -math.rad(90))
+			pPart.CFrame = CFrame.new(spawnPosition) * hrp.CFrame.Rotation * rotationCorrection
+
+			local targetCFrame = pPart.CFrame * CFrame.new(speed, 0, 0)
+			local tween = createTweenFunctions.MovePart(pPart, targetCFrame, aliveDur)
+			tween:Play()
+
+			local hitId: { number } = {}
+			pPart.Touched:Connect(function(hit)
+				if hit and hit.Parent:IsA("Model") then
+					local playerhit = Players:GetPlayerFromCharacter(hit.Parent)
+
+					if playerhit and playerhit.UserId ~= player.UserId and not table.find(hitId, playerhit.UserId) then
+						print("hitting player")
+						table.insert(hitId, playerhit.UserId)
+						ragdollUtils.ragdoll(playerhit, pPart.CFrame.RightVector.Unit * power, 2)
+						KingCoinFunctions.StealKingScore(playerhit, player, drainPercent, true, nil)
+					end
+				end
+			end)
+			task.delay(aliveDur, function()
+				slashClone:Destroy()
+			end)
+		end)
+		return
 	end
 	warn("No ability logic happened")
 end)

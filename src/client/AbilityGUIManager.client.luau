@@ -102,7 +102,7 @@ function setAbility(equippedTool: Tool?, isAdded: boolean?)
 			if chargeTime and chargeTime > 0 then
 				local entry = {
 					canActivate = true,
-					saveSlot = (abilityValsT.Parent and abilityValsT.Parent:GetAttribute("SaveSlot")),
+					saveSlot = 0,
 				}
 				table.insert(activationTable, entry)
 				local index = table.find(activationTable, entry)
@@ -128,11 +128,13 @@ function updateGui()
 	end
 
 	local curSaveSlot = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("SaveSlot")
+	local curSlotStr = tostring(curSaveSlot)
 	local activationPairMatch: { canActivate: boolean, saveSlot: number }? = nil
-	for _, acvationPair in ipairs(activationTable) do
-		if tostring(acvationPair.saveSlot) == tostring(curSaveSlot) then
-			activationPairMatch = acvationPair
-			continue
+	for _, activationPair in ipairs(activationTable) do
+		local slotStr = tostring(activationPair.saveSlot)
+		if slotStr == curSlotStr or slotStr == "0" then
+			activationPairMatch = activationPair
+			break
 		end
 	end
 
@@ -194,14 +196,17 @@ local function activateAbility(actionName, inputState, inputObject)
 		end
 
 		local curSaveSlot = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("SaveSlot")
+		local curSlotStr = tostring(curSaveSlot)
 		if not curSaveSlot then
 			curSaveSlot = " "
 		end
+
 		local activationPairMatch: { canActivate: boolean, saveSlot: number }? = nil
-		for _, acvationPair in ipairs(activationTable) do
-			if tostring(acvationPair.saveSlot) == tostring(curSaveSlot) then
-				activationPairMatch = acvationPair
-				continue
+		for _, activationPair in ipairs(activationTable) do
+			local slotStr = tostring(activationPair.saveSlot)
+			if slotStr == curSlotStr or slotStr == "0" then
+				activationPairMatch = activationPair
+				break
 			end
 		end
 
@@ -232,7 +237,7 @@ local function activateAbility(actionName, inputState, inputObject)
 			if not toolId then
 				toolId = " "
 			end
-			-- Add your ability logic here (e.g., effects, damage, etc.)
+
 			abilityEvent:FireServer(abilityValsT, curSaveSlot .. "" .. toolId)
 		end
 	end

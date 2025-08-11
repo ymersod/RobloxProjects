@@ -132,4 +132,21 @@ function abilityUtils.getPlayersInCone(
 
 	return playersInCone
 end
+
+function abilityUtils.checkAoE(obj: BasePart, player: Player, targetSize: Vector3)
+	local playersHit: { Player } = {}
+	for _, plr in ipairs(game.Players:GetPlayers()) do
+		if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") and plr ~= player then
+			local targetHRP = plr.Character.HumanoidRootPart
+			local dist = (targetHRP.Position - obj.Position).Magnitude
+			local maxRadius = math.max(targetSize.X, targetSize.Z) / 2
+			if dist <= maxRadius then
+				table.insert(playersHit, plr)
+			end
+		end
+	end
+
+	return playersHit
+end
+
 return abilityUtils

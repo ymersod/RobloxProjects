@@ -12,7 +12,11 @@ function bombUtils.giveBombToPlayer(player: Player, bomb: Tool)
 	end
 end
 
-function bombUtils.createBombItem(bomb: Tool, startingPosition: Vector3, parent)
+function bombUtils.createBombItem(bomb: Tool, startingPosition: Vector3, parent, newFuse: number?)
+	if newFuse then
+		_ = bomb.PrimaryPart and bomb.PrimaryPart:SetAttribute("FUSE_TIME_SECOND", newFuse)
+	end
+
 	local item = itemSphere:Clone()
 	item.Position = startingPosition
 	item.Parent = parent

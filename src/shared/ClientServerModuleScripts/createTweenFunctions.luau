@@ -16,7 +16,7 @@ function tweenCreate.Pulse(gui: GuiObject, scaleFactor: number, duration: number
 	return growTween, shrinkTween
 end
 
-function tweenCreate.Pulse2(gui: GuiObject, scaleFactor: number, repeatCount:number, iterationDuration: number)
+function tweenCreate.Pulse2(gui: GuiObject, scaleFactor: number, repeatCount: number, iterationDuration: number)
 	local originalSize = gui.Size
 	local pulseSize = UDim2.fromScale(originalSize.X.Scale + scaleFactor, originalSize.Y.Scale + scaleFactor)
 
@@ -94,12 +94,21 @@ function tweenCreate.Grow(gui: Frame, duration: number, startSize: UDim2?, endSi
 
 	return tween
 end
+
 function tweenCreate.Grow2(gui: Frame, duration: number, endSize: UDim2?)
 	local finalSize = endSize or UDim2.new(1, 0, 1, 0)
 
 	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 	local tween = TweenService:Create(gui, tweenInfo, { Size = finalSize })
 
+	return tween
+end
+
+function tweenCreate.GrowMesh(part: BasePart, duration: number, endSize: Vector3?)
+	local finalSize = endSize or Vector3.one
+
+	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+	local tween = TweenService:Create(part, tweenInfo, { Size = finalSize })
 	return tween
 end
 
@@ -226,6 +235,22 @@ function tweenCreate.BlowToSize(part: BasePart?, targetSize: Vector3, dur: numbe
 	local pulse = TweenService:Create(part, tweenInfo, { Size = targetSize })
 
 	return pulse
+end
+
+function tweenCreate.SizeTween(frame: Frame, targetSize: UDim2, duration: number)
+	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+	return TweenService:Create(frame, tweenInfo, { Size = targetSize })
+end
+
+function tweenCreate.RotationTween(frame: Frame, targetRotation: number, duration: number)
+	local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+	return TweenService:Create(frame, tweenInfo, { Rotation = targetRotation })
+end
+
+function tweenCreate.MovePart(part: Part, targetCframe: CFrame, duration: number)
+	local tweeninfo = TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+	local tween = TweenService:Create(part, tweeninfo, { CFrame = targetCframe })
+	return tween
 end
 
 return tweenCreate

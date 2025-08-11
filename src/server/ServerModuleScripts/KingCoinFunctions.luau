@@ -113,7 +113,7 @@ function funcs.spawnMultipleKingCoinOfSizeRangesFromPlayers(
 	)
 end
 
-function funcs.StealKingScore(playerHit: Player, self: Player, drainPercent: number, giveXp: true?)
+function funcs.StealKingScore(playerHit: Player, self: Player, drainPercent: number, giveXp: true?, shouldDrain: true?)
 	local playerHitLeaderStats = playerHit:FindFirstChild("leaderstats")
 	local playerHitkingScore: IntValue = playerHitLeaderStats and playerHitLeaderStats:FindFirstChild("King Score")
 
@@ -128,7 +128,8 @@ function funcs.StealKingScore(playerHit: Player, self: Player, drainPercent: num
 	local drainAmount = playerHitkingScore.Value * drainPercent
 	local flooredDrainAmount = math.floor(drainAmount)
 
-	playerHitkingScore.Value = playerHitkingScore.Value - flooredDrainAmount * 2
+	local mult = shouldDrain and 1.5 or 1
+	playerHitkingScore.Value = playerHitkingScore.Value - math.floor(flooredDrainAmount * mult)
 	selfKingScore.Value = selfKingScore.Value + flooredDrainAmount
 
 	if giveXp then

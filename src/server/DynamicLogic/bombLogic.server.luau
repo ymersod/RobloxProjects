@@ -162,7 +162,11 @@ function explode()
 			tempPart:Destroy()
 		end)
 	end
-	bomb.Parent:Destroy()
+	if bomb.Parent.Parent and bomb.Parent.Parent.Name == "ItemSphere" then
+		bomb.Parent.Parent:Destroy()
+	else
+		bomb.Parent:Destroy()
+	end
 end
 
 local function pushPlayerFromCurPlayer(player)
