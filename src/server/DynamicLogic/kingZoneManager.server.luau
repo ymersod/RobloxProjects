@@ -4,7 +4,8 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local kingZoneScript = ServerScriptService:WaitForChild("Server"):WaitForChild("DynamicLogic"):WaitForChild("kingzone")
 
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
-
+local kingZoneActivateClient =
+	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("KingZoneActivateClient")
 local this = script.Parent
 local kingZones = {}
 local waitTime = this:GetAttribute("swapActiveZoneSeconds")
@@ -44,63 +45,96 @@ local function DifferenceOperation(a_1: { Instance }, a_2: { Instance }): { Inst
 	return output
 end
 
-task.spawn(function()
-	local initialSizes: { { Model: UnionOperation, Size: Vector3 } } = {}
-	while true do
-		local newActiveZones = {}
-		local selectIndex = math.random(1, #kingZones)
-		for i = 1, numberOfZonesActive do
-			local selected = kingZones[selectIndex] -- selects a king zone
-			local endIndex = #kingZones - (i - 1) -- gets the index of the last unselected zone
-			-- swaps the selected zone with the last unselected zone
-			kingZones[selectIndex] = kingZones[endIndex]
-			kingZones[endIndex] = selected
+local function shuffle(t)
+	for i = #t, 2, -1 do
+		local j = math.random(1, i)
+		t[i], t[j] = t[j], t[i]
+	end
+end
 
-			table.insert(newActiveZones, selected) -- adds selected zone to an list
-			selectIndex = math.random(1, #kingZones - i) -- selects another zone index
+task.spawn(function()
+	local previousActiveZones = {} -- track zones from last cycle
+
+	while true do
+		-- Create candidate list excluding previousActiveZones
+		local candidates = {}
+		for _, zone in ipairs(kingZones) do
+			local isPrevActive = false
+			for _, prevZone in ipairs(previousActiveZones) do
+				if zone == prevZone then
+					isPrevActive = true
+					break
+				end
+			end
+			if not isPrevActive then
+				table.insert(candidates, zone)
+			end
 		end
 
-		local unselectedZone = DifferenceOperation(kingZones, newActiveZones) -- gets all zones that won't be active
+		-- Shuffle candidates to randomize selection
+		shuffle(candidates)
 
-		-- creates and plays the animations for all zones that won't be active
-		local pulseTweens: { Tween } = {}
-		local implodeTweens: { Tween } = {}
-		for i, zone in ipairs(unselectedZone) do
+		local newActiveZones = {}
+
+		-- First fill newActiveZones from candidates (zones not used last time)
+		for i = 1, math.min(numberOfZonesActive, #candidates) do
+			table.insert(newActiveZones, candidates[i])
+		end
+
+		-- If still need more zones, fill from previousActiveZones (allow repeats only if necessary)
+		if #newActiveZones < numberOfZonesActive then
+			shuffle(previousActiveZones)
+			for i = 1, numberOfZonesActive - #newActiveZones do
+				if previousActiveZones[i] then
+					table.insert(newActiveZones, previousActiveZones[i])
+				else
+					-- fallback if previousActiveZones too small (just use kingZones)
+					table.insert(newActiveZones, kingZones[1])
+				end
+			end
+		end
+
+		-- Now do your animations and attribute updates as before
+
+		local unselectedZone = DifferenceOperation(kingZones, newActiveZones)
+
+		-- Animation code (pulse, implode) for unselected zones
+		local pulseTweens = {}
+		local implodeTweens = {}
+		local initialSizes = {}
+		for _, zone in ipairs(unselectedZone) do
 			local model = zone:FindFirstChildOfClass("UnionOperation")
 			if model and zone:GetAttribute("isActive") then
-				local pulseTween = createTweenFunctions.PulseSize(model, model.Size * 0.9, 4, 2)
-				local implodeTween = createTweenFunctions.Implode(model, 2)
-				table.insert(pulseTweens, pulseTween)
-				table.insert(implodeTweens, implodeTween)
+				table.insert(pulseTweens, createTweenFunctions.PulseSize(model, model.Size * 0.9, 4, 2))
+				table.insert(implodeTweens, createTweenFunctions.Implode(model, 2))
 				table.insert(initialSizes, { Model = model, Size = model.Size })
 			end
 		end
-		for i, t in ipairs(pulseTweens) do
-			t:Play()
+
+		for _, tween in ipairs(pulseTweens) do
+			tween:Play()
 		end
 		if #pulseTweens > 0 then
 			pulseTweens[1].Completed:Wait()
 		end
-		for i, t in ipairs(implodeTweens) do
-			t:Play()
+		for _, tween in ipairs(implodeTweens) do
+			tween:Play()
 		end
 		if #implodeTweens > 0 then
 			implodeTweens[1].Completed:Wait()
 		end
 
-		if #unselectedZone > 0 then
-			for _, kingZone in ipairs(unselectedZone) do
-				kingZone:SetAttribute("isActive", false)
-			end
+		for _, zone in ipairs(unselectedZone) do
+			zone:SetAttribute("isActive", false)
 		end
 
-		-- resets the sizes of all models changed by animations
-		for i, zone in ipairs(initialSizes) do
-			zone.Model.Size = zone.Size
+		-- Reset sizes
+		for _, zoneInfo in ipairs(initialSizes) do
+			zoneInfo.Model.Size = zoneInfo.Size
 		end
 
-		-- creates new plays animations that expand new active zones to the normal size
-		for i, zone in ipairs(newActiveZones) do
+		-- Animate new active zones
+		for _, zone in ipairs(newActiveZones) do
 			local model = zone:FindFirstChildOfClass("UnionOperation")
 			if model and not zone:GetAttribute("isActive") then
 				zone:SetAttribute("isActive", true)
@@ -108,9 +142,12 @@ task.spawn(function()
 				model.Size = Vector3.zero
 				blowUpSizeTween:Play()
 			end
+			kingZoneActivateClient:FireAllClients(zone, 7)
 		end
-		table.clear(initialSizes)
 
-		task.wait(waitTime) -- waits until next zone change window
+		-- Update previousActiveZones for next cycle
+		previousActiveZones = newActiveZones
+
+		task.wait(5)
 	end
 end)

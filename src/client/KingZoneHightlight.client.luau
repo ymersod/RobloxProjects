@@ -2,6 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = game:GetService("Players").LocalPlayer
+
 local kingZoneActivateClient =
 	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("KingZoneActivateClient")
 local createTweenFunctionsScript = ReplicatedStorage:WaitForChild("Shared")
@@ -12,66 +13,96 @@ local createTweenFunctions = require(createTweenFunctionsScript)
 
 local rootFrame: Frame =
 	player:WaitForChild("PlayerGui"):WaitForChild("ScreenGui"):WaitForChild("KingZoneHighlightTestFrame")
-local spinnerFrame: Frame = player
-	:WaitForChild("PlayerGui")
-	:WaitForChild("ScreenGui")
-	:WaitForChild("KingZoneHighlightTestFrame")
-	:WaitForChild("Spinner")
-local backglowImage: ImageLabel = player
-	:WaitForChild("PlayerGui")
-	:WaitForChild("ScreenGui")
-	:WaitForChild("KingZoneHighlightTestFrame")
-	:WaitForChild("Backglow")
+local spinnerTemplate = rootFrame:WaitForChild("Spinner") :: Frame
+local backglowTemplate = rootFrame:WaitForChild("Backglow") :: ImageLabel
 
-local spinnerTween = createTweenFunctions.Pulse2(spinnerFrame, 0.05, -1, 1)
-local glowTween = createTweenFunctions.Pulse2(backglowImage, 0.1, -1, 1)
+-- Active kingzones state table
+local activeKingzones = {} -- [kingzoneInstance] = { spinner, backglow, spinnerTween, glowTween, expiration }
 
-spinnerTween:Play()
-glowTween:Play()
+-- Create UI clones + tweens but don't show yet
+local function createUIForKingzone()
+	local spinnerClone = spinnerTemplate:Clone()
+	local backglowClone = backglowTemplate:Clone()
 
--- TODO: change it to work for more than one kingzone, when/if ever needed
-local zonePos: Vector3 = Vector3.zero
+	spinnerClone.Parent = rootFrame
+	backglowClone.Parent = rootFrame
 
-local function setupKingZone(kingzone: Instance)
-	if kingzone:IsA("Part") then
-		local initIsActive = kingzone:GetAttribute("isActive")
-		if initIsActive then
-			local kingZoneModel = kingzone:WaitForChild("KingZoneModel") :: UnionOperation
-			zonePos = kingZoneModel and kingZoneModel.Position or zonePos
-		end
+	spinnerClone.Visible = false
+	backglowClone.Visible = false
 
-		-- Handle future changes to 'isActive'
-		kingzone:GetAttributeChangedSignal("isActive"):Connect(function()
-			local newValue = kingzone:GetAttribute("isActive")
-			if newValue then
-				local kingZoneModel = kingzone:FindFirstChild("KingZoneModel") :: UnionOperation
-				zonePos = kingZoneModel and kingZoneModel.Position or zonePos
-			end
-		end)
+	local spinnerTween = createTweenFunctions.Pulse2(spinnerClone, 0.05, -1, 1)
+	local glowTween = createTweenFunctions.Pulse2(backglowClone, 0.1, -1, 1)
+
+	spinnerTween:Play()
+	glowTween:Play()
+
+	return spinnerClone, backglowClone, spinnerTween, glowTween
+end
+
+local function cleanupUIForKingzone(uiData)
+	if uiData.spinnerTween then
+		uiData.spinnerTween:Cancel()
+	end
+	if uiData.glowTween then
+		uiData.glowTween:Cancel()
+	end
+	if uiData.spinner then
+		uiData.spinner:Destroy()
+	end
+	if uiData.backglow then
+		uiData.backglow:Destroy()
 	end
 end
-function setup()
-	local function onFound(kingZoneManager: Part)
-		for _, kingzone in ipairs(kingZoneManager:GetChildren()) do
-			setupKingZone(kingzone)
-		end
 
-		kingZoneManager.ChildAdded:Connect(setupKingZone)
-
-		kingZoneActivateClient.OnClientEvent:Connect(function(dur: number)
-			KingZoneHighligt.Highlight(spinnerFrame, backglowImage, dur)
-			print("Zonepos is: ", zonePos)
-		end)
+-- Setup a kingzone's UI tracking (creates UI but does NOT activate it)
+local function setupKingZone(kingzone: Instance)
+	if kingzone:IsA("Part") and not activeKingzones[kingzone] then
+		local spinnerClone, backglowClone, spinnerTween, glowTween = createUIForKingzone()
+		activeKingzones[kingzone] = {
+			spinner = spinnerClone,
+			backglow = backglowClone,
+			spinnerTween = spinnerTween,
+			glowTween = glowTween,
+			expiration = 0, -- initially inactive
+		}
 	end
+end
 
+-- Initialize kingzones under the manager
+local function initializeKingZones(kingZoneManager: Part)
+	for _, kingzone in ipairs(kingZoneManager:GetChildren()) do
+		setupKingZone(kingzone)
+	end
+	kingZoneManager.ChildAdded:Connect(setupKingZone)
+end
+
+-- One centralized event handler for activating kingzones
+kingZoneActivateClient.OnClientEvent:Connect(function(kingzoneActivated: Instance, dur: number)
+	local uiData = activeKingzones[kingzoneActivated]
+	if not uiData then
+		-- If UI wasn't setup before, create it now
+		setupKingZone(kingzoneActivated)
+		uiData = activeKingzones[kingzoneActivated]
+	end
+	-- Set expiration time for this activation
+	uiData.expiration = tick() + dur
+	-- Make sure UI is visible
+	uiData.spinner.Visible = true
+	uiData.backglow.Visible = true
+
+	-- Optionally start highlight animation here if needed
+	KingZoneHighligt.Highlight(uiData.spinner, uiData.backglow, dur)
+end)
+
+local function setup()
 	local tagged = CollectionService:GetTagged("KingZoneManager")
 	if #tagged > 0 then
-		onFound(tagged[1])
+		initializeKingZones(tagged[1])
 	else
 		CollectionService:GetInstanceAddedSignal("KingZoneManager"):Wait()
 		local newTagged = CollectionService:GetTagged("KingZoneManager")
 		if #newTagged > 0 then
-			onFound(newTagged[1])
+			initializeKingZones(newTagged[1])
 		else
 			warn("Failed to find KingZoneManager after tag added!")
 		end
@@ -80,38 +111,47 @@ end
 setup()
 
 RunService.Heartbeat:Connect(function()
-	if spinnerFrame.Visible then
-		local screenPos, isOnScreen = workspace.CurrentCamera:WorldToScreenPoint(zonePos)
-		local theta = math.atan(
-			(
-				screenPos.X
-				- (spinnerFrame.AbsolutePosition.X + (spinnerFrame.AbsoluteSize.X / 2) - rootFrame.AbsolutePosition.X)
-			)
-				/ (
-					screenPos.Y
-					- (
-						spinnerFrame.AbsolutePosition.Y
-						+ (spinnerFrame.AbsoluteSize.Y / 2)
-						- rootFrame.AbsolutePosition.Y
+	local now = tick()
+	for kingzone, uiData in pairs(activeKingzones) do
+		if uiData.expiration > now then
+			local kingZoneModel = kingzone:FindFirstChild("KingZoneModel")
+			if kingZoneModel then
+				local zonePos = kingZoneModel.Position
+				local screenPos, isOnScreen = workspace.CurrentCamera:WorldToScreenPoint(zonePos)
+
+				if isOnScreen then
+					uiData.backglow.Position = UDim2.fromOffset(
+						screenPos.X - rootFrame.AbsolutePosition.X,
+						screenPos.Y - rootFrame.AbsolutePosition.Y
 					)
-				)
-		)
+					uiData.backglow.Visible = true
+					uiData.spinner.Visible = true
 
-		if
-			screenPos.Y
-			> (spinnerFrame.AbsolutePosition.Y + (spinnerFrame.AbsoluteSize.Y / 2) - rootFrame.AbsolutePosition.Y)
-		then
-			theta += math.pi
-		end
+					local centerX = uiData.spinner.AbsolutePosition.X
+						+ (uiData.spinner.AbsoluteSize.X / 2)
+						- rootFrame.AbsolutePosition.X
+					local centerY = uiData.spinner.AbsolutePosition.Y
+						+ (uiData.spinner.AbsoluteSize.Y / 2)
+						- rootFrame.AbsolutePosition.Y
 
-		if isOnScreen then
-			backglowImage.Position =
-				UDim2.fromOffset(screenPos.X - rootFrame.AbsolutePosition.X, screenPos.Y - rootFrame.AbsolutePosition.Y)
-			backglowImage.Visible = true
+					local theta = math.atan((screenPos.X - centerX) / (screenPos.Y - centerY))
+					if screenPos.Y > centerY then
+						theta += math.pi
+					end
+
+					uiData.spinner.Rotation = -(theta * (180 / math.pi))
+				else
+					uiData.backglow.Visible = false
+					uiData.spinner.Visible = false
+				end
+			end
 		else
-			backglowImage.Visible = false
+			-- Expired: hide and cleanup UI
+			uiData.backglow.Visible = false
+			uiData.spinner.Visible = false
+
+			cleanupUIForKingzone(uiData)
+			activeKingzones[kingzone] = nil
 		end
-		--print("theta is " .. (theta * (180/math.pi)) .. " degrees")
-		spinnerFrame.Rotation = -(theta * (180 / math.pi))
 	end
 end)
