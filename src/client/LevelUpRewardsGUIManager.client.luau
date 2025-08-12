@@ -50,6 +50,16 @@ local uiStates = {
 
 local updateGUI
 
+-- for _, bla in ipairs(levelUpRewardsGui:GetDescendants()) do
+-- 	local success, err = pcall(function()
+-- 		print(bla.Name .. " " .. bla.ZIndex)
+-- 		return
+-- 	end)
+-- 	if success then
+-- 	else
+-- 	end
+-- end
+
 local function setStars(starChildren: { Frame }, locked: boolean)
 	local foundStar = nil
 	for _, starChild: Frame in starChildren do
@@ -210,7 +220,7 @@ updateGUI = function()
 		for i = 1, count do
 			setForState(levels[i], uiStates.Claimed)
 		end
-		if curLevel > tonumber(result.payload.lastClaimedLevel) then
+		if curLevel > tonumber(result.payload.lastClaimedLevel) and lastClaimedLevel < 1000 then
 			setForState(levels[count + 1], uiStates.Claimable)
 		end
 	end

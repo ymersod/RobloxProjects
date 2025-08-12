@@ -1,12 +1,15 @@
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 local ServerScripService = game:GetService("ServerScriptService")
+local ServerScriptService = game:GetService("ServerScriptService")
 local kingCoinFuncsScript =
 	ServerScripService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("KingCoinFunctions")
 local slapBind = ServerScripService:WaitForChild("Server")
 	:WaitForChild("Abilities")
 	:WaitForChild("BindableEvents")
 	:WaitForChild("slapBind")
+local abilityUtils = require(ServerScriptService.Server.ServerModuleScripts.abilityUtils)
 local kingCoinFuncs = require(kingCoinFuncsScript)
 local expManagerFuncsScript =
 	ServerScripService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("expManagerFunctions")
@@ -35,6 +38,8 @@ local canActivate = true
 -- local COIN_SPAWN_RADIUS = 10
 local KING_SCORE_DRAIN_PERCENT = 0.05
 
+local function doSlapCheck() end
+
 tool.Activated:Connect(function()
 	if not canActivate then
 		return
@@ -50,66 +55,47 @@ tool.Activated:Connect(function()
 		end
 	end
 
-	canActivate = false -- Begin cooldown
-	loadedAnim:Play()
-
-	-- Start cooldown timer
-	task.delay(COOLDOWN, function()
-		canActivate = true
-	end)
-
 	local statVals = tool:FindFirstChild("StatVals")
 
 	if not statVals or not statVals:GetAttribute("Range") then
 		return
 	end
 
-	if tool.Parent and tool.Parent:IsA("Model") and tool.Parent.PrimaryPart then
-		local directionV3 = tool.Parent.PrimaryPart.CFrame.LookVector
+	local char = tool.Parent
+	local player = char and Players:GetPlayerFromCharacter(char)
+	local hrp = char and char:FindFirstChild("HumanoidRootPart") :: BasePart
+	local aniDur = loadedAnim.Length
+	local _, size = tool:GetBoundingBox()
 
-		if
-			tool.Parent:FindFirstChildOfClass("Humanoid")
-			and tool.Parent:FindFirstChildOfClass("Humanoid").MoveDirection.Magnitude > 0
-		then
-			directionV3 = tool.Parent:FindFirstChildOfClass("Humanoid").MoveDirection
-		end
+	if player and char.PrimaryPart then
+		canActivate = false
+		loadedAnim:Play()
 
-		local castParams = RaycastParams.new()
-		castParams.CollisionGroup = "MeeleTools"
-		castParams.FilterType = Enum.RaycastFilterType.Exclude
+		task.delay(COOLDOWN, function()
+			canActivate = true
+		end)
 
-		local shapeCastResults = workspace:Blockcast(
-			tool.Parent.PrimaryPart.CFrame,
-			Vector3.new(30, 10, 1),
-			directionV3 * (statVals:GetAttribute("Range") + 6),
-			castParams
-		)
+		local hitPlayers = {}
+		local endTime = tick() + aniDur
 
-		shapeCastGismo.drawBlockCast(
-			tool.Parent.PrimaryPart.CFrame,
-			Vector3.new(30, 10, 1),
-			directionV3 * (statVals:GetAttribute("Range") + 6)
-		)
-
-		if
-			shapeCastResults
-			and shapeCastResults.Instance:FindFirstAncestorOfClass("Model")
-			and game.Players:GetPlayerFromCharacter(shapeCastResults.Instance:FindFirstAncestorOfClass("Model"))
-		then
-			local targetPlayer =
-				Players:GetPlayerFromCharacter(shapeCastResults.Instance:FindFirstAncestorOfClass("Model"))
-			if targetPlayer.States.Safe.Value then
-				print(targetPlayer.Name, " is safe!")
+		local connection
+		connection = RunService.Heartbeat:Connect(function()
+			if tick() > endTime then
+				connection:Disconnect()
 				return
 			end
 
-			local player = Players:GetPlayerFromCharacter(tool.Parent)
-			local _ = player and kingCoinFuncs.StealKingScore(targetPlayer, player, KING_SCORE_DRAIN_PERCENT, true)
+			local playersInCone =
+				abilityUtils.getPlayersInCone(player, hrp.Position, hrp.CFrame.LookVector, 80, size.Z + 3.5)
+			for _, target in ipairs(playersInCone) do
+				if not hitPlayers[target] then
+					hitPlayers[target] = true
+					local _ = player and kingCoinFuncs.StealKingScore(target, player, KING_SCORE_DRAIN_PERCENT, true)
 
-			local attackerHRP = tool.Parent:FindFirstChild("HumanoidRootPart")
-			local hitDirection = (shapeCastResults.Instance.Position - attackerHRP.Position).Unit * POWER_MULT
-			local ownerAbilitVals = tool:FindFirstChild("AbilityVals") :: StringValue?
-			slapBind:Fire(targetPlayer, player, hitDirection, ownerAbilitVals, tool)
-		end
+					local ownerAbilitVals = tool:FindFirstChild("AbilityVals") :: StringValue?
+					slapBind:Fire(target, player, hrp.CFrame.LookVector * POWER_MULT, ownerAbilitVals, tool)
+				end
+			end
+		end)
 	end
 end)

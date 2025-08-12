@@ -108,7 +108,7 @@ function abilityUtils.getPlayersInCone(
 	local cosAngle = math.cos(math.rad(coneAngle)) -- For dot product comparison
 
 	local segments = 20
-	-- visualizeCone(originPos, forwardDir, coneAngle, coneDistance, segments)
+	visualizeCone(originPos, forwardDir, coneAngle, coneDistance, segments)
 	for _, otherPlayer in ipairs(Players:GetPlayers()) do
 		if otherPlayer ~= originPlayer then
 			local otherChar = otherPlayer.Character
