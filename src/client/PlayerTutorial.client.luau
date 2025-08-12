@@ -1,6 +1,5 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local KingZoneHighligt = require(ReplicatedStorage.Shared.ClientServerModuleScripts.KingZoneHighligt)
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local uiUtils = require(ReplicatedStorage.Shared.ClientServerModuleScripts.uiUtils)
@@ -47,9 +46,6 @@ if not slotSpace1 then
 	warn("Couldnt find slot")
 	return
 end
-
-local spinnerFrame: Frame = screenGui:WaitForChild("KingZoneHighlightTestFrame"):WaitForChild("Spinner")
-local backglowImage: ImageLabel = screenGui:WaitForChild("KingZoneHighlightTestFrame"):WaitForChild("Backglow")
 
 local overlay: Frame? = nil
 local TEXT_SPEED = 0.02
@@ -110,13 +106,12 @@ end
 
 local function Step7ShowKingzone()
 	local fullText =
-		"The best way to get stronger is going to the zone, the arrow can help you - also look for the tall purple beam"
+		"The best way to get stronger is going to stand in the king-zones - look for the tall purple beams!"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.9, 0), UDim2.new(0.5, 0, 1, 0))
 	label.ZIndex = 51
 
 	animateText(fullText, label, TEXT_SPEED)
 
-	KingZoneHighligt.Highlight(spinnerFrame, backglowImage, KINGZONE_HIGHLIGHT_DUR)
 	task.wait(KINGZONE_HIGHLIGHT_DUR)
 
 	label:Destroy()
@@ -401,13 +396,13 @@ end
 function start()
 	local loginData: StringValue = player:WaitForChild("LocalStats"):WaitForChild("FirstTimeLogin")
 
-	if loginData.Value == enums.Login.FirstTimeLogin then
-		Step1SetupOverlay()
+	if loginData.Value == enums.Login.ConcurrentLogin then
+		Step7ShowKingzone()
 	end
 	loginData.Changed:Once(function(val)
 		print(val)
-		if val == enums.Login.FirstTimeLogin then
-			Step1SetupOverlay()
+		if val == enums.Login.ConcurrentLogin then
+			Step7ShowKingzone()
 		end
 	end)
 end

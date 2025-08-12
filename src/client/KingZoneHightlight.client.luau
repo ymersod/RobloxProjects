@@ -76,21 +76,16 @@ local function initializeKingZones(kingZoneManager: Part)
 	kingZoneManager.ChildAdded:Connect(setupKingZone)
 end
 
--- One centralized event handler for activating kingzones
 kingZoneActivateClient.OnClientEvent:Connect(function(kingzoneActivated: Instance, dur: number)
 	local uiData = activeKingzones[kingzoneActivated]
 	if not uiData then
-		-- If UI wasn't setup before, create it now
 		setupKingZone(kingzoneActivated)
 		uiData = activeKingzones[kingzoneActivated]
 	end
-	-- Set expiration time for this activation
 	uiData.expiration = tick() + dur
-	-- Make sure UI is visible
 	uiData.spinner.Visible = true
 	uiData.backglow.Visible = true
 
-	-- Optionally start highlight animation here if needed
 	KingZoneHighligt.Highlight(uiData.spinner, uiData.backglow, dur)
 end)
 
@@ -146,7 +141,6 @@ RunService.Heartbeat:Connect(function()
 				end
 			end
 		else
-			-- Expired: hide and cleanup UI
 			uiData.backglow.Visible = false
 			uiData.spinner.Visible = false
 
