@@ -52,7 +52,7 @@ local spinnerFrame: Frame = screenGui:WaitForChild("KingZoneHighlightTestFrame")
 local backglowImage: ImageLabel = screenGui:WaitForChild("KingZoneHighlightTestFrame"):WaitForChild("Backglow")
 
 local overlay: Frame? = nil
-local TEXT_SPEED = 0.01
+local TEXT_SPEED = 0.02
 local KINGZONE_HIGHLIGHT_DUR = 4
 
 local function createText(parent, text: string, position: UDim2, size: UDim2): TextLabel
@@ -103,13 +103,14 @@ local function Step8()
 
 	animateText(fullText, label, TEXT_SPEED)
 
-	task.wait(3)
+	task.wait(5)
 
 	label:Destroy()
 end
 
 local function Step7ShowKingzone()
-	local fullText = "To get more tickets"
+	local fullText =
+		"The best way to get stronger is going to the zone, the arrow can help you - also look for the tall purple beam"
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.9, 0), UDim2.new(0.5, 0, 1, 0))
 	label.ZIndex = 51
 
@@ -127,7 +128,6 @@ local function Step6RollForSlapStyle()
 	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.9, 0), UDim2.new(0.5, 0, 1, 0))
 
 	label.ZIndex = 51
-	animateText(fullText, label, TEXT_SPEED)
 
 	uiUtils.raiseZIndex(rollFrame, 50)
 
@@ -163,6 +163,8 @@ local function Step6RollForSlapStyle()
 		uiUtils.raiseZIndex(rollButton, -50)
 		Step7ShowKingzone()
 	end)
+
+	animateText(fullText, label, TEXT_SPEED)
 end
 
 local function Step5PickRollSlot()
@@ -171,7 +173,6 @@ local function Step5PickRollSlot()
 
 	local slotGachaUi2 = slotSpace2Gacha:FindFirstChildOfClass("Frame")
 	label.ZIndex = 51
-	animateText(fullText, label, TEXT_SPEED)
 
 	uiUtils.raiseZIndex(slotGachaUi2, 50)
 
@@ -206,6 +207,8 @@ local function Step5PickRollSlot()
 
 		Step6RollForSlapStyle()
 	end)
+
+	animateText(fullText, label, TEXT_SPEED)
 end
 
 local function Step4OpenGacha()
@@ -214,7 +217,6 @@ local function Step4OpenGacha()
 
 	label.ZIndex = 51
 
-	animateText(fullText, label, TEXT_SPEED)
 	uiUtils.raiseZIndex(rollAccessGui, 50)
 
 	local glow = createGlow(rollAccessGui)
@@ -245,6 +247,8 @@ local function Step4OpenGacha()
 		uiUtils.raiseZIndex(rollAccessGui, -50)
 		Step5PickRollSlot()
 	end)
+
+	animateText(fullText, label, TEXT_SPEED)
 end
 local function Step3OpenAccessBar()
 	local fullText = "Let's try to get a better slap-style - open the menu to the left"
@@ -252,7 +256,6 @@ local function Step3OpenAccessBar()
 
 	label.ZIndex = 51
 
-	animateText(fullText, label, TEXT_SPEED)
 	uiUtils.raiseZIndex(accessGuiOpenClose, 50)
 
 	local glow = createGlow(accessGuiOpenClose)
@@ -283,6 +286,8 @@ local function Step3OpenAccessBar()
 		uiUtils.raiseZIndex(accessGuiOpenClose, -50)
 		Step4OpenGacha()
 	end)
+
+	animateText(fullText, label, TEXT_SPEED)
 end
 
 local function Step2EquipSlapStyle()
@@ -292,7 +297,6 @@ local function Step2EquipSlapStyle()
 	local slotUi1 = slotSpace1:FindFirstChildOfClass("Frame")
 	label.ZIndex = 51
 
-	animateText(fullText, label, TEXT_SPEED)
 	uiUtils.raiseZIndex(slotUi1, 50)
 
 	local glow = createGlow(slotUi1)
@@ -313,9 +317,6 @@ local function Step2EquipSlapStyle()
 			pulseTweenOut.Completed:Wait()
 		end
 	end
-
-	task.spawn(pulse)
-
 	--Cleanup when clicked
 	local button = slotUi1:WaitForChild("Bg"):WaitForChild("EquipButton")
 	button.MouseButton1Click:Once(function()
@@ -325,6 +326,9 @@ local function Step2EquipSlapStyle()
 
 		Step3OpenAccessBar()
 	end)
+	task.spawn(pulse)
+
+	animateText(fullText, label, TEXT_SPEED)
 end
 
 local function Step1SetupOverlay()
@@ -349,15 +353,49 @@ local function Step1SetupOverlay()
 
 	-- Tutorial label
 	local fullText = "Welcome Slapper! Since you're new here let me show you around"
-	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.75, 0), UDim2.new(0.5, 0, 1, 0))
+	local label = createText(screenGui, "", UDim2.new(0.5, 0, 0.7, 0), UDim2.new(0.7, 0, 0.1, 0))
 	label.ZIndex = 51
 
-	animateText(fullText, label, TEXT_SPEED)
+	-- Green glowing "Go" button (under the text)
+	local goButton = Instance.new("TextButton")
+	goButton.Text = "Go"
+	goButton.Font = Enum.Font.SourceSansBold
+	goButton.TextSize = 24
+	goButton.TextColor3 = Color3.new(1, 1, 1)
+	goButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+	goButton.Size = UDim2.new(0, 100, 0, 50)
+	goButton.Position = UDim2.new(0.5, -50, 0.8, 0) -- centered under label
+	goButton.ZIndex = 52
+	goButton.Parent = screenGui
 
-	task.delay(3, function()
+	-- Rounded corners
+	local uiCorner = Instance.new("UICorner")
+	uiCorner.CornerRadius = UDim.new(0, 8)
+	uiCorner.Parent = goButton
+
+	-- Green outline for glow
+	local uiStroke = Instance.new("UIStroke")
+	uiStroke.Thickness = 3
+	uiStroke.Color = Color3.fromRGB(0, 255, 0)
+	uiStroke.Parent = goButton
+
+	-- Pulse glow animation
+	task.spawn(function()
+		while goButton.Parent do
+			uiStroke.Transparency = 0.3
+			task.wait(0.5)
+			uiStroke.Transparency = 0.7
+			task.wait(0.5)
+		end
+	end)
+
+	goButton.MouseButton1Click:Connect(function()
 		label:Destroy()
+		goButton:Destroy()
 		Step2EquipSlapStyle()
 	end)
+
+	animateText(fullText, label, TEXT_SPEED)
 end
 
 function start()
