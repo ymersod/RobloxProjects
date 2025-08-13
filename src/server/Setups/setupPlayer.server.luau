@@ -140,7 +140,7 @@ game.Players.PlayerAdded:Connect(function(player)
 	speedBoost.Parent = localStats
 	local jumpBoost = Instance.new("IntValue")
 	jumpBoost.Name = "JumpValue"
-	jumpBoost.Value = 7.2
+	jumpBoost.Value = 7
 	jumpBoost.Parent = localStats
 	local tickets = Instance.new("IntValue")
 	tickets.Name = "Tickets"

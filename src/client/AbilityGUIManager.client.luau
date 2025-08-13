@@ -82,7 +82,6 @@ function setAbility(equippedTool: Tool?, isAdded: boolean?)
 	if equippedTool then
 		local abilityValsRef = equippedTool:FindFirstChild("AbilityVals")
 		local abilityEventRef = equippedTool:FindFirstChildOfClass("RemoteEvent")
-		local isPassive = abilityValsRef:GetAttribute("passiveType")
 
 		abilityValsT = abilityValsRef
 		abilityEvent = abilityEventRef
@@ -91,17 +90,9 @@ function setAbility(equippedTool: Tool?, isAdded: boolean?)
 			icon.Image = iconRef
 			local chargeTime = abilityValsT:GetAttribute("chargeTimeSeconds")
 
-			if isPassive and abilityEvent then
-				local curSaveSlot = equippedTool:GetAttribute("SaveSlot")
-				local toolId = equippedTool:GetAttribute("ToolId")
-				if toolId and curSaveSlot then
-					abilityEvent:FireServer(abilityValsT, curSaveSlot .. "" .. toolId)
-				end
-			end
-
-			if chargeTime and chargeTime > 0 then
+			if chargeTime then
 				local entry = {
-					canActivate = true,
+					canActivate = false,
 					saveSlot = 0,
 				}
 				table.insert(activationTable, entry)
@@ -128,11 +119,15 @@ function updateGui()
 	end
 
 	local curSaveSlot = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("SaveSlot")
+	if not curSaveSlot then
+		curSaveSlot = 0
+	end
+
 	local curSlotStr = tostring(curSaveSlot)
 	local activationPairMatch: { canActivate: boolean, saveSlot: number }? = nil
 	for _, activationPair in ipairs(activationTable) do
 		local slotStr = tostring(activationPair.saveSlot)
-		if slotStr == curSlotStr or slotStr == "0" then
+		if slotStr == curSlotStr then
 			activationPairMatch = activationPair
 			break
 		end
@@ -196,24 +191,31 @@ local function activateAbility(actionName, inputState, inputObject)
 		end
 
 		local curSaveSlot = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("SaveSlot")
-		local curSlotStr = tostring(curSaveSlot)
+
 		if not curSaveSlot then
-			curSaveSlot = " "
+			curSaveSlot = 0
 		end
+		local curSlotStr = curSaveSlot and tostring(curSaveSlot)
 
 		local activationPairMatch: { canActivate: boolean, saveSlot: number }? = nil
 		for _, activationPair in ipairs(activationTable) do
 			local slotStr = tostring(activationPair.saveSlot)
-			if slotStr == curSlotStr or slotStr == "0" then
+			if slotStr == curSlotStr then
 				activationPairMatch = activationPair
 				break
 			end
 		end
 
 		if not activationPairMatch then
-			local entry = { canActivate = true, saveSlot = curSaveSlot }
-			table.insert(activationTable, entry)
-			activationPairMatch = entry
+			if not curSaveSlot then
+				local entry = { canActivate = false, saveSlot = curSaveSlot }
+				table.insert(activationTable, entry)
+				activationPairMatch = entry
+			else
+				local entry = { canActivate = true, saveSlot = curSaveSlot }
+				table.insert(activationTable, entry)
+				activationPairMatch = entry
+			end
 		end
 
 		print("Trying to activate: ", activationPairMatch)
@@ -230,15 +232,19 @@ local function activateAbility(actionName, inputState, inputObject)
 			if not cd then
 				return
 			end
-
-			toolActivationCooldown(cd, index)
+			if cd > 0 then
+				toolActivationCooldown(cd, index)
+			end
 
 			local toolId = abilityValsT.Parent and abilityValsT.Parent:GetAttribute("ToolId")
 			if not toolId then
-				toolId = " "
+				toolId = "bomb"
 			end
 
 			abilityEvent:FireServer(abilityValsT, curSaveSlot .. "" .. toolId)
+			if curSaveSlot == 0 then
+				activationTable[index] = nil
+			end
 		end
 	end
 end

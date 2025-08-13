@@ -2,6 +2,10 @@ local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local replicatedStorage = game:GetService("ReplicatedStorage")
+local bombBind = ServerScriptService:WaitForChild("Server")
+	:WaitForChild("serverEvents")
+	:WaitForChild("binds")
+	:WaitForChild("bombDestroyingBind")
 
 local pushBackClient = replicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("PushBackClient")
 
@@ -105,9 +109,6 @@ end
 
 function explode()
 	--TODO: Generalize this to a func, similar to the func in SafeZone server. Make a func that return players who is within a sphere
-	if curOwnerPlayer then
-		removeBoosts(curOwnerPlayer)
-	end
 	local playersHit = {}
 	for _, player in pairs(Players:GetPlayers()) do
 		local char = player.Character
@@ -290,6 +291,7 @@ bomb.Parent:GetPropertyChangedSignal("Parent"):Connect(function()
 			curOwnerPlayer = newPlayer
 			local cancellationTokens = addBombBoosts(newPlayer)
 			keyTable[newPlayer.UserId] = cancellationTokens
+			bombBind:Fire(curOwnerPlayer, keyTable)
 		end
 	end
 end)

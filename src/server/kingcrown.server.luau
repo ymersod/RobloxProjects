@@ -198,9 +198,13 @@ runner.Heartbeat:Connect(function()
 	for rank, crownEntry in ipairs(crowns) do
 		local player = topPlayers[rank]
 
+		if not player then
+			continue
+		end
+
 		if player ~= crownEntry.currentPlayer then
 			if crownEntry.currentPlayer then
-				removeModifiers(crownEntry.currentPlayer.UserId)
+				removeModifiers(crownEntry.currentPlayer)
 			end
 
 			crownEntry.currentPlayer = player
