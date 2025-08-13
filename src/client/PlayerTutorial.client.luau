@@ -396,13 +396,13 @@ end
 function start()
 	local loginData: StringValue = player:WaitForChild("LocalStats"):WaitForChild("FirstTimeLogin")
 
-	if loginData.Value == enums.Login.ConcurrentLogin then
-		Step7ShowKingzone()
+	if loginData.Value == enums.Login.FirstTimeLogin then
+		Step1SetupOverlay()
 	end
 	loginData.Changed:Once(function(val)
 		print(val)
-		if val == enums.Login.ConcurrentLogin then
-			Step7ShowKingzone()
+		if val == enums.Login.FirstTimeLogin then
+			Step1SetupOverlay()
 		end
 	end)
 end

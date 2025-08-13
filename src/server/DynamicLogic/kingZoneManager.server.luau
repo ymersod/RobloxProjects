@@ -148,6 +148,6 @@ task.spawn(function()
 		-- Update previousActiveZones for next cycle
 		previousActiveZones = newActiveZones
 
-		task.wait(5)
+		task.wait(waitTime)
 	end
 end)

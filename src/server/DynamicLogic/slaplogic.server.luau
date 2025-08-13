@@ -11,13 +11,6 @@ local slapBind = ServerScripService:WaitForChild("Server")
 	:WaitForChild("slapBind")
 local abilityUtils = require(ServerScriptService.Server.ServerModuleScripts.abilityUtils)
 local kingCoinFuncs = require(kingCoinFuncsScript)
-local expManagerFuncsScript =
-	ServerScripService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("expManagerFunctions")
-local expManagerFuncs = require(expManagerFuncsScript)
-
-local ShapeCastGismosScript =
-	ServerScripService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("ShapeCastGismos")
-local shapeCastGismo = require(ShapeCastGismosScript)
 
 local slapAnimation = ServerStorage:WaitForChild("Animations"):WaitForChild("SlapAni")
 local part = script:FindFirstAncestorOfClass("Tool"):FindFirstChildOfClass("MeshPart") :: MeshPart
