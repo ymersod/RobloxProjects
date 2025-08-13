@@ -21,6 +21,7 @@ if not kingCoin then
 	error("Missing KingCoin in ServerStorage.Pickups")
 end
 
+local Boostmanager = require(ServerScriptService.Server.ServerModuleScripts.Boostmanager)
 local inventoryFunctions = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 local killPlayerServer = require(ServerScriptService.Server.ServerModuleScripts.killPlayerServer)
 local kingCoinFuncs = require(ServerScriptService.Server.ServerModuleScripts.KingCoinFunctions)
@@ -73,28 +74,7 @@ countdownText.Font = Enum.Font.FredokaOne
 countdownText.Text = FUSE_TIME_SECOND
 countdownText.Parent = billboardGui
 
-local types = require(ServerScriptService.Server.ServerModuleScripts.CompIntValTypes)
-local compUtils = require(ServerScriptService.Server.ServerModuleScripts.CompIntValUtils)
 local IsSafeUtil = require(ServerScriptService.Server.ServerModuleScripts.IsSafeUtil)
-
-local jumpAmp: types.CompModifier = {
-	Name = "BombJumpAmp",
-	Value = AMP_JUMP_PERCENT,
-}
-local speedAmp: types.CompModifier = {
-	Name = "BombSpeedAmp",
-	Value = AMP_SPEED_PERCENT,
-}
-
-local function removeBombBoosts(player: Player)
-	compUtils.removeModifier(player, "JumpValue", jumpAmp)
-	compUtils.removeModifier(player, "SpeedValue", speedAmp)
-end
-
-local function setBombBoosts(player: Player)
-	compUtils.applyModifier(player, "JumpValue", jumpAmp)
-	compUtils.applyModifier(player, "SpeedValue", speedAmp)
-end
 
 local function playExplosion(position: Vector3)
 	local explosion = Instance.new("Explosion")
@@ -105,10 +85,28 @@ local function playExplosion(position: Vector3)
 	explosion.Parent = workspace
 end
 
+local keyTable: { [string]: { string } } = {}
+
+local function removeBoosts(player: Player)
+	if not player then
+		return
+	end
+	local userId = player.UserId
+	local oldKeys = keyTable[userId]
+	if oldKeys then
+		for _, key in ipairs(oldKeys) do
+			if key then
+				Boostmanager.RemoveBoost(key)
+			end
+		end
+		keyTable[userId] = nil
+	end
+end
+
 function explode()
 	--TODO: Generalize this to a func, similar to the func in SafeZone server. Make a func that return players who is within a sphere
 	if curOwnerPlayer then
-		removeBombBoosts(curOwnerPlayer)
+		removeBoosts(curOwnerPlayer)
 	end
 	local playersHit = {}
 	for _, player in pairs(Players:GetPlayers()) do
@@ -267,6 +265,18 @@ hitBox.Touched:Connect(function(hit)
 	end)
 end)
 
+local function addBombBoosts(player: Player): { string }
+	local cancellationTokens = {}
+
+	local speedCancellationToken = Boostmanager.AddBoost(player, "SpeedValue", "callback", AMP_SPEED_PERCENT)
+	local jumpCancellationToken = Boostmanager.AddBoost(player, "JumpValue", "callback", AMP_JUMP_PERCENT)
+
+	table.insert(cancellationTokens, speedCancellationToken)
+	table.insert(cancellationTokens, jumpCancellationToken)
+
+	return cancellationTokens
+end
+
 bomb.Parent:GetPropertyChangedSignal("Parent"):Connect(function()
 	local parent = bomb.Parent
 	local grandparent = parent and parent.Parent
@@ -274,11 +284,12 @@ bomb.Parent:GetPropertyChangedSignal("Parent"):Connect(function()
 		local newPlayer = Players:GetPlayerFromCharacter(grandparent)
 		if newPlayer and newPlayer ~= curOwnerPlayer then
 			if curOwnerPlayer then
-				removeBombBoosts(curOwnerPlayer)
+				removeBoosts(curOwnerPlayer)
 			end
 			curOwnerModel = grandparent
 			curOwnerPlayer = newPlayer
-			setBombBoosts(newPlayer)
+			local cancellationTokens = addBombBoosts(newPlayer)
+			keyTable[newPlayer.UserId] = cancellationTokens
 		end
 	end
 end)

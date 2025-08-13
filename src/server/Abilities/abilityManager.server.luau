@@ -3,6 +3,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
+local BoostTypes = require(ServerScriptService.Server.ServerModuleScripts.BoostTypes)
+local Boostmanager = require(ServerScriptService.Server.ServerModuleScripts.Boostmanager)
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local velocityUtils = require(ReplicatedStorage.Shared.ClientServerModuleScripts.velocityUtils)
@@ -17,8 +19,6 @@ local spawnAbilityBind = bindableEvents:WaitForChild("spawnAbilityBind")
 local slapLogicPassiveBind = bindableEvents:WaitForChild("slapLogicPassiveBind")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
 
-local compTypes = require(ServerScriptService.Server.ServerModuleScripts.CompIntValTypes)
-local compUtils = require(ServerScriptService.Server.ServerModuleScripts.CompIntValUtils)
 local KingCoinFunctions = require(ServerScriptService.Server.ServerModuleScripts.KingCoinFunctions)
 local abilityUtils = require(ServerScriptService.Server.ServerModuleScripts.abilityUtils)
 local bombUtils = require(ServerScriptService.Server.ServerModuleScripts.bombUtils)
@@ -30,13 +30,7 @@ local emoteClientEvent =
 local AbilityUIClientEvent =
 	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("AbilityUIClientEvent")
 
-local function handleBoost(
-	player: Player,
-	abilityVals: Instance,
-	slotToolId: string,
-	boostType: compTypes.CompIntIdSuffixes,
-	postMul: true?
-)
+local function handleBoost(player: Player, abilityVals: Instance, _: string, boostType: BoostTypes.BoostTypes, _: true?)
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if not humanoid then
@@ -51,22 +45,7 @@ local function handleBoost(
 		return
 	end
 
-	local modifierName = slotToolId .. boostType .. "Amp"
-	local modifier: compTypes.CompModifier = { Name = modifierName, Value = amp, PostMul = postMul }
-	compUtils.applyModifier(player, boostType, modifier)
-
-	delayUtil.Delay(timer, function()
-		local newCharacter = player and player.Character
-		local newHumanoid = newCharacter and newCharacter:FindFirstChildOfClass("Humanoid")
-
-		if newHumanoid and newHumanoid:IsDescendantOf(game) then
-			compUtils.removeModifier(player, boostType, modifier)
-		else
-			player.CharacterAdded:Once(function()
-				compUtils.removeModifier(player, boostType, modifier)
-			end)
-		end
-	end)
+	Boostmanager.AddBoost(player, boostType, "delay", amp, timer)
 end
 
 local function getStartEndSound(tool, char: Model)

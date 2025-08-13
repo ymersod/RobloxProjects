@@ -4,16 +4,11 @@ local serverStorage = game:GetService("ServerStorage")
 local collectionService = game:GetService("CollectionService")
 
 local ServerScriptService = game:GetService("ServerScriptService")
-local types = require(ServerScriptService.Server.ServerModuleScripts.CompIntValTypes)
-local compUtils = require(ServerScriptService.Server.ServerModuleScripts.CompIntValUtils)
+local Boostmanager = require(ServerScriptService.Server.ServerModuleScripts.Boostmanager)
 
 local hatsFolder = serverStorage:WaitForChild("Hats"):WaitForChild("KingCrowns")
 
 local rankRequirementId = "RANK_REQUIREMENT"
-
-local prefixCrownSpeedBoostName = "KingSpeedBoost"
-local prefixCrownJumpBoostName = "KingJumpBoost"
-local prefixCrownExpBoosName = "KingExpBoost"
 
 type Boost = {
 	Name: string,
@@ -23,13 +18,15 @@ type Boost = {
 type CrownEntry = {
 	itemPrefab: Instance,
 	item: Instance?,
-	speedBoost: types.CompModifier,
-	jumpBoost: types.CompModifier,
-	expBoost: types.CompModifier,
+	speedBoost: number,
+	jumpBoost: number,
+	expBoost: number,
 	currentPlayer: Player?,
 	enabled: boolean,
 }
 local crowns: { [number]: CrownEntry } = {}
+
+local keyTable: { [string]: { key: string } } = {}
 
 for _, item in ipairs(hatsFolder:GetChildren()) do
 	if collectionService:HasTag(item, "KingCrown") then
@@ -63,9 +60,9 @@ for _, item in ipairs(hatsFolder:GetChildren()) do
 		crowns[rank] = {
 			itemPrefab = item,
 			item = item:Clone(),
-			speedBoost = { Name = prefixCrownSpeedBoostName .. rank .. item.Name, Value = speedBoost },
-			jumpBoost = { Name = prefixCrownJumpBoostName .. rank .. item.Name, Value = jumpBoost },
-			expBoost = { Name = prefixCrownExpBoosName .. rank .. item.Name, Value = expBoost },
+			speedBoost = speedBoost,
+			jumpBoost = jumpBoost,
+			expBoost = expBoost,
 			currentPlayer = nil,
 			enabled = true,
 		}
@@ -94,25 +91,37 @@ local function getTopPlayersWithScore()
 	return topPlayers
 end
 
-local function applyModifiers(crownEntry: CrownEntry)
+local function applyModifiers(crownEntry: CrownEntry): { string }
 	local player = crownEntry.currentPlayer
+	local cancellationTokens = {}
+	if not player then
+		return cancellationTokens
+	end
+	local callbackExp = Boostmanager.AddBoost(player, "ExpBoost", "callback", crownEntry.expBoost)
+	local callbackSpeed = Boostmanager.AddBoost(player, "SpeedValue", "callback", crownEntry.speedBoost)
+	local callbackJump = Boostmanager.AddBoost(player, "JumpValue", "callback", crownEntry.jumpBoost)
+
+	table.insert(cancellationTokens, callbackExp)
+	table.insert(cancellationTokens, callbackSpeed)
+	table.insert(cancellationTokens, callbackJump)
+
+	return cancellationTokens
+end
+
+local function removeModifiers(player: Player?)
 	if not player then
 		return
 	end
-	compUtils.applyModifier(player, "ExpBoost", crownEntry.expBoost)
-	compUtils.applyModifier(player, "SpeedValue", crownEntry.speedBoost)
-	compUtils.applyModifier(player, "JumpValue", crownEntry.jumpBoost)
-end
-
-local function removeModifiers(crownEntry: CrownEntry)
-	local player = crownEntry.currentPlayer
-	if not crownEntry.currentPlayer then
-		return
+	local userId = player.UserId
+	local oldKeys = keyTable[userId]
+	if oldKeys then
+		for _, key in ipairs(oldKeys) do
+			if key then
+				Boostmanager.RemoveBoost(key)
+			end
+		end
+		keyTable[userId] = nil
 	end
-
-	compUtils.removeModifier(player, "ExpBoost", crownEntry.expBoost)
-	compUtils.removeModifier(player, "SpeedValue", crownEntry.speedBoost)
-	compUtils.removeModifier(player, "JumpValue", crownEntry.jumpBoost)
 end
 
 local function positionCrownOverPlayer(crown, char: Model)
@@ -189,11 +198,16 @@ runner.Heartbeat:Connect(function()
 	for rank, crownEntry in ipairs(crowns) do
 		local player = topPlayers[rank]
 
-		-- Skip if same player: modifier functions handle nil internally.
 		if player ~= crownEntry.currentPlayer then
-			removeModifiers(crownEntry)
+			if crownEntry.currentPlayer then
+				removeModifiers(crownEntry.currentPlayer.UserId)
+			end
+
 			crownEntry.currentPlayer = player
-			applyModifiers(crownEntry)
+
+			local cancellationTokens = applyModifiers(crownEntry)
+			local userIdStr = tostring(player.UserId)
+			keyTable[userIdStr] = cancellationTokens
 		end
 
 		applyCrownToPlayer(crownEntry)

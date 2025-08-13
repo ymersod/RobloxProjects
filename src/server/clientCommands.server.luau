@@ -40,7 +40,6 @@ local dataStoreDevManagementFunctions = require(dataStoreDevManagementFunctionsS
 
 local inventoryFuncs = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 
-local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
 local ragdollUtils = require(ServerScriptService.Server.ServerModuleScripts.ragdollUtils)
 local rollTickets = require(ServerScriptService.Server.ServerModuleScripts.rollTickets)
 
@@ -245,13 +244,6 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 				end
 				coinScore.Value = 50
 				coinLogic.Enabled = true
-			end
-		elseif command.command == "/getcompint" then
-			if #command.args > 1 then
-				local key = command.args[1] .. command.args[2]
-				if compositeIntValueMultiton.hasKeyEntry(key) then
-					print(compositeIntValueMultiton.getCompositeIntValue(key).Value)
-				end
 			end
 		elseif command.command == "/clearlevels" then
 			expFuncs.setExp(player.UserId, tonumber(0))

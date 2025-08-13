@@ -6,7 +6,6 @@ local DataStoreService = game:GetService("DataStoreService")
 local firstTimePlayerStore = DataStoreService:GetDataStore("FirstTimeLogin")
 local ServerScriptService = game:GetService("ServerScriptService")
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
-local compositeIntValueMultiton = require(ServerScriptService.Server.ServerModuleScripts.CompositeIntValueMultiton)
 local inventoryFunctions = require(ServerScriptService.Server.ServerModuleScripts.inventoryFunctions)
 local rollTickets = require(ServerScriptService.Server.ServerModuleScripts.rollTickets)
 
@@ -153,21 +152,8 @@ game.Players.PlayerAdded:Connect(function(player)
 	login.Value = enums.Login.NotInitYet
 	login.Parent = localStats
 
-	local compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "ExpBoost", "sum", 100)
-	compIntVal.setBoundTarget(expBoost)
-	compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "SpeedValue", "mul", 16)
-	compIntVal.setBoundTarget(speedBoost)
-	compIntVal = compositeIntValueMultiton.getCompositeIntValue(player.UserId .. "JumpValue", "mul", 7.2)
-	compIntVal.setBoundTarget(jumpBoost)
-
 	local character = player.Character or player.CharacterAdded:Wait()
 	SetupStarterTools(player)
-end)
-
-game.Players.PlayerRemoving:Connect(function(player)
-	compositeIntValueMultiton.removeCompositeIntValue(player.UserId .. "ExpBoost")
-	compositeIntValueMultiton.removeCompositeIntValue(player.UserId .. "SpeedValue")
-	compositeIntValueMultiton.removeCompositeIntValue(player.UserId .. "JumpValue")
 end)
 
 -- SETUP SERVER SIDE PLAYER CHARACTER
