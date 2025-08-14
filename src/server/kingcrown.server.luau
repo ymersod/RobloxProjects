@@ -112,11 +112,12 @@ local function removeModifiers(player: Player?)
 	if not player then
 		return
 	end
-	local userId = player.UserId
+	local userId = tostring(player.UserId)
 	local oldKeys = keyTable[userId]
 	if oldKeys then
 		for _, key in ipairs(oldKeys) do
 			if key then
+				print("removing boost")
 				Boostmanager.RemoveBoost(key)
 			end
 		end
@@ -203,12 +204,8 @@ runner.Heartbeat:Connect(function()
 		end
 
 		if player ~= crownEntry.currentPlayer then
-			if crownEntry.currentPlayer then
-				removeModifiers(crownEntry.currentPlayer)
-			end
-
 			crownEntry.currentPlayer = player
-
+			removeModifiers(crownEntry.currentPlayer)
 			local cancellationTokens = applyModifiers(crownEntry)
 			local userIdStr = tostring(player.UserId)
 			keyTable[userIdStr] = cancellationTokens

@@ -5,7 +5,7 @@ local CollectionService = game:GetService("CollectionService")
 local dynamicLogicFolder = ServerScriptService:WaitForChild("Server"):WaitForChild("DynamicLogic")
 local sounds = ServerStorage:WaitForChild("Sounds")
 local abilitySounds = sounds:WaitForChild("AbilitySounds")
-local slapSound = sounds:WaitForChild("Slap"):WaitForChild("Slap Sound Effect")
+local toolSounds = sounds:WaitForChild("Slap"):GetChildren()
 local kingZoneManagerScript = dynamicLogicFolder:WaitForChild("kingZoneManager")
 local kingCoinScript = dynamicLogicFolder:WaitForChild("kingCoinLogic")
 local bombScript = dynamicLogicFolder:WaitForChild("bombLogic")
@@ -105,8 +105,12 @@ for _, slapPrefab in ipairs(slapPrefabs:GetChildren()) do
 		soundClone.Parent = handle
 		soundClone:SetAttribute("PlayOnUse", false)
 	end
-	local slapSoundClone = slapSound:Clone()
-	slapSoundClone.Parent = handle
+	for _, sound in ipairs(toolSounds) do
+		if sound:IsA("Sound") then
+			local soundClone = sound:Clone()
+			soundClone.Parent = handle
+		end
+	end
 end
 
 for _, slipPart in ipairs(game:GetService("CollectionService"):GetTagged("Slippery")) do

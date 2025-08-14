@@ -2,14 +2,19 @@ local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local replicatedStorage = game:GetService("ReplicatedStorage")
+--TODO: Might not want a binds for this but is nesscsary if we want to keep other code
 local bombBind = ServerScriptService:WaitForChild("Server")
 	:WaitForChild("serverEvents")
 	:WaitForChild("binds")
 	:WaitForChild("bombDestroyingBind")
+local bombSoundBind = ServerScriptService:WaitForChild("Server")
+	:WaitForChild("serverEvents")
+	:WaitForChild("binds")
+	:WaitForChild("bombSoundBind")
 
 local pushBackClient = replicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("PushBackClient")
 
-local explosionSphere = game:GetService("Workspace"):WaitForChild("ExplosionSphere")
+local explosionSphere = ServerStorage:WaitForChild("ExplosionSphere")
 if not explosionSphere then
 	error("Missing ExplosionSphere in Workspace")
 end
@@ -145,7 +150,6 @@ function explode()
 	playExplosion(bomb.Position)
 	local sound = bomb:FindFirstChildOfClass("Sound")
 
-	--TODO: Might want the part on the bomb, and then decouple it when the sound should play instead of copy and instance
 	if sound then
 		local tempPart = Instance.new("Part")
 		tempPart.Size = Vector3.new(1, 1, 1)
@@ -157,9 +161,7 @@ function explode()
 
 		sound.Parent = tempPart
 		sound:Play()
-		sound.Ended:Once(function()
-			tempPart:Destroy()
-		end)
+		bombSoundBind:Fire(sound, tempPart)
 	end
 	if bomb.Parent.Parent and bomb.Parent.Parent.Name == "ItemSphere" then
 		bomb.Parent.Parent:Destroy()

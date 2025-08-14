@@ -1,4 +1,5 @@
 local ServerStorage = game:GetService("ServerStorage")
+local IsSafeUtil = require(script.Parent.IsSafeUtil)
 local expManagerFunctions = require(script.Parent.expManagerFunctions)
 
 local kingCoin = ServerStorage:WaitForChild("Pickups"):WaitForChild("KingCoin") :: Part
@@ -113,7 +114,32 @@ function funcs.spawnMultipleKingCoinOfSizeRangesFromPlayers(
 	)
 end
 
-function funcs.StealKingScore(playerHit: Player, self: Player, drainPercent: number, giveXp: true?, shouldDrain: true?)
+function funcs.StealKingScore(
+	playerHit: Player,
+	self: Player,
+	drainPercent: number,
+	tool: Tool,
+	giveXp: true?,
+	shouldDrain: true?
+)
+	if IsSafeUtil.IsSafeFromAll(playerHit) then
+		return
+	end
+
+	if tool.PrimaryPart then
+		local dingSound = tool.PrimaryPart:FindFirstChild("Ding Ding!")
+		local dingSus = tool.PrimaryPart:FindFirstChild("Among Us Ding meme")
+
+		if dingSound or dingSus then
+			if math.random(1, 75) == 1 and dingSus then
+				-- 1 in 100 chance to play the sus sound
+				dingSus:Play()
+			elseif dingSound then
+				-- otherwise play the normal sound
+				dingSound:Play()
+			end
+		end
+	end
 	local playerHitLeaderStats = playerHit:FindFirstChild("leaderstats")
 	local playerHitkingScore: IntValue = playerHitLeaderStats and playerHitLeaderStats:FindFirstChild("King Score")
 

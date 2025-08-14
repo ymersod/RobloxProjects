@@ -522,6 +522,20 @@ local function RollAnimation(duration: number, callback: ((Instance) -> ())?)
 	table.insert(fillClones, statsClone:FindFirstChild("Range"):FindFirstChild("Fill"))
 	table.insert(fillClones, statsClone:FindFirstChild("Speed"):FindFirstChild("Fill"))
 
+	-- 🔹 Create full-screen click-blocker
+	local blocker = Instance.new("ImageButton")
+	blocker.BackgroundTransparency = 1
+	blocker.ImageTransparency = 1
+	blocker.Size = UDim2.new(1, 0, 1, 0)
+	blocker.Position = UDim2.new(0, 0, 0, 0)
+	blocker.ZIndex = 100
+	blocker.ScaleType = Enum.ScaleType.Stretch
+	blocker.AutoButtonColor = false
+	blocker.Image = "" -- blank image
+	blocker.Parent = screenGui -- or the main UI container
+	blocker.Active = true
+	blocker.Visible = true
+
 	-- ANIMATION
 	task.spawn(function()
 		bgClone.Transparency = 0
@@ -586,6 +600,9 @@ local function RollAnimation(duration: number, callback: ((Instance) -> ())?)
 		bgBackGlowClone.ImageColor3 = finalColor.End
 
 		task.wait(0.3)
+
+		-- 🔹 Remove blocker after animation
+		blocker:Destroy()
 
 		if callback then
 			callback(topFrameClone)

@@ -4,6 +4,10 @@ local bombBind = ServerScriptService:WaitForChild("Server")
 	:WaitForChild("serverEvents")
 	:WaitForChild("binds")
 	:WaitForChild("bombDestroyingBind")
+local bombSoundBind = ServerScriptService:WaitForChild("Server")
+	:WaitForChild("serverEvents")
+	:WaitForChild("binds")
+	:WaitForChild("bombSoundBind")
 
 local function removeBoosts(player: Player, keyTable)
 	if not player then
@@ -23,9 +27,16 @@ local function removeBoosts(player: Player, keyTable)
 		keyTable[userId] = nil
 	end
 end
+
 bombBind.Event:Connect(function(curownerplayer: Player, keyTable)
 	curownerplayer.CharacterAdded:Once(function()
 		print("removing boosts")
 		removeBoosts(curownerplayer, keyTable)
+	end)
+end)
+
+bombSoundBind.Event:Connect(function(sound: Sound, partToDestroy: Part)
+	sound.Ended:Connect(function()
+		partToDestroy:Destroy()
 	end)
 end)

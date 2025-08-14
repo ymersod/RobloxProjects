@@ -9,6 +9,7 @@ local slapBind = ServerScripService:WaitForChild("Server")
 	:WaitForChild("Abilities")
 	:WaitForChild("BindableEvents")
 	:WaitForChild("slapBind")
+local IsSafeUtil = require(ServerScriptService.Server.ServerModuleScripts.IsSafeUtil)
 local abilityUtils = require(ServerScriptService.Server.ServerModuleScripts.abilityUtils)
 local kingCoinFuncs = require(kingCoinFuncsScript)
 
@@ -30,8 +31,6 @@ local canActivate = true
 -- local COIN_VALUE_MAX = 15
 -- local COIN_SPAWN_RADIUS = 10
 local KING_SCORE_DRAIN_PERCENT = 0.05
-
-local function doSlapCheck() end
 
 tool.Activated:Connect(function()
 	if not canActivate then
@@ -57,7 +56,7 @@ tool.Activated:Connect(function()
 	local char = tool.Parent
 	local player = char and Players:GetPlayerFromCharacter(char)
 	local hrp = char and char:FindFirstChild("HumanoidRootPart") :: BasePart
-	local aniDur = loadedAnim.Length
+	local aniDur = loadedAnim.Length / 1.5
 	local _, size = tool:GetBoundingBox()
 
 	if player and char.PrimaryPart then
@@ -79,11 +78,11 @@ tool.Activated:Connect(function()
 			end
 
 			local playersInCone =
-				abilityUtils.getPlayersInCone(player, hrp.Position, hrp.CFrame.LookVector, 80, size.Z + 3.5)
+				abilityUtils.getPlayersInCone(player, hrp.Position, hrp.CFrame.LookVector, 80, size.Z + 2.5)
 			for _, target in ipairs(playersInCone) do
 				if not hitPlayers[target] then
 					hitPlayers[target] = true
-					local _ = player and kingCoinFuncs.StealKingScore(target, player, KING_SCORE_DRAIN_PERCENT, true)
+					local _ = player and kingCoinFuncs.StealKingScore(target, player, KING_SCORE_DRAIN_PERCENT, tool)
 
 					local ownerAbilitVals = tool:FindFirstChild("AbilityVals") :: StringValue?
 					slapBind:Fire(target, player, hrp.CFrame.LookVector * POWER_MULT, ownerAbilitVals, tool)

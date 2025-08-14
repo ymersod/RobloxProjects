@@ -91,13 +91,26 @@ function setAbility(equippedTool: Tool?, isAdded: boolean?)
 			local chargeTime = abilityValsT:GetAttribute("chargeTimeSeconds")
 
 			if chargeTime then
-				local entry = {
-					canActivate = false,
-					saveSlot = 0,
-				}
-				table.insert(activationTable, entry)
-				local index = table.find(activationTable, entry)
-				toolActivationCooldown(chargeTime, index)
+				local existingIndex
+				for i, v in ipairs(activationTable) do
+					if v.saveSlot == 0 then
+						existingIndex = i
+						break
+					end
+				end
+				if existingIndex then
+					print("have had bomb before kekw")
+					toolActivationCooldown(chargeTime, existingIndex)
+				else
+					print("first time bomber!")
+					local entry = {
+						canActivate = true,
+						saveSlot = 0,
+					}
+					table.insert(activationTable, entry)
+					local newEntry = table.find(activationTable, entry)
+					toolActivationCooldown(chargeTime, newEntry)
+				end
 			end
 		end
 	else
@@ -242,9 +255,6 @@ local function activateAbility(actionName, inputState, inputObject)
 			end
 
 			abilityEvent:FireServer(abilityValsT, curSaveSlot .. "" .. toolId)
-			if curSaveSlot == 0 then
-				activationTable[index] = nil
-			end
 		end
 	end
 end

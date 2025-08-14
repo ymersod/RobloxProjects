@@ -5,6 +5,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local BoostTypes = require(ServerScriptService.Server.ServerModuleScripts.BoostTypes)
 local Boostmanager = require(ServerScriptService.Server.ServerModuleScripts.Boostmanager)
+local IsSafeUtil = require(ServerScriptService.Server.ServerModuleScripts.IsSafeUtil)
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local velocityUtils = require(ReplicatedStorage.Shared.ClientServerModuleScripts.velocityUtils)
@@ -97,6 +98,8 @@ local function handleSoundAndDelays(
 		return
 	end
 
+	print(timer .. "Timer")
+
 	delayUtil.Delay(timer, function()
 		if not player.Character then
 			warn("Player died before sound could end")
@@ -161,7 +164,7 @@ slapBind.Event:Connect(function(targetPlayer: Player, self: Player, direction, a
 		handleSoundAndDelays(0, startsound, nil, self)
 	elseif abilityVals and passiveValue and passiveValue == enums.abilityTypes.steal then
 		local stealAmount = abilityVals and abilityVals:GetAttribute("StealAmount")
-		KingCoinFunctions.StealKingScore(targetPlayer, self, stealAmount)
+		KingCoinFunctions.StealKingScore(targetPlayer, self, stealAmount, tool)
 		ragdollUtils.ragdoll(targetPlayer, direction, 2)
 		local startsound, _ = getStartEndSound(tool, selfChar)
 		handleSoundAndDelays(0, startsound, nil, self)
@@ -174,9 +177,9 @@ slapBind.Event:Connect(function(targetPlayer: Player, self: Player, direction, a
 		end
 
 		AbilityUIClientEvent:InvokeClient(targetPlayer, enums.abilityTypes.brainrot, duration)
+		ragdollUtils.ragdoll(targetPlayer, direction, 2)
 		local startsound, _ = getStartEndSound(tool, targetChar)
 		handleSoundAndDelays(duration, startsound, nil, targetPlayer)
-		ragdollUtils.ragdoll(targetPlayer, direction, 2)
 	else
 		ragdollUtils.ragdoll(targetPlayer, direction, 2)
 	end
@@ -271,7 +274,7 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 			local players = abilityUtils.getPlayersInCone(player, hrp.Position, hrp.CFrame.LookVector, angle, range)
 
 			for _, playerHit in ipairs(players) do
-				KingCoinFunctions.StealKingScore(playerHit, player, drainPercent)
+				KingCoinFunctions.StealKingScore(playerHit, player, drainPercent, tool)
 				ragdollUtils.ragdoll(playerHit, (hrp.CFrame.LookVector + Vector3.new(0, upAngle, 0)) * power, 3)
 			end
 		end)
@@ -402,9 +405,8 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 						local finalDir = (pushDir + Vector3.new(0, upAngle, 0)).Unit
 
 						local directionVector = finalDir * power
-
 						ragdollUtils.ragdoll(hitPlayer, directionVector, 2)
-						KingCoinFunctions.StealKingScore(hitPlayer, player, drainPercent, true, nil)
+						KingCoinFunctions.StealKingScore(hitPlayer, player, drainPercent, tool, true, nil)
 					end
 				end
 			end)
@@ -457,7 +459,7 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 						print("hitting player")
 						table.insert(hitId, playerhit.UserId)
 						ragdollUtils.ragdoll(playerhit, pPart.CFrame.RightVector.Unit * power, 2)
-						KingCoinFunctions.StealKingScore(playerhit, player, drainPercent, true, nil)
+						KingCoinFunctions.StealKingScore(playerhit, player, drainPercent, tool, true, nil)
 					end
 				end
 			end)
