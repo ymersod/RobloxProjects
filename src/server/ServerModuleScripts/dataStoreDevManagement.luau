@@ -7,9 +7,10 @@ local dailyRewardStore = DataStoreService:GetDataStore("DailyRewards")
 local levelUpRewardStore = DataStoreService:GetDataStore("LevelupRewards")
 local firstTimePlayerStore = DataStoreService:GetDataStore("FirstTimeLogin")
 local volumeSettingsStore = DataStoreService:GetDataStore("VolumeSettings")
+local shopStore = DataStoreService:GetDataStore("ShopStore")
+
 local MemoryStoreService = game:GetService("MemoryStoreService")
 local orderedExpMemoryStore = MemoryStoreService:GetSortedMap("OrderedPlayerExp")
-
 
 dataStoreManagementFunctions = {}
 
@@ -89,6 +90,16 @@ function dataStoreManagementFunctions.removePlayerVolumeSettingsStore(playerId)
 	end)
 	if success then
 		return { success = true, payload = "player " .. playerId .. " removed from VolumeSettings" }
+	end
+	return { success = false, payload = err }
+end
+
+function dataStoreManagementFunctions.removePlayerShopStore(playerId)
+	local success, err = pcall(function()
+		return shopStore:RemoveAsync(playerId)
+	end)
+	if success then
+		return { success = true, payload = "player " .. playerId .. " removed from shopstore" }
 	end
 	return { success = false, payload = err }
 end
@@ -255,6 +266,24 @@ function dataStoreManagementFunctions.clearVolumeSettingsStore()
 	return { success = false, payload = "Something when wrong while searching for keys in VolumeSettingsStore" }
 end
 
+function dataStoreManagementFunctions.clearShopStore()
+	local success, keys = pcall(function()
+		return shopStore:ListKeysAsync()
+	end)
+	if success then
+		for i, k in ipairs(keys:GetCurrentPage()) do
+			local success2, err = pcall(function()
+				return shopStore:RemoveAsync(k.KeyName)
+			end)
+			if not success2 then
+				return { success = false, payload = err }
+			end
+		end
+		return { success = true, payload = "VolumeSettingsStore was cleared of keys" }
+	end
+	return { success = false, payload = "Something when wrong while searching for keys in VolumeSettingsStore" }
+end
+
 function dataStoreManagementFunctions.clearAllKeysInDataStores()
 	local clearSuccessObj = dataStoreManagementFunctions.clearDailyRewardStore()
 	if not clearSuccessObj.success then
@@ -297,6 +326,11 @@ function dataStoreManagementFunctions.clearAllKeysInDataStores()
 	end
 
 	clearSuccessObj = dataStoreManagementFunctions.clearVolumeSettingsStore()
+	if not clearSuccessObj.success then
+		warn(clearSuccessObj.payload)
+	end
+
+	clearSuccessObj = dataStoreManagementFunctions.clearShopStore()
 	if not clearSuccessObj.success then
 		warn(clearSuccessObj.payload)
 	end

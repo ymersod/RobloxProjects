@@ -5,6 +5,7 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local bombSpawnScript = ServerScriptService:WaitForChild("Server"):WaitForChild("bombSpawn")
 
+local bombUtils = require(ServerScriptService.Server.ServerModuleScripts.bombUtils)
 local killModule = require(
 	ServerScriptService:WaitForChild("Server"):WaitForChild("ServerModuleScripts"):WaitForChild("killPlayerServer")
 )
@@ -203,6 +204,10 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 					local response = dataStoreDevManagementFunctions.removePlayerVolumeSettingsStore(command.args[1])
 					print(response)
 				end
+				if #command.args == 1 or #command.args == 2 and command.args[2] == "shop" then
+					local response = dataStoreDevManagementFunctions.removePlayerShopStore(command.args[1])
+					print(response)
+				end
 			end
 		elseif command.command == "/cleardatastores" then
 			dataStoreDevManagementFunctions.clearAllKeysInDataStores()
@@ -219,13 +224,7 @@ game:GetService("Players").PlayerAdded:Connect(function(player)
 		elseif command.command == "/givebomb" then
 			if player and player.Character then
 				local bombClone = bombPrefab:Clone()
-				local bombLogic: Script? = bombClone.PrimaryPart:FindFirstChildOfClass("Script")
-				if not bombLogic then
-					warn("Cant find bomblogic")
-					return
-				end
-				bombLogic.Enabled = true
-				inventoryFuncs.EquipBomb(player, bombClone, 0.1)
+				bombUtils.giveBombToPlayer(player, bombClone)
 			end
 		elseif command.command == "/spawnkingcoin" then
 			if player and player.Character then

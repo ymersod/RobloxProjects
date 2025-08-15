@@ -1,7 +1,6 @@
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local CollectionService = game:GetService("CollectionService")
-
 local dynamicLogicFolder = ServerScriptService:WaitForChild("Server"):WaitForChild("DynamicLogic")
 local sounds = ServerStorage:WaitForChild("Sounds")
 local abilitySounds = sounds:WaitForChild("AbilitySounds")
@@ -31,6 +30,7 @@ kingCoinScriptClone.Parent = kingCoinPrefab
 kingCoinScriptClone.Enabled = true
 
 local delayUtil = require(ServerScriptService.Server.ServerModuleScripts.delayUtil)
+local ingameShopManager = require(ServerScriptService.Server.ServerModuleScripts.ingameShopManager)
 
 local bombScriptClone = bombScript:Clone()
 bombScriptClone.Parent = bombPrefab.PrimaryPart
