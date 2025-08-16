@@ -30,7 +30,7 @@ kingCoinScriptClone.Parent = kingCoinPrefab
 kingCoinScriptClone.Enabled = true
 
 local delayUtil = require(ServerScriptService.Server.ServerModuleScripts.delayUtil)
-local ingameShopManager = require(ServerScriptService.Server.ServerModuleScripts.ingameShopManager) -- DONT DELETE
+local _ = require(ServerScriptService.Server.ServerModuleScripts.ingameShopManager) -- DONT DELETE
 
 local bombScriptClone = bombScript:Clone()
 bombScriptClone.Parent = bombPrefab.PrimaryPart
