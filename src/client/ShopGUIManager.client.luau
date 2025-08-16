@@ -11,6 +11,8 @@ local getDevProducts = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("shop")
 	:WaitForChild("GetDevProductTable")
+local ownsGamePass =
+	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("shop"):WaitForChild("ownsGamePass")
 local buyDevProduct =
 	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("shop"):WaitForChild("BuyDevProduct")
 
@@ -40,6 +42,7 @@ local shrinkTween = createTweenFunctions.Shrink2(shopGui, 0.1, UDim2.new(0, 0, 0
 
 local result: { isInGroup: boolean, claimed: boolean } = groupEvent:InvokeServer(false)
 type RewardEffect = "ticket" | "boostself" | "boostall" | "bomball"
+type ProductType = "devProduct" | "gamePass"
 
 if result.claimed then
 	joinGroupFrame.Visible = false
@@ -49,6 +52,7 @@ local function updateDevProductFrame(
 	productData: {
 		id: string,
 		price: number,
+		devProduct: ProductType,
 		paidRandomItem: boolean,
 		reward: { effect: RewardEffect, amount: number },
 	},
@@ -63,16 +67,36 @@ local function updateDevProductFrame(
 		price.Text = productData.price .. " robux"
 	end
 
+	if productData.devProduct == "gamePass" then
+		local gamepassOwned = ownsGamePass:InvokeServer(productData.id)
+		if gamepassOwned then
+			devProductFrame.Visible = false
+		end
+	end
+
 	local buyButton = devProductFrame:FindFirstChildOfClass("ImageButton")
 	if buyButton then
 		buyButton.MouseButton1Click:Connect(function()
-			print("click")
 			buyDevProduct:InvokeServer(productData.id)
+			if productData.devProduct then
+				local gamepassOwned = ownsGamePass:InvokeServer(productData.id)
+				if gamepassOwned then
+					devProductFrame.Visible = false
+				end
+			end
 		end)
 	end
 end
 
-local devProducts: { [string]: { id: string, price: number, paidRandomItem: boolean, reward: { effect: RewardEffect, amount: number } } } =
+local devProducts: {
+	[string]: {
+		id: string,
+		price: number,
+		devProduct: ProductType,
+		paidRandomItem: boolean,
+		reward: { effect: RewardEffect, amount: number },
+	},
+} =
 	getDevProducts:InvokeServer()
 for _, devProductFrame in ipairs(scrollingFrame:GetDescendants()) do
 	local idOnGui = devProductFrame:GetAttribute("DevProductId")

@@ -30,7 +30,6 @@ kingCoinScriptClone.Parent = kingCoinPrefab
 kingCoinScriptClone.Enabled = true
 
 local delayUtil = require(ServerScriptService.Server.ServerModuleScripts.delayUtil)
-local ingameShopManager = require(ServerScriptService.Server.ServerModuleScripts.ingameShopManager)
 
 local bombScriptClone = bombScript:Clone()
 bombScriptClone.Parent = bombPrefab.PrimaryPart
@@ -88,6 +87,7 @@ for _, slapPrefab in ipairs(slapPrefabs:GetChildren()) do
 	local abilityVals = slapPrefab:FindFirstChild("AbilityVals")
 	local abilitySoundStart = abilityVals and abilityVals:GetAttribute("AbilitySoundStart")
 	local abilitySoundEnd = abilityVals and abilityVals:GetAttribute("AbilitySoundEnd")
+	local abilitySoundOnHit = abilityVals and abilityVals:GetAttribute("AbilitySoundOnHit")
 
 	if not handle then
 		warn("Cant find handle something went wrong in setup")
@@ -104,6 +104,12 @@ for _, slapPrefab in ipairs(slapPrefabs:GetChildren()) do
 		local soundClone = sound:Clone()
 		soundClone.Parent = handle
 		soundClone:SetAttribute("PlayOnUse", false)
+	end
+	if abilitySoundOnHit then
+		local sound = abilitySounds:FindFirstChild(abilitySoundOnHit) :: Sound
+		local soundClone = sound:Clone()
+		soundClone.Parent = handle
+		soundClone:SetAttribute("OnHit", true)
 	end
 	for _, sound in ipairs(toolSounds) do
 		if sound:IsA("Sound") then

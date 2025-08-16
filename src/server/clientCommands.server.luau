@@ -70,7 +70,7 @@ local function parseCommand(string: string): { command: string, args: { string }
 
 	return { command = parts[1], args = subSet(parts, 2) }
 end
---                                                                            cindy         kuwrl
+--                                                                             cindy         kuwrl
 local COMMAND_WHITE_LIST: { number } =
 	{ 8394946161, 8591486140, 8637529946, 8468299314, 8383239814, 1199035078, 1314955009, 2534809727 }
 

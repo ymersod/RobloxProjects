@@ -4,6 +4,7 @@ local tickets: IntValue = localStats:WaitForChild("Tickets")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
+local TweenService = game:GetService("TweenService")
 local createTweenFunctions = require(ReplicatedStorage.Shared.ClientServerModuleScripts.createTweenFunctions)
 local enums = require(ReplicatedStorage.Shared.ClientServerModuleScripts.enums)
 local sounds = require(ReplicatedStorage.Shared.ClientServerModuleScripts.sounds)
@@ -16,10 +17,6 @@ local spendTicketsEvent = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("Events")
 	:WaitForChild("TicketFunctions")
 	:WaitForChild("SpendTickets")
-local incrementSlotsEvent = ReplicatedStorage:WaitForChild("Shared")
-	:WaitForChild("Events")
-	:WaitForChild("InventoryFunctions")
-	:WaitForChild("IncrementSlots")
 
 -- GUI LOCALS
 local screenGui = player.PlayerGui:WaitForChild("ScreenGui")
@@ -36,6 +33,19 @@ local abilityImage = abiltiy:WaitForChild("ImageLabel") :: ImageLabel
 local abilityText = abiltiy:WaitForChild("AbilityName") :: TextLabel
 local rollButton: ImageButton = rightClip:WaitForChild("Buttons"):WaitForChild("RollFrame"):WaitForChild("RollButton")
 local rollText = rollButton:WaitForChild("RollsLeft") :: TextLabel
+
+-- STOLEN FROM ACCESSGUIMANAGER
+local shopGui = screenGui:WaitForChild("Shop") :: Frame
+local elasticGrowDur = 0.3
+local elasticShrinkDur = 0.1
+local growRealShopGUI, shrinkRealShopGUI = createTweenFunctions.Elastic(
+	shopGui,
+	elasticGrowDur,
+	elasticShrinkDur,
+	UDim2.new(0.5, 0, 0.5, 0),
+	UDim2.new(0, 0, 0, 0),
+	true
+)
 
 local defaultAbility = abilityImage.Image
 local defaultabilityText = abilityText.Text
@@ -110,8 +120,12 @@ local stateConfigs = {
 		setup = function(buyButton)
 			if not buyButton:GetAttribute("ConnectionsSet") then
 				buyButton:SetAttribute("ConnectionsSet", true)
-				buyButton.MouseButton1Click:Once(function()
-					incrementSlotsEvent:InvokeServer(player)
+				buyButton.MouseButton1Click:Connect(function()
+					if not shopGui.Visible then
+						uiUtils.raiseZIndex(shopGui, 60)
+						shopGui.Visible = true
+						growRealShopGUI:Play()
+					end
 				end)
 			end
 		end,

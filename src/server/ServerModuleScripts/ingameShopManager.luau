@@ -7,6 +7,8 @@ local getDevProducts = ReplicatedStorage:WaitForChild("Shared")
 	:WaitForChild("GetDevProductTable")
 local buyDevProduct =
 	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("shop"):WaitForChild("BuyDevProduct")
+local ownsGamePass =
+	ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Events"):WaitForChild("shop"):WaitForChild("ownsGamePass")
 local DataStoreService = game:GetService("DataStoreService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
@@ -14,10 +16,12 @@ local PolicyService = game:GetService("PolicyService")
 local ServerStorage = game:GetService("ServerStorage")
 local Boostmanager = require(script.Parent.Boostmanager)
 local bombUtils = require(script.Parent.bombUtils)
+local inventoryFunctions = require(script.Parent.inventoryFunctions)
 local rollTickets = require(script.Parent.rollTickets)
 local shopStore = DataStoreService:GetDataStore("ShopStore")
 local bombPrefab = ServerStorage:WaitForChild("Tools"):WaitForChild("Bombs"):WaitForChild("Bomb") :: Tool
 local shop = {}
+
 local GROUP_ID = 35951660
 local GROUP_REWARD = {
 	XP_BOOST = {
@@ -26,63 +30,88 @@ local GROUP_REWARD = {
 	},
 	TICKETS = 20,
 }
-type RewardEffect = "ticket" | "boostself" | "boostall" | "bomball"
+type RewardEffect = "ticket" | "boostself" | "boostall" | "bomball" | "backpack"
+type ProductType = "devProduct" | "gamePass"
 
-local devProducts: { [string]: { id: string, price: number, paidRandomItem: boolean, reward: { effect: RewardEffect, amount: number } } } =
+local devProducts: {
+	[string]: {
+		id: string,
+		price: number,
+		devProduct: ProductType,
+		paidRandomItem: boolean,
+		reward: { effect: RewardEffect, amount: number },
+	},
+} =
 	{
 		["1slap"] = {
 			id = "3371429809",
-			price = 20,
+			price = 5,
+			devProduct = "devProduct",
 			paidRandomItem = true,
 			reward = { effect = "ticket", amount = 1 },
 		},
 		["5slap"] = {
 			id = "3371431317",
-			price = 80,
+			price = 19,
+			devProduct = "devProduct",
 			paidRandomItem = true,
 			reward = { effect = "ticket", amount = 5 },
 		},
 		["10slap"] = {
 			id = "3371431667",
-			price = 150,
+			price = 29,
+			devProduct = "devProduct",
 			paidRandomItem = true,
 			reward = { effect = "ticket", amount = 10 },
 		},
 		["20slap"] = {
 			id = "3371431925",
-			price = 250,
+			price = 45,
+			devProduct = "devProduct",
 			paidRandomItem = true,
 			reward = { effect = "ticket", amount = 20 },
 		},
 		["50slap"] = {
 			id = "3371432388",
-			price = 500,
+			price = 79,
+			devProduct = "devProduct",
 			paidRandomItem = true,
 			reward = { effect = "ticket", amount = 50 },
 		},
 		["100slap"] = {
 			id = "3371433008",
-			price = 750,
+			price = 149,
+			devProduct = "devProduct",
 			paidRandomItem = true,
 			reward = { effect = "ticket", amount = 100 },
 		},
 		["xpboostself"] = {
 			id = "3371434602",
-			price = 100,
+			price = 79,
+			devProduct = "devProduct",
 			paidRandomItem = false,
 			reward = { effect = "boost", amount = 3600 },
 		},
 		["xpboostall"] = {
 			id = "3371435310",
-			price = 500,
+			price = 179,
+			devProduct = "devProduct",
 			paidRandomItem = false,
 			reward = { effect = "boostall", amount = 3600 },
 		},
 		["bomball"] = {
 			id = "3371433642",
-			price = 300,
+			price = 199,
+			devProduct = "devProduct",
 			paidRandomItem = false,
 			reward = { effect = "bomball", amount = 0 },
+		},
+		["bpUpgrade"] = {
+			id = "1404903177",
+			price = 199,
+			devProduct = "gamePass",
+			paidRandomItem = false,
+			reward = { effect = "backpack", amount = 1 },
 		},
 	}
 
@@ -126,9 +155,28 @@ groupEvent.OnServerInvoke = function(player: Player, claim: boolean): { isInGrou
 end
 
 getDevProducts.OnServerInvoke = function(_): {
-	[string]: { id: string, price: number, paidRandomItem: boolean, reward: { effect: RewardEffect, amount: number } },
+	[string]: {
+		id: string,
+		price: number,
+		devProduct: ProductType,
+		paidRandomItem: boolean,
+		reward: { effect: RewardEffect, amount: number },
+	},
 }
 	return devProducts
+end
+
+local function PlayerOwnsGamePass(player, gamePassId)
+	local success, result = pcall(function()
+		return MarketplaceService:UserOwnsGamePassAsync(player.UserId, gamePassId)
+	end)
+	print(result)
+	if success then
+		return result
+	else
+		warn("Error checking gamepass ownership for", player, gamePassId)
+		return false
+	end
 end
 
 local function tryBuy(
@@ -136,6 +184,7 @@ local function tryBuy(
 	product: {
 		id: string,
 		price: number,
+		devProduct: ProductType,
 		paidRandomItem: boolean,
 		reward: { effect: RewardEffect, amount: number },
 	}
@@ -146,7 +195,14 @@ local function tryBuy(
 		return
 	end
 
-	MarketplaceService:PromptProductPurchase(player, productId)
+	if product.devProduct == "devProduct" then
+		MarketplaceService:PromptProductPurchase(player, productId)
+	elseif product.devProduct == "gamePass" then
+		if PlayerOwnsGamePass(player, product.id) then
+			return
+		end
+		MarketplaceService:PromptGamePassPurchase(player, productId)
+	end
 end
 
 buyDevProduct.OnServerInvoke = function(player, id)
@@ -175,6 +231,10 @@ buyDevProduct.OnServerInvoke = function(player, id)
 	end
 end
 
+ownsGamePass.OnServerInvoke = function(player, gamePassId)
+	return PlayerOwnsGamePass(player, gamePassId)
+end
+
 function shop.ResetGroupRewards(player: Player)
 	local userId = player.UserId
 	local _, _ = pcall(function()
@@ -183,6 +243,7 @@ function shop.ResetGroupRewards(player: Player)
 end
 
 MarketplaceService.ProcessReceipt = function(receiptInfo)
+	print("process")
 	local player = game:GetService("Players"):GetPlayerByUserId(receiptInfo.PlayerId)
 	if not player then
 		return Enum.ProductPurchaseDecision.NotProcessedYet
@@ -205,24 +266,36 @@ MarketplaceService.ProcessReceipt = function(receiptInfo)
 
 	if product.reward.effect == "ticket" then
 		rollTickets.AddTickets(player.UserId, product.reward.amount)
+		return Enum.ProductPurchaseDecision.PurchaseGranted
 	elseif product.reward.effect == "boost" then
 		Boostmanager.AddBoost(player, "ExpBoost", "delay", 2, product.reward.amount)
+		return Enum.ProductPurchaseDecision.PurchaseGranted
 	elseif product.reward.effect == "boostall" then
 		for _, onlinePlayer in Players:GetChildren() do
 			if onlinePlayer then
 				Boostmanager.AddBoost(onlinePlayer, "ExpBoost", "delay", 2, product.reward.amount)
 			end
 		end
+		return Enum.ProductPurchaseDecision.PurchaseGranted
 	elseif product.reward.effect == "bomball" then
 		for _, onlinePlayer: Player? in Players:GetChildren() do
-			local bombClone = bombPrefab:Clone()
 			if onlinePlayer and onlinePlayer.UserId ~= player.UserId then
-				bombUtils.giveBombToPlayer(player, bombClone)
+				local bombClone = bombPrefab:Clone()
+				bombUtils.giveBombToPlayer(onlinePlayer, bombClone)
 			end
 		end
+		return Enum.ProductPurchaseDecision.PurchaseGranted
 	end
 
-	return Enum.ProductPurchaseDecision.PurchaseGranted
+	return Enum.ProductPurchaseDecision.NotProcessedYet
 end
+
+MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, purchasedPassId, wasPurchased)
+	if wasPurchased then
+		if purchasedPassId == 1404903177 then
+			inventoryFunctions.IncrementSlotSpace(player)
+		end
+	end
+end)
 
 return shop

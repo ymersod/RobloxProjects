@@ -46,6 +46,7 @@ tool.Activated:Connect(function()
 			sound:Play()
 		end
 	end
+	local handle = tool.PrimaryPart
 
 	local statVals = tool:FindFirstChild("StatVals")
 
@@ -85,6 +86,7 @@ tool.Activated:Connect(function()
 					local _ = player and kingCoinFuncs.StealKingScore(target, player, KING_SCORE_DRAIN_PERCENT, tool)
 
 					local ownerAbilitVals = tool:FindFirstChild("AbilityVals") :: StringValue?
+
 					slapBind:Fire(target, player, hrp.CFrame.LookVector * POWER_MULT, ownerAbilitVals, tool)
 				end
 			end

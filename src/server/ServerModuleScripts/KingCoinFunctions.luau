@@ -144,7 +144,14 @@ function funcs.StealKingScore(
 	local playerHitkingScore: IntValue = playerHitLeaderStats and playerHitLeaderStats:FindFirstChild("King Score")
 
 	if playerHitkingScore.Value <= 0 then
-		print("cant steal from 0 points")
+		local xpBoost = 1
+		local xpBoostIntValue = self and self:WaitForChild("LocalStats"):WaitForChild("ExpBoost") :: IntValue
+		if xpBoostIntValue then
+			xpBoost = xpBoostIntValue.Value / 100
+		end
+
+		local xpAccordingToPlayerHitKingScore = 2
+		expManagerFunctions.incrementExp(self.UserId, xpAccordingToPlayerHitKingScore * xpBoost)
 		return
 	end
 
@@ -152,6 +159,7 @@ function funcs.StealKingScore(
 	local selfKingScore: IntValue = selfLeaderStats and selfLeaderStats:FindFirstChild("King Score")
 
 	local drainAmount = playerHitkingScore.Value * drainPercent
+
 	local flooredDrainAmount = math.floor(drainAmount)
 
 	local mult = shouldDrain and 1.5 or 1

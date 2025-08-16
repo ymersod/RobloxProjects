@@ -155,6 +155,16 @@ slapBind.Event:Connect(function(targetPlayer: Player, self: Player, direction, a
 	local selfChar = self.Character
 	local passiveValue = abilityVals and abilityVals:GetAttribute("abilityType")
 
+	local pPart = tool.PrimaryPart :: Part
+	for _, sound in ipairs(pPart:GetChildren()) do
+		local attr = sound:GetAttribute("OnHit")
+		if sound:IsA("Sound") and attr then
+			sound.Volume = sound.Volume * 2
+			sound:Play()
+			break
+		end
+	end
+
 	if abilityVals and passiveValue and passiveValue == enums.abilityTypes.slimy then
 		handleBoost(targetPlayer, abilityVals, "slimy", "SpeedValue", true)
 		ragdollUtils.ragdoll(targetPlayer, direction, 2)
@@ -435,7 +445,9 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 			warn("wtf")
 			return
 		end
+		local startSound = getStartEndSound(tool, char)
 		task.delay(trackLength / 1.5, function()
+			handleSoundAndDelays(duration, startSound, nil, player)
 			local slashClone: Model = spawnableRef.Value:Clone()
 			local pPart = slashClone.PrimaryPart
 			slashClone.Parent = workspace
