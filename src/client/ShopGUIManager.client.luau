@@ -98,6 +98,7 @@ local devProducts: {
 	},
 } =
 	getDevProducts:InvokeServer()
+
 for _, devProductFrame in ipairs(scrollingFrame:GetDescendants()) do
 	local idOnGui = devProductFrame:GetAttribute("DevProductId")
 
