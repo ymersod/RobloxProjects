@@ -81,6 +81,15 @@ function SetupStarterTools(player: Player)
 	else
 		warn("Inventory or getting data went wrong in init")
 	end
+
+	local newInventory = player:FindFirstChild("Inventory") :: Folder
+
+	for _, item in ipairs(newInventory:GetChildren()) do
+		local attr = item:GetAttribute("SaveSlot")
+		if attr and attr == 1 then
+			inventoryFunctions.EquipTool(player, item)
+		end
+	end
 	--inventoryFunctions.EquipTool(player, tool1)
 	--inventoryFunctions.AddToInventory(player, tool1)
 

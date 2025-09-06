@@ -83,7 +83,8 @@ tool.Activated:Connect(function()
 			for _, target in ipairs(playersInCone) do
 				if not hitPlayers[target] then
 					hitPlayers[target] = true
-					local _ = player and kingCoinFuncs.StealKingScore(target, player, KING_SCORE_DRAIN_PERCENT, tool)
+					local _ = player
+						and kingCoinFuncs.StealKingScore(target, player, KING_SCORE_DRAIN_PERCENT, tool, true, true)
 
 					local ownerAbilitVals = tool:FindFirstChild("AbilityVals") :: StringValue?
 

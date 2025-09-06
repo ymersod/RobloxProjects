@@ -119,8 +119,8 @@ function funcs.StealKingScore(
 	self: Player,
 	drainPercent: number,
 	tool: Tool,
-	giveXp: true?,
-	shouldDrain: true?
+	giveXp: boolean,
+	shouldDrain: boolean
 )
 	if IsSafeUtil.IsSafeFromAll(playerHit) then
 		return

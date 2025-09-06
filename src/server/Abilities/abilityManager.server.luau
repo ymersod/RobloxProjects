@@ -174,7 +174,7 @@ slapBind.Event:Connect(function(targetPlayer: Player, self: Player, direction, a
 		handleSoundAndDelays(0, startsound, nil, self)
 	elseif abilityVals and passiveValue and passiveValue == enums.abilityTypes.steal then
 		local stealAmount = abilityVals and abilityVals:GetAttribute("StealAmount")
-		KingCoinFunctions.StealKingScore(targetPlayer, self, stealAmount, tool)
+		KingCoinFunctions.StealKingScore(targetPlayer, self, stealAmount, tool, true, true)
 		ragdollUtils.ragdoll(targetPlayer, direction, 2)
 		local startsound, _ = getStartEndSound(tool, selfChar)
 		handleSoundAndDelays(0, startsound, nil, self)
@@ -284,7 +284,7 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 			local players = abilityUtils.getPlayersInCone(player, hrp.Position, hrp.CFrame.LookVector, angle, range)
 
 			for _, playerHit in ipairs(players) do
-				KingCoinFunctions.StealKingScore(playerHit, player, drainPercent, tool)
+				KingCoinFunctions.StealKingScore(playerHit, player, drainPercent, tool, true, true)
 				ragdollUtils.ragdoll(playerHit, (hrp.CFrame.LookVector + Vector3.new(0, upAngle, 0)) * power, 3)
 			end
 		end)
@@ -416,7 +416,7 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 
 						local directionVector = finalDir * power
 						ragdollUtils.ragdoll(hitPlayer, directionVector, 2)
-						KingCoinFunctions.StealKingScore(hitPlayer, player, drainPercent, tool, true, nil)
+						KingCoinFunctions.StealKingScore(hitPlayer, player, drainPercent, tool, true, true)
 					end
 				end
 			end)
@@ -471,7 +471,7 @@ spawnAbilityBind.Event:Connect(function(player: Player, abilityVals: Instance, _
 						print("hitting player")
 						table.insert(hitId, playerhit.UserId)
 						ragdollUtils.ragdoll(playerhit, pPart.CFrame.RightVector.Unit * power, 2)
-						KingCoinFunctions.StealKingScore(playerhit, player, drainPercent, tool, true, nil)
+						KingCoinFunctions.StealKingScore(playerhit, player, drainPercent, tool, true, true)
 					end
 				end
 			end)
